@@ -27,7 +27,7 @@ public class IndividualJavaTest extends JavaTest {
     @ConfigItem(key = "temp", description = "A temporary output directory")
     public String tempResults;
 
-    @ConfigItem(key = "included", required = true,
+    @ConfigItem(key = "included", required = false,
             description = "Folder containing files to include in submission working directory when running tests")
     public File included = null;
 

@@ -17,7 +17,7 @@ import java.util.Scanner;
  */
 public class LoadSubmissionData {
 
-    @ConfigItem(key = "json", description = "Location of data files")
+    @ConfigItem(key = "json", description = "Location of data files", required = false)
     public String json;
 
     private static final String WARNING =
@@ -41,29 +41,6 @@ public class LoadSubmissionData {
                 System.exit(1);
             }
         } while (!answer.equals("y"));*/
-    }
-
-    /**
-     * Create a folder for the JSON data output directory.
-     */
-    @Prior
-    public void createOutputDirectory(Map<String, String> config) {
-        File directory = Paths.get(json).toFile();
-
-        if (directory.exists()) {
-            File[] files = directory.listFiles((File pathname) ->
-                pathname.getName().endsWith(".json")
-            );
-            if (files != null && files.length > 0) {
-                promptWarning();
-            }
-        } else {
-            try {
-                Files.createDirectory(directory.toPath());
-            } catch (IOException e) {
-                System.err.println("Unable to create output json directory");
-            }
-        }
     }
 
     /**
