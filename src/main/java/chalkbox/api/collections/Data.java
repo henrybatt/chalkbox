@@ -166,6 +166,15 @@ public class Data {
         json.put(keys[keys.length - 1].replace("\\.", "."), value);
     }
 
+    /**
+     * Deletes the value at the given key.
+     *
+     * @param key key to delete value at
+     */
+    public void delete(String key) {
+        this.json.remove(key);
+    }
+
     @Override
     public String toString() {
         return this.json.toJSONString();

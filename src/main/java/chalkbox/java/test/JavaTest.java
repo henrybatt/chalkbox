@@ -10,6 +10,7 @@ import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.java.compilation.JavaCompilation;
+import org.json.simple.JSONArray;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class JavaTest {
 
     @ConfigItem(key = "tests", description = "Path of JUnit test files")
     public String testPath;
+    // TODO add distinction between visible/marking tests
 
     @ConfigItem(description = "Class path for tests to be compiled with")
     public String classPath;
@@ -101,15 +103,18 @@ public class JavaTest {
         if (hasErrors) {
             return submission;
         }
-        if (!submission.getResults().is("compilation.compiles")) {
+        if (!submission.getResults().is("extra_data.compilation.compiles")) {
             return submission;
         }
 
         String classPath = this.classPath + ":" + submission.getWorking().getUnmaskedPath("bin");
+        JSONArray testResults = new JSONArray();
         for (String className : tests.getClasses("")) {
             Data results = JUnitRunner.runTest(className, classPath, new File("."));
-            submission.getResults().set("tests." + className.replace(".", "\\."), results);
+            results.set("name", className);
+            testResults.add(results);
         }
+        submission.getResults().set("tests", testResults);
 
         return submission;
     }

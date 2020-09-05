@@ -68,8 +68,8 @@ public class JavaCompilation {
         boolean success = Compiler.compile(sourceFiles, classPath,
                 working.getUnmaskedPath("bin"), output);
 
-        results.set("compilation.compiles", success);
-        results.set("compilation.output", output.toString());
+        results.set("extra_data.compilation.compiles", success);
+        results.set("extra_data.compilation.output", output.toString());
         working.refresh();
         return submission;
     }

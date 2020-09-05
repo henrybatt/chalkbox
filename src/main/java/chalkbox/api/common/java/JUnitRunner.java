@@ -33,10 +33,12 @@ public class JUnitRunner {
                     classPath, JUNIT_RUNNER, className);
         } catch (IOException e) {
             e.printStackTrace();
-            results.set("errors", "Test running IO Error - see tutor");
+            results.set("score", 0);
+            results.set("output", "Test running IO Error - see tutor");
             return results;
         } catch (TimeoutException e) {
-            results.set("errors", "Timed out");
+            results.set("score", 0);
+            results.set("output", "Timed out");
             return results;
         }
 
@@ -44,27 +46,26 @@ public class JUnitRunner {
         String output = process.getOutput();
         String errors = process.getError();
 
-        results.set("output", output);
-        results.set("errors", errors);
-
         /* Parse the JUnit output */
         JUnitParser jUnit;
         try {
             jUnit = JUnitParser.parse(output);
         } catch (IOException io) {
             io.printStackTrace();
+            results.set("score", 0);
+            results.set("output", "Test parsing IO Error - see tutor");
             return results;
         } catch (JUnitParseException p) {
             System.err.println(output);
             System.err.println(errors);
             p.printStackTrace();
-            results.set("errors", p.getMessage());
+            results.set("score", 0);
+            results.set("output", p.getMessage());
             return results;
         }
 
-        results.set("passes", jUnit.getPasses());
-        results.set("fails", jUnit.getFails());
-        results.set("total", jUnit.getTotal());
+        results.set("score", jUnit.getPasses());
+        results.set("max_score", jUnit.getTotal());
         results.set("output", jUnit.formatOutput());
 
         return results;
