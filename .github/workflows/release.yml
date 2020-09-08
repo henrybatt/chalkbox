@@ -7,11 +7,21 @@ jobs:
     name: Create release-artifacts
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@master
-      - name: Generate the artifacts
-        uses: skx/github-action-build@master
-      - name: Upload the artifacts
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+      - name: Run Gradle Test
+        uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: test
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Generate Artifacts
+        uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: build
+      - name: Upload Artifacts
         uses: skx/github-action-publish-binaries@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
