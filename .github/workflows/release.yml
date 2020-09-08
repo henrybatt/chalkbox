@@ -23,4 +23,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: 'chalkbox.jar'
+          args: /home/runner/work/chalkbox/chalkbox/build/libs/chalkbox.jar
