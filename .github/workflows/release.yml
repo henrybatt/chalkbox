@@ -1,7 +1,8 @@
+name: Build and Deploy Release Assets
+
 on:
   release:
     types: [created]
-name: Release
 jobs:
   generate:
     name: Create release-artifacts
@@ -11,12 +12,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 14
-      - name: Run Gradle Test
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: test
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
       - name: Generate Artifacts
         uses: eskatos/gradle-command-action@v1
         with:
