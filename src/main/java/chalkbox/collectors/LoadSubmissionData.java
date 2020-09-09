@@ -32,11 +32,9 @@ public class LoadSubmissionData {
     private void promptWarning() {/*
         Scanner input = new Scanner(System.in);
         System.out.print(WARNING);
-
         String answer;
         do {
             answer = input.nextLine();
-
             if (answer.equals("n")) {
                 System.exit(1);
             }
