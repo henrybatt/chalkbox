@@ -316,6 +316,7 @@ public class ChalkBox {
     }
 
     public void executeProcess(Class processorClass) {
+        //Checks for processor annotation in processorClass
         if (!processorClass.isAnnotationPresent(Processor.class)) {
             hasError = true;
             System.err.println("Processor class does not have @Processor annotation");
@@ -340,18 +341,6 @@ public class ChalkBox {
 
             streams.put(stream, ProcessRunner.executeProcess(data, instance,
                     pipe, annotation.threads()));
-        }
-
-        List<Method> groupPipes = methodsByAnnotation(processorClass, GroupPipe.class);
-        for (Method method : groupPipes) {
-            String stream = method.getAnnotation(GroupPipe.class).stream();
-            List<Object> data = streams.get(stream);
-
-            try {
-                method.invoke(instance, data);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
 
         runFinish(processorClass, instance);

@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Logger;
-
+//ELLA - probs can be deleted
 /**
  * Process to rename submissions containing only one file of with an extension
  * to the expected file name.
