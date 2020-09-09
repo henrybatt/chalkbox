@@ -1,6 +1,5 @@
 package chalkbox.java.test;
 
-import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
 import chalkbox.api.annotations.Prior;
 import chalkbox.api.annotations.Processor;
@@ -50,15 +49,21 @@ public class JavaTest {
     private Bundle tests;
     protected boolean hasErrors;
 
-    @ConfigItem(key = "solution", description = "Sample solution to compile tests with")
+    /** Sample solution to compile tests with */
     public String solutionPath;
 
-    @ConfigItem(key = "tests", description = "Path of JUnit test files")
+    /** Path of JUnit test files */
     public String testPath;
     // TODO add distinction between visible/marking tests
 
-    @ConfigItem(description = "Class path for tests to be compiled with")
+    /** Class path for tests to be compiled with */
     public String classPath;
+
+    public JavaTest(String solutionPath, String testPath, String classPath) {
+        this.solutionPath = solutionPath;
+        this.testPath = testPath;
+        this.classPath = classPath;
+    }
 
     /**
      * Compile the sample solution and then compile the tests with the sample

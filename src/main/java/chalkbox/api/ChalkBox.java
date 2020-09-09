@@ -13,7 +13,11 @@ import chalkbox.api.config.ChalkboxConfig;
 import chalkbox.api.config.ConfigParseException;
 import chalkbox.api.config.ConfigParser;
 import chalkbox.api.config.FieldAssigner;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Engine;
+import chalkbox.engines.EngineLoader;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -417,7 +421,7 @@ public class ChalkBox {
         return builder.toString();
     }
 
-    public static void main(String[] args) throws ConfigParseException {
+    public static void main(String[] args) throws ConfigFormatException {
         if (args.length == 2) {
             if (!args[0].equals("help")) {
                 System.err.println(USAGE);
@@ -433,8 +437,7 @@ public class ChalkBox {
             return;
         }
 
-        ChalkboxConfig config = ConfigParser.box().read(Paths.get(args[0]));
-        ChalkBox box = new ChalkBox(config);
-        box.run();
+        Engine engine = EngineLoader.load(args[0]);
+        engine.run();
     }
 }

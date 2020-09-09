@@ -37,9 +37,13 @@ import java.io.StringWriter;
  */
 @Processor
 public class JavaCompilation {
-    @ConfigItem(description = "Class path to use to compile submissions")
-    public String classPath;
 
+    /** Class path to use to compile submissions */
+    private String classPath;
+
+    public JavaCompilation(String classPath) {
+        this.classPath = classPath;
+    }
 
     @Pipe(stream = "submissions")
     public Collection compile(Collection submission) {

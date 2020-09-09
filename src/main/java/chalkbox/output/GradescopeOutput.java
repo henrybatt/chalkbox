@@ -8,26 +8,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.util.List;
 
 public class GradescopeOutput {
 
     @Output
-    public void output(PrintStream stream, List<Collection> collections) {
-        for (Collection collection : collections) {
-            Data results = collection.getResults();
+    public void output(PrintStream stream, Collection submission) {
+        Data results = submission.getResults();
 
-            // The below fields are not part of the Gradescope format, but still
-            // needed during the processing pipeline (for now).
-            results.delete("root");
-            results.delete("json");
+        // The below fields are not part of the Gradescope format, but still
+        // needed during the processing pipeline (for now).
+        results.delete("root");
+        results.delete("json");
 
-            File jsonFile = new File("/autograder/results/results.json");
-            try {
-                Files.write(jsonFile.toPath(), results.toString().getBytes());
-            } catch (IOException e) {
-                System.err.println("Unable to write output JSON file");
-            }
+        File jsonFile = new File("/autograder/results/results.json");
+        try {
+            Files.write(jsonFile.toPath(), results.toString().getBytes());
+        } catch (IOException e) {
+            System.err.println("Unable to write output JSON file");
         }
     }
 }
