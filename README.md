@@ -1,4 +1,4 @@
-# Chalkbox v2 ( WIP )
+# Chalkbox v3 ![Gradle Build](https://github.com/UQTools/chalkbox/workflows/Gradle%20Build/badge.svg)
 
 <img src="https://github.com/BraeWebb/chalkbox/raw/master/resources/chalkbox.png" alt="Chalkbox Logo">
 
