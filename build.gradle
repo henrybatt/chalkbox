@@ -27,10 +27,15 @@ sourceSets {
     test {
         java {
             srcDir 'test/chalkbox'
-            exclude 'test/resources**'
+        }
+        resources {
+            srcDirs "test/resources"
+            exclude "**/*.java"
         }
     }
 }
+
+sourceSets.test.resources
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'

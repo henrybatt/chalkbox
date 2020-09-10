@@ -1,10 +1,12 @@
 package chalkbox.engines;
 
-import org.apache.commons.io.FileUtils;
+
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
@@ -27,11 +29,8 @@ public class CSSE2002EngineTest {
         }
         engine.run();
 
-        File results = Paths.get(RESULTS_PATH).toFile();
-        File expected = Paths.get(EXPECTED_PATH).toFile();
-
         assertEquals("Output JSON files are different",
-                FileUtils.readFileToString(expected, "utf-8"),
-                FileUtils.readFileToString(results, "utf-8"));
+                Files.readString(Paths.get(EXPECTED_PATH), StandardCharsets.UTF_8),
+                Files.readString(Paths.get(RESULTS_PATH), StandardCharsets.UTF_8));
     }
 }
