@@ -14,6 +14,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -99,6 +100,7 @@ public class Bundle {
         for (String filename : sources.getFileNames(".java")) {
             classes.add(getClassName(filename));
         }
+        Collections.sort(classes); // deterministic order (alphabetical)
         return classes;
     }
 
