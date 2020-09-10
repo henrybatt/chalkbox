@@ -25,6 +25,9 @@ public class ProcessRunner extends Thread {
         return updatedSegment;
     }
 
+    /*
+        I think this is where multiple student submissions are handled (don't need)
+     */
     @Override
     public void run() {
         for (Object item : dataSegment) {
@@ -36,6 +39,7 @@ public class ProcessRunner extends Thread {
         }
     }
 
+    // all the threading stuff which we don't need for single submissions
     public static List<Object> executeProcess(List<Object> data, Object instance,
                                               Method method, int threadNumber) {
         List<Object> updated = new ArrayList<>();

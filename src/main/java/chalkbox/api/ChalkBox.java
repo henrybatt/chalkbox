@@ -34,6 +34,7 @@ public class ChalkBox {
             + "\tchalkbox <box file>" + System.lineSeparator()
             + "\tchalkbox help <class>";
 
+    // i think the objects (in streams) are collections of student submissions
     private Map<String, List<Object>> streams = new HashMap<>();
     private Class collector;
     private Class processor;
