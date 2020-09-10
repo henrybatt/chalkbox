@@ -129,7 +129,7 @@ public class Bundle {
         if (filePath.startsWith("/test/")) {
             filePath = filePath.replace("/test/", "");
         }
-        return filePath.replace(".java", "")
+        return filePath.replace(".java", "").replace("/", ".")
                 .replace(File.separator, ".");
     }
 

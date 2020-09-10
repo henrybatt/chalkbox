@@ -81,7 +81,7 @@ public class JavaTest {
             solutionOutput = new Bundle();
             testOutput = new Bundle();
             /* Add the tests to the class path for execution */
-            classPath = classPath + ":" + testOutput.getUnmaskedPath();
+            classPath = classPath + System.getProperty("path.separator") + testOutput.getUnmaskedPath();
         } catch (IOException e) {
             hasErrors = true;
             e.printStackTrace();
@@ -96,7 +96,7 @@ public class JavaTest {
 
         /* Compile the tests with the sample solution */
         Compiler.compile(Compiler.getSourceFiles(tests),
-                classPath + ":" + solutionOutput.getUnmaskedPath(),
+                classPath + System.getProperty("path.separator") + solutionOutput.getUnmaskedPath(),
                 testOutput.getUnmaskedPath(), output);
     }
 
@@ -112,7 +112,7 @@ public class JavaTest {
             return submission;
         }
 
-        String classPath = this.classPath + ":" + submission.getWorking().getUnmaskedPath("bin");
+        String classPath = this.classPath + System.getProperty("path.separator") + submission.getWorking().getUnmaskedPath("bin");
         JSONArray testResults = new JSONArray();
         for (String className : tests.getClasses("")) {
             Data results = JUnitRunner.runTest(className, classPath, new File("."));

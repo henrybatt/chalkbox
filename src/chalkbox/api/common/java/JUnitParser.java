@@ -54,7 +54,7 @@ public class JUnitParser {
         /* Combine test failures and test errors */
         for (Map.Entry<Integer, String> failure : failureMethods.entrySet()) {
             builder.append(failure.getValue());
-            builder.append(errorMessages.get(failure.getKey())).append(System.lineSeparator());
+            builder.append(errorMessages.get(failure.getKey())).append("\n");
         }
 
         return builder.toString();
@@ -176,7 +176,7 @@ public class JUnitParser {
             if (parsingTest) {
                 test.errorMessages.put(testNum,
                         test.errorMessages.get(testNum)
-                                + System.lineSeparator() + line);
+                                + "\n" + line);
             }
         }
 
