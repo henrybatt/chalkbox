@@ -1,0 +1,18 @@
+engine: chalkbox.engines.CSSE2002Engine
+---
+courseCode: CSSE2002
+assignment: ass1
+submission: ./test/resources/csse2002/submission/
+outputFile: ./test/resources/csse2002/results/results.json
+dependencies: # optional
+  - ./test/resources/csse2002/lib/hamcrest-core-1.3.jar
+  - ./test/resources/csse2002/lib/junit-4.12.jar
+linterConfig: config/checkstyle.xml # optional
+resources: # optional
+  - networks/
+testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional
+correctSolution: ./test/resources/csse2002/solutions/correct/ # optional
+faultySolutions: solutions/faulty/ # optional
+assessableTestClasses: # optional
+  - tms.intersection.IntersectionTest
+  - tms.sensors.DemoPressurePadTest
