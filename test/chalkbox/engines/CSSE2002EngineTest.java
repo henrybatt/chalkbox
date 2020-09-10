@@ -29,8 +29,12 @@ public class CSSE2002EngineTest {
         }
         engine.run();
 
-        assertEquals("Output JSON files are different",
-                Files.readString(Paths.get(EXPECTED_PATH), StandardCharsets.UTF_8),
-                Files.readString(Paths.get(RESULTS_PATH), StandardCharsets.UTF_8));
+        String expected = Files.readString(Paths.get(EXPECTED_PATH),
+                StandardCharsets.UTF_8);
+        String actual = Files.readString(Paths.get(RESULTS_PATH),
+                StandardCharsets.UTF_8);
+        System.out.println("expected: " + expected);
+        System.out.println("actual: " + actual);
+        assertEquals("Output JSON files are different", expected, actual);
     }
 }
