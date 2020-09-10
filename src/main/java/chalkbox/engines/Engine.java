@@ -1,13 +1,36 @@
 package chalkbox.engines;
 
+import chalkbox.api.collections.Collection;
+import chalkbox.collectors.GradescopeCollector;
+import chalkbox.output.GradescopeOutput;
+
 public abstract class Engine {
     private String engine;
     private String courseCode;
     private String assignment;
+    private String submission;
+    private String outputFile;
 
     public boolean configIsValid() {
-        return courseCode != null && !courseCode.isEmpty() && assignment != null
-                && !assignment.isEmpty();
+        return courseCode != null && !courseCode.isEmpty()
+                && assignment != null && !assignment.isEmpty()
+                && submission != null && !submission.isEmpty()
+                && outputFile != null && !outputFile.isEmpty();
+    }
+
+    public Collection collect() {
+        return new GradescopeCollector().collect(submission, outputFile);
+    }
+
+    public void output(Collection submission) {
+        new GradescopeOutput().output(null, submission);
+    }
+
+    public abstract void run();
+
+    @Override
+    public String toString() {
+        return String.format("%s %s", courseCode, assignment);
     }
 
     public String getEngine() {
@@ -34,12 +57,19 @@ public abstract class Engine {
         this.assignment = assignmentId;
     }
 
-    public void run() {
-        System.out.println(this);
+    public String getSubmission() {
+        return submission;
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s %s", courseCode, assignment);
+    public void setSubmission(String submission) {
+        this.submission = submission;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
     }
 }

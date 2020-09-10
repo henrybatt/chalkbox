@@ -14,13 +14,13 @@ public class GradescopeOutput {
     @Output
     public void output(PrintStream stream, Collection submission) {
         Data results = submission.getResults();
+        File jsonFile = new File((String) results.get("json"));
 
         // The below fields are not part of the Gradescope format, but still
         // needed during the processing pipeline (for now).
         results.delete("root");
         results.delete("json");
 
-        File jsonFile = new File("/autograder/results/results.json");
         try {
             Files.write(jsonFile.toPath(), results.toString().getBytes());
         } catch (IOException e) {

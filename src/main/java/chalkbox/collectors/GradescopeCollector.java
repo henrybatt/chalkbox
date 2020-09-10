@@ -9,13 +9,13 @@ import java.io.File;
 @Collector
 public class GradescopeCollector extends LoadSubmissionData {
 
-    public Collection collect() {
-        File submissionFolder = new File("/autograder/submission");
+    public Collection collect(String submissionPath, String outputPath) {
+        File submissionFolder = new File(submissionPath);
 
         Data metadata = new Data();
 
         metadata.set("root", submissionFolder.getPath());
-        metadata.set("json", "/autograder/results/results.json");
+        metadata.set("json", outputPath);
 
         return new Collection(metadata);
     }

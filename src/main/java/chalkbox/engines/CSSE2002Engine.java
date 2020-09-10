@@ -1,10 +1,8 @@
 package chalkbox.engines;
 
 import chalkbox.api.collections.Collection;
-import chalkbox.collectors.GradescopeCollector;
 import chalkbox.java.compilation.JavaCompilation;
 import chalkbox.java.test.JavaTest;
-import chalkbox.output.GradescopeOutput;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -20,12 +18,9 @@ public class CSSE2002Engine extends Engine {
 
     @Override
     public void run() {
-        super.run();
         System.out.println("Running CSSE2002 engine");
 
-        // TODO remove collection and output into Engine?
-        GradescopeCollector collector = new GradescopeCollector();
-        Collection submission = collector.collect();
+        Collection submission = super.collect();
 
         JavaCompilation compilation = new JavaCompilation(
                 dependenciesToClasspath(this.dependencies));
@@ -36,8 +31,7 @@ public class CSSE2002Engine extends Engine {
         test.compileTests(null); // TODO remove unused param
         submission = test.runTests(submission);
 
-        GradescopeOutput output = new GradescopeOutput();
-        output.output(null, submission); // TODO remove unused param
+        super.output(submission);
     }
 
     private String dependenciesToClasspath(List<String> dependencies) {
