@@ -67,7 +67,7 @@ public class JavaCompilation {
         }
 
         StringWriter output = new StringWriter();
-        String classPath = submission.getSource().getUnmaskedPath() + ":" + this.classPath;
+        String classPath = submission.getSource().getUnmaskedPath() + System.getProperty("path.separator") + this.classPath;
 
         boolean success = Compiler.compile(sourceFiles, classPath,
                 working.getUnmaskedPath("bin"), output);

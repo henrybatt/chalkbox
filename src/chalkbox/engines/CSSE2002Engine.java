@@ -35,7 +35,7 @@ public class CSSE2002Engine extends Engine {
     }
 
     private String dependenciesToClasspath(List<String> dependencies) {
-        StringJoiner joiner = new StringJoiner(":");
+        StringJoiner joiner = new StringJoiner(System.getProperty("path.separator"));
         for (String dependency : dependencies) {
             joiner.add(dependency);
         }
