@@ -63,9 +63,11 @@ public class CSSE2002Engine extends Engine {
         test.compileTests(null); // TODO remove unused param
         submission = test.runTests(submission);
 
-        Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
-                this.checkstyle.getConfig(), this.checkstyle.getExcluded());
-        submission = checkstyle.run(submission);
+        if (checkstyle != null) {
+            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
+                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
+            submission = checkstyle.run(submission);
+        }
 
         super.output(submission);
     }
