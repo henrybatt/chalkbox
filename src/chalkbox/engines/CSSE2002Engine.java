@@ -1,6 +1,7 @@
 package chalkbox.engines;
 
 import chalkbox.api.collections.Collection;
+import chalkbox.java.checkstyle.Checkstyle;
 import chalkbox.java.compilation.JavaCompilation;
 import chalkbox.java.test.JavaTest;
 
@@ -9,11 +10,42 @@ import java.util.StringJoiner;
 
 public class CSSE2002Engine extends Engine {
 
+    public static class CheckstyleOptions {
+        private String config;
+        private String jar;
+        private List<String> excluded;
+
+        public String getConfig() {
+            return config;
+        }
+
+        public void setConfig(String config) {
+            this.config = config;
+        }
+
+        public String getJar() {
+            return jar;
+        }
+
+        public void setJar(String jar) {
+            this.jar = jar;
+        }
+
+        public List<String> getExcluded() {
+            return excluded;
+        }
+
+        public void setExcluded(List<String> excluded) {
+            this.excluded = excluded;
+        }
+    }
+
     private List<String> dependencies;
     private List<String> resources;
     private String linterConfig;
     private String testDirectory;
     private String correctSolution;
+    private CheckstyleOptions checkstyle;
     // TODO: add faultySolutions and assessableTestClasses
 
     @Override
@@ -30,6 +62,12 @@ public class CSSE2002Engine extends Engine {
                 dependenciesToClasspath(this.dependencies));
         test.compileTests(null); // TODO remove unused param
         submission = test.runTests(submission);
+
+        if (checkstyle != null) {
+            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
+                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
+            submission = checkstyle.run(submission);
+        }
 
         super.output(submission);
     }
@@ -80,5 +118,13 @@ public class CSSE2002Engine extends Engine {
 
     public void setCorrectSolution(String correctSolution) {
         this.correctSolution = correctSolution;
+    }
+
+    public CheckstyleOptions getCheckstyle() {
+        return this.checkstyle;
+    }
+
+    public void setCheckstyle(CheckstyleOptions checkstyle) {
+        this.checkstyle = checkstyle;
     }
 }
