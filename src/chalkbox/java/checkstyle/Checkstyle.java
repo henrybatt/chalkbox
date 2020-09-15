@@ -1,6 +1,5 @@
 package chalkbox.java.checkstyle;
 
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -16,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Processor to execute the Checkstyle tool on the submission.
  */
-@Processor
+
 public class  Checkstyle {
     private String jar;
     private String config;
