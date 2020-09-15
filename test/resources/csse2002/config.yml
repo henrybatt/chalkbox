@@ -7,7 +7,11 @@ outputFile: ./test/resources/csse2002/results/results.json
 dependencies: # optional
   - ./test/resources/csse2002/lib/hamcrest-core-1.3.jar
   - ./test/resources/csse2002/lib/junit-4.12.jar
-linterConfig: config/checkstyle.xml # optional
+checkstyle: # optional
+  config: ./test/resources/csse2002/checkstyle.xml
+  jar: ./test/resources/csse2002/lib/checkstyle-8.36-all.jar
+  excluded:
+    - ./test/resources/csse2002/submission/src/tms/display/
 resources: # optional
   - networks/
 testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional

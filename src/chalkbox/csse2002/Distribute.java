@@ -6,7 +6,7 @@ import chalkbox.api.annotations.Pipe;
 import chalkbox.api.annotations.Prior;
 import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
-import chalkbox.java.checkstyle.CheckStyle;
+import chalkbox.java.checkstyle.Checkstyle;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -45,7 +45,7 @@ import java.util.zip.ZipOutputStream;
  *     if functionality was run</li>
  * </ul>
  */
-@Processor(depends = {CheckStyle.class, Allocate.class}, threads = 1)
+@Processor(depends = {Checkstyle.class, Allocate.class}, threads = 1)
 public class Distribute {
     private Map<String, ZipOutputStream> zips = new HashMap<>();
 
