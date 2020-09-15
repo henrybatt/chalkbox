@@ -1,7 +1,6 @@
 package chalkbox.python;
 
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-@Processor
 public class PythonUnitTest {
 
     @Pipe

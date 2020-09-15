@@ -3,7 +3,6 @@ package chalkbox.java.conformance;
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
 import chalkbox.api.annotations.Prior;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -20,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Processor(depends = {JavaCompilation.class})
+//depends on javaCompliation.class
 public class Conformance {
     @ConfigItem(description = "The location of files to use for conformance checking")
     public String conformance;
