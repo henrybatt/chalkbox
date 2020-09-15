@@ -2,7 +2,6 @@ package chalkbox.java.checkstyle;
 
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -22,7 +21,6 @@ import java.util.concurrent.TimeoutException;
  * }
  * </pre>
  */
-@Processor
 public class CheckStyle {
     @ConfigItem(description = "path to a checkstyle jar to execute")
     public String checkstyleJar;

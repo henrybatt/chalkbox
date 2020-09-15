@@ -2,7 +2,6 @@ package chalkbox.python;
 
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -15,7 +14,8 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 //todo(issue:#21) Refactor this to not be CSSE1001
-@Processor(depends = RenameSubmissions.class)
+
+//dependancies RenameSubmission.class
 public class CSSE1001Test {
     @ConfigItem(key = "python", required = false,
             description = "Command to execute python from terminal")

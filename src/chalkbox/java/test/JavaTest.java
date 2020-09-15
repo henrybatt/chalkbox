@@ -2,7 +2,6 @@ package chalkbox.java.test;
 
 import chalkbox.api.annotations.Pipe;
 import chalkbox.api.annotations.Prior;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -44,7 +43,6 @@ import java.util.Map;
  * }
  * </pre>
  */
-@Processor(depends = {JavaCompilation.class})
 public class JavaTest {
     private Bundle tests;
     protected boolean hasErrors;

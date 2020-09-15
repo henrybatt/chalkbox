@@ -2,7 +2,6 @@ package chalkbox.java.compilation;
 
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -35,7 +34,6 @@ import java.io.StringWriter;
  * <p>A submission without any .java files will have compilation.compiles set
  * to false and compilation.output set to "Empty submission"
  */
-@Processor
 public class JavaCompilation {
 
     /** Class path to use to compile submissions */

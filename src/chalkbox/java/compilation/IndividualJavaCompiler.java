@@ -3,7 +3,6 @@ package chalkbox.java.compilation;
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
 import chalkbox.api.annotations.Prior;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -52,7 +51,6 @@ import java.util.Map;
  * }
  * </pre>
  */
-@Processor
 public class IndividualJavaCompiler {
     @ConfigItem(description = "Class path to use to compile submissions")
     public String classPath;

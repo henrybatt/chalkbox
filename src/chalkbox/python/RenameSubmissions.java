@@ -2,7 +2,6 @@ package chalkbox.python;
 
 import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Processor;
 import chalkbox.api.collections.Collection;
 import chalkbox.java.junit.JUnit;
 
@@ -24,7 +23,6 @@ import java.util.logging.Logger;
  * If only one file is found with the given extension then it is renamed to
  * the expected file name.
  */
-@Processor
 public class RenameSubmissions {
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
