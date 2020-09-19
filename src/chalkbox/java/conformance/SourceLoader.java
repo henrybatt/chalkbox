@@ -5,10 +5,7 @@ import chalkbox.api.files.FileLoader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SourceLoader extends ClassLoader {
     private File classDirectory;
@@ -36,7 +33,7 @@ public class SourceLoader extends ClassLoader {
     }
 
     public Map<String, Class> getClassMap() throws ClassNotFoundException {
-        Map<String, Class> classes = new HashMap<>();
+        Map<String, Class> classes = new TreeMap<>();
         for (String file : files) {
             classes.put(file, loadClass(file));
         }

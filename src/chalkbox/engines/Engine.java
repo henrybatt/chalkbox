@@ -3,6 +3,7 @@ package chalkbox.engines;
 import chalkbox.api.collections.Collection;
 import chalkbox.collectors.GradescopeCollector;
 import chalkbox.output.GradescopeOutput;
+import org.json.simple.JSONArray;
 
 public abstract class Engine {
     private String engine;
@@ -19,7 +20,9 @@ public abstract class Engine {
     }
 
     public Collection collect() {
-        return new GradescopeCollector().collect(submission, outputFile);
+        Collection col = new GradescopeCollector().collect(submission, outputFile);
+        col.getResults().set("tests", new JSONArray());
+        return col;
     }
 
     public void output(Collection submission) {

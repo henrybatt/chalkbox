@@ -1,44 +1,72 @@
 package chalkbox.java.conformance;
 
-import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Prior;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.files.FileLoader;
-import chalkbox.java.compilation.JavaCompilation;
 import chalkbox.java.conformance.comparator.ClassComparator;
 import chalkbox.java.conformance.comparator.CodeComparator;
+import org.json.simple.JSONArray;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-//depends on javaCompliation.class
+/**
+ * Checks whether a submission conforms exactly to the specified public API.
+ *
+ * Detects extra or missing files in a submission, compared to the expected
+ * file structure. Uses class comparators to identify methods and members in the
+ * submission that differ to those in the correct solution.
+ */
 public class Conformance {
-    @ConfigItem(description = "The location of files to use for conformance checking")
-    public String conformance;
+    /**
+     * Path of the correct solution to the assignment.
+     *
+     * Will be compiled into class files which are checked member-for-member
+     * against classes in the the provided submission.
+     */
+    private final String correctSolution;
 
-    @ConfigItem(description = "The expected file structure for the assignment")
-    public String structure;
-
-    @ConfigItem
-    public String classPath;
+    /**
+     * Class path to use when compiling the sample solution.
+     *
+     * Any dependencies should be added here, e.g. JUnit.
+     */
+    private final String classPath;
 
     private Map<String, Class> expectedClasses;
     private List<String> expectedFiles;
 
     /**
+     *
+     * @param correctSolution path of the correct solution to the assignment
+     * @param expectedStructure path of the directory to compare against the
+     *                          provided submission. Extra and missing files
+     *                          will be flagged based on whether they appear
+     *                          in this directory
+     * @param classPath class path to use when compiling the sample solution
+     * @throws IOException if loading the expected class files fails
+     */
+    public Conformance(String correctSolution, String expectedStructure,
+            String classPath) throws IOException {
+        this.correctSolution = correctSolution;
+        this.classPath = classPath;
+        this.expectedFiles = FileLoader.loadFiles(expectedStructure);
+
+        loadExpected();
+    }
+
+    /**
      * Loads the expected class files into the conformance checker
      */
-    @Prior
-    public void loadExpected(Map<String, String> config) throws IOException {
-        Bundle expected = new Bundle(new File(conformance));
+    private void loadExpected() throws IOException {
+        Bundle expected = new Bundle(new File(correctSolution));
         StringWriter output = new StringWriter();
 
         /* Load output directories for the solution and the tests */
@@ -62,16 +90,19 @@ public class Conformance {
         }
     }
 
-    @Prior
-    public void loadStructure(Map<String, String> config) {
-        expectedFiles = FileLoader.loadFiles(structure);
-    }
-
-    @Pipe(stream = "submissions")
-    public Collection files(Collection submission) {
+    public Collection run(Collection submission) throws IOException {
         List<String> missing = new ArrayList<>();
         List<String> extra = new ArrayList<>();
         List<String> actual = FileLoader.loadFiles(submission.getSource().getUnmaskedPath());
+
+        Data data = submission.getResults();
+        JSONArray tests = (JSONArray) data.get("tests");
+        Data result = new Data(); // test result representing conformance check
+        result.set("name", "conformance");
+        result.set("output", "");
+        result.set("score", 0);
+//        result.set("max_score", 1);
+        tests.add(result);
 
         for (String expected : expectedFiles) {
             if (!actual.contains(expected)) {
@@ -85,19 +116,21 @@ public class Conformance {
             }
         }
 
-        submission.getResults().set("structure.missing", missing);
-        submission.getResults().set("structure.extra", extra);
+        // Enforce deterministic order of list of missing/extra files
+        Collections.sort(missing);
+        Collections.sort(extra);
 
-        return submission;
-    }
+        result.set("output", result.get("output") + "Missing files:\n"
+                + String.join("\n", missing) + "\n");
+        result.set("output", result.get("output") + "Extra files:\n"
+                + String.join("\n", extra) + "\n");
 
-    @Pipe(stream = "submissions")
-    public Collection compare(Collection submission) throws IOException {
-        Data data = submission.getResults();
-
-        if (!data.is("compilation.compiles")) {
+        // Only check classes for conformance if the submission compiles
+        if (!data.is("extra_data.compilation.compiles")) {
             return submission;
         }
+
+        result.set("output", result.get("output") + "Class conformance:\n");
 
         SourceLoader submissionLoader = new SourceLoader(submission.getWorking()
                 .getUnmaskedPath("bin"));
@@ -105,11 +138,13 @@ public class Conformance {
         try {
             submissionMap = submissionLoader.getClassMap();
         } catch (ClassNotFoundException|NoClassDefFoundError cnf) {
-            data.set("conformance.error", "Unable to find a class - consult a tutor");
+            result.set("output", result.get("output")
+                    + "Unable to find a class in submission\n");
             cnf.printStackTrace();
             return submission;
         }
 
+        boolean allConforms = true;
         for (String className : expectedClasses.keySet()) {
             // Skip anon generated classes
             if (className.contains("$")) {
@@ -121,16 +156,27 @@ public class Conformance {
             Class actualClass = submissionMap.get(className);
 
             if (expectedClass == null || actualClass == null) {
-                data.set(jsonKey + "differs", true);
-                data.set(jsonKey + "output", "Unable to load class");
+                result.set("output", result.get("output") + className
+                        + " was not found (unable to load class)\n");
                 continue;
             }
 
             CodeComparator<Class> comparator = new ClassComparator(expectedClass,
                     actualClass);
-            data.set(jsonKey + "differs", comparator.hasDifference());
-            data.set(jsonKey + "output", comparator.toString());
+            if (comparator.hasDifference()) {
+                // Class does not conform
+                result.set("output", result.get("output") + className
+                        + " does not conform:\n" + comparator.toString() + "\n");
+                allConforms = false;
+            } else {
+                // Class conforms
+                result.set("output", result.get("output") + className
+                        + " conforms\n");
+            }
         }
+
+        // TODO weighting of conformance results
+        result.set("score", allConforms ? 1 : 0);
 
         return submission;
     }

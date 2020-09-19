@@ -111,13 +111,12 @@ public class JavaTest {
         }
 
         String classPath = this.classPath + System.getProperty("path.separator") + submission.getWorking().getUnmaskedPath("bin");
-        JSONArray testResults = new JSONArray();
+        JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         for (String className : tests.getClasses("")) {
             Data results = JUnitRunner.runTest(className, classPath, new File("."));
             results.set("name", className);
             testResults.add(results);
         }
-        submission.getResults().set("tests", testResults);
 
         return submission;
     }

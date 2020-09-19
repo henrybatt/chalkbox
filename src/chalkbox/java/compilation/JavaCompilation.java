@@ -48,7 +48,7 @@ public class JavaCompilation {
         Bundle working = submission.getWorking();
         Data results = submission.getResults();
 
-        results.set("compilation.compiles", false);
+        results.set("extra_data.compilation.compiles", false);
 
         /* Attempt to create a new output directory */
         if (!working.makeDir("bin")) {

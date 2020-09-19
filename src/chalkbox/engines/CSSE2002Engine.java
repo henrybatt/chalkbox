@@ -3,8 +3,10 @@ package chalkbox.engines;
 import chalkbox.api.collections.Collection;
 import chalkbox.java.checkstyle.Checkstyle;
 import chalkbox.java.compilation.JavaCompilation;
+import chalkbox.java.conformance.Conformance;
 import chalkbox.java.test.JavaTest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -45,6 +47,7 @@ public class CSSE2002Engine extends Engine {
     private String linterConfig;
     private String testDirectory;
     private String correctSolution;
+    private String expectedStructure;
     private CheckstyleOptions checkstyle;
     // TODO: add faultySolutions and assessableTestClasses
 
@@ -57,6 +60,16 @@ public class CSSE2002Engine extends Engine {
         JavaCompilation compilation = new JavaCompilation(
                 dependenciesToClasspath(this.dependencies));
         submission = compilation.compile(submission);
+
+        try {
+            Conformance conformance = new Conformance(this.correctSolution,
+                    this.expectedStructure,
+                    dependenciesToClasspath(this.dependencies));
+            submission = conformance.run(submission);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         JavaTest test = new JavaTest(this.correctSolution, this.testDirectory,
                 dependenciesToClasspath(this.dependencies));
@@ -126,5 +139,13 @@ public class CSSE2002Engine extends Engine {
 
     public void setCheckstyle(CheckstyleOptions checkstyle) {
         this.checkstyle = checkstyle;
+    }
+
+    public String getExpectedStructure() {
+        return expectedStructure;
+    }
+
+    public void setExpectedStructure(String expectedStructure) {
+        this.expectedStructure = expectedStructure;
     }
 }

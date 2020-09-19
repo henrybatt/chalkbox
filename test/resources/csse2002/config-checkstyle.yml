@@ -16,6 +16,7 @@ resources: # optional
   - networks/
 testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional
 correctSolution: ./test/resources/csse2002/solutions/correct/src/ # optional
+expectedStructure: ./test/resources/csse2002/solutions/correct/ # optional
 faultySolutions: solutions/faulty/ # optional
 assessableTestClasses: # optional
   - tms.intersection.IntersectionTest
