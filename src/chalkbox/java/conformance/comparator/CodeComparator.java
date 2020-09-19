@@ -50,12 +50,12 @@ public abstract class CodeComparator<T> {
 
     public String toString() {
         StringBuilder builder = new StringBuilder(getIndent()).append(name)
-                .append(System.lineSeparator());
+                .append("\n");
 
         for (Flag flag : flags) {
             if (flag.isSet()) {
                 builder.append(flag.toString(indent + 4))
-                        .append(System.lineSeparator());
+                        .append("\n");
             }
         }
 
