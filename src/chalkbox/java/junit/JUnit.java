@@ -114,7 +114,8 @@ public class JUnit {
     private void compileSolutions() {
         /* Collect the list of broken solution folders */
         File solutionsFolder = new File(this.faultySolutionsPath);
-        File[] solutions = solutionsFolder.listFiles();
+        /* Only include directories as faulty solutions (e.g. not .DS_Store) */
+        File[] solutions = solutionsFolder.listFiles(File::isDirectory);
         if (solutions == null) {
             LOGGER.severe("Unable to load the folder of broken solutions");
             return;
@@ -159,9 +160,6 @@ public class JUnit {
     }
 
     private Collection compileTests(Collection submission) {
-        String student = submission.getResults().get("sid").toString();
-        LOGGER.info(String.format("STUDENT(%s) Tests Compiling", student));
-
         Bundle tests = submission.getSource().getBundle("test");
 
         StringWriter output = new StringWriter();
