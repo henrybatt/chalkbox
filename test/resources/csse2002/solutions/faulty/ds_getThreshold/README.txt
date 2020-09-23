@@ -1,0 +1,1 @@
+DemoSensor#getThreshold returns wrong value (threshold + 1).

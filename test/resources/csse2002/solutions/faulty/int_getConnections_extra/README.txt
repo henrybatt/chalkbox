@@ -1,0 +1,1 @@
+Intersection#getConnections adds extra Route to list before returning it.

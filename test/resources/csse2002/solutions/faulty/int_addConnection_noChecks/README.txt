@@ -1,0 +1,1 @@
+Intersection#addConnection does not check defaultSpeed or duplicated connection.

@@ -1,0 +1,1 @@
+Intersection#toString returns extra string beyond id.

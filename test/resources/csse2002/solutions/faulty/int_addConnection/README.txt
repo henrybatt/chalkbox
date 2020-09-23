@@ -1,0 +1,1 @@
+Intersection#addConnection does not add newRoute to incomingConnections list.
