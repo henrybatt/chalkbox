@@ -15,11 +15,11 @@ public class SingularFlag<T> extends Flag {
         StringBuilder builder = new StringBuilder(getIndent(indent));
 
         builder.append(message)
-                .append(System.lineSeparator());
+                .append("\n");
         builder.append(getIndent(indent)).append("Expected: ").append(expected)
-                .append(System.lineSeparator())
+                .append("\n")
                 .append(getIndent(indent)).append("Actual:   ").append(actual)
-                .append(System.lineSeparator());
+                .append("\n");
 
         return builder.toString();
     }

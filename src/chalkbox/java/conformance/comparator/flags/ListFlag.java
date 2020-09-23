@@ -54,11 +54,11 @@ public class ListFlag<T> extends Flag {
         }
 
         builder.append(message)
-                .append(System.lineSeparator());
+                .append("\n");
         builder.append(getIndent(indent)).append("Missing: ").append(missing)
-                .append(System.lineSeparator());
+                .append("\n");
         builder.append(getIndent(indent)).append("Extra:   ").append(extra)
-                .append(System.lineSeparator());
+                .append("\n");
 
         return builder.toString();
     }

@@ -4,6 +4,7 @@ import chalkbox.api.collections.Collection;
 import chalkbox.java.checkstyle.Checkstyle;
 import chalkbox.java.compilation.JavaCompilation;
 import chalkbox.java.conformance.Conformance;
+import chalkbox.java.junit.JUnit;
 import chalkbox.java.test.JavaTest;
 
 import java.io.IOException;
@@ -49,7 +50,8 @@ public class CSSE2002Engine extends Engine {
     private String correctSolution;
     private String expectedStructure;
     private CheckstyleOptions checkstyle;
-    // TODO: add faultySolutions and assessableTestClasses
+    private String faultySolutions;
+    private List<String> assessableTestClasses;
 
     @Override
     public void run() {
@@ -73,13 +75,21 @@ public class CSSE2002Engine extends Engine {
 
         JavaTest test = new JavaTest(this.correctSolution, this.testDirectory,
                 dependenciesToClasspath(this.dependencies));
-        test.compileTests(null); // TODO remove unused param
+        test.compileTests(null); // TODO remove unused param; move to constructor
         submission = test.runTests(submission);
 
         if (checkstyle != null) {
             Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
                     this.checkstyle.getConfig(), this.checkstyle.getExcluded());
             submission = checkstyle.run(submission);
+        }
+
+        // Test submitted JUnit classes
+        if (faultySolutions != null) {
+            JUnit jUnit = new JUnit(this.correctSolution, this.faultySolutions,
+                    this.assessableTestClasses,
+                    dependenciesToClasspath(this.dependencies));
+            submission = jUnit.run(submission);
         }
 
         super.output(submission);
@@ -147,5 +157,21 @@ public class CSSE2002Engine extends Engine {
 
     public void setExpectedStructure(String expectedStructure) {
         this.expectedStructure = expectedStructure;
+    }
+
+    public String getFaultySolutions() {
+        return faultySolutions;
+    }
+
+    public void setFaultySolutions(String faultySolutions) {
+        this.faultySolutions = faultySolutions;
+    }
+
+    public List<String> getAssessableTestClasses() {
+        return assessableTestClasses;
+    }
+
+    public void setAssessableTestClasses(List<String> assessableTestClasses) {
+        this.assessableTestClasses = assessableTestClasses;
     }
 }

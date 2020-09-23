@@ -1,8 +1,5 @@
 package chalkbox.java.junit;
 
-import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Prior;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -15,16 +12,32 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class JUnit {
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
     private static final String SOLUTIONS_ROOT = "junit.solutions";
+
+    /**
+     * Path to a directory containing the sample solution
+     */
+    private String solutionPath;
+
+    /**
+     * Path to a directory containing various broken sample solutions
+     */
+    private String faultySolutionsPath;
+
+    /**
+     * JUnit classes to execute
+     */
+    public List<String> assessableTestClasses;
+
+    /**
+     * Class path for student tests to be compiled with
+     */
+    private String classPath;
 
     private Bundle solutionsOutput;
     private Bundle solutionOutput;
@@ -32,22 +45,13 @@ public class JUnit {
     private String solutionClassPath;
     private Map<String, String> classPaths = new HashMap<>();
 
-    @ConfigItem(description = "JUnit classes to execute, separated by |")
-    public String classes;
+    public JUnit(String solutionPath, String faultySolutionsPath,
+            List<String> assessableTestClasses, String classPath) {
+        this.solutionPath = solutionPath;
+        this.faultySolutionsPath = faultySolutionsPath;
+        this.assessableTestClasses = assessableTestClasses;
+        this.classPath = classPath;
 
-    @ConfigItem(description = "Class path for student tests to be compiled with")
-    public String classPath;
-
-    @ConfigItem(key = "solution",
-            description = "Path to a directory containing the sample solution")
-    public String solution;
-
-    @ConfigItem(key = "junitSolutions",
-            description = "Path to a directory containing various broken sample solutions")
-    public String solutions;
-
-    @Prior
-    public void init() {
         createCompilationOutput();
         compileSolution();
         compileSolutions();
@@ -56,7 +60,7 @@ public class JUnit {
     /**
      * Creates the compilation output directory.
      */
-    public void createCompilationOutput() {
+    private void createCompilationOutput() {
         /* Create a new temporary directory for compilation output */
         Bundle compilationOutput;
         try {
@@ -107,9 +111,9 @@ public class JUnit {
     /**
      * Compile all the broken solutions to test students junit tests on
      */
-    public void compileSolutions() {
+    private void compileSolutions() {
         /* Collect the list of broken solution folders */
-        File solutionsFolder = new File(solutions);
+        File solutionsFolder = new File(this.faultySolutionsPath);
         File[] solutions = solutionsFolder.listFiles();
         if (solutions == null) {
             LOGGER.severe("Unable to load the folder of broken solutions");
@@ -128,27 +132,33 @@ public class JUnit {
             compileSolution(solutionBundle, solutionName, solutionOut, writer);
 
             /* Add an entry for this solution to the class path mapping */
-            classPaths.put(solutionName, classPath + ":" + solutionOut);
+            classPaths.put(solutionName, classPath
+                    + System.getProperty("path.separator") + solutionOut);
         }
     }
 
     /**
      * Compile the sample solution.
      */
-    public void compileSolution() {
-        Bundle solutionSource = new Bundle(new File(solution));
+    private void compileSolution() {
+        Bundle solutionSource = new Bundle(new File(solutionPath));
 
         /* Compile the sample solution */
         StringWriter writer = new StringWriter();
         compileSolution(solutionSource, "sample solution",
                 solutionOutput.getUnmaskedPath(), writer);
 
-        solutionClassPath = classPath + ":" + solutionOutput.getUnmaskedPath();
+        solutionClassPath = classPath + System.getProperty("path.separator")
+                + solutionOutput.getUnmaskedPath();
     }
 
-    @Pipe
-    public Collection compileTests(Collection submission) {
-        String[] testClasses = classes.split("\\|");
+    public Collection run(Collection submission) {
+        compileTests(submission);
+        runTests(submission);
+        return submission;
+    }
+
+    private Collection compileTests(Collection submission) {
         String student = submission.getResults().get("sid").toString();
         LOGGER.info(String.format("STUDENT(%s) Tests Compiling", student));
 
@@ -165,7 +175,7 @@ public class JUnit {
             uncomment commented out lines
          */
         //List<SourceFile> files = new ArrayList<>();
-        for (String className : testClasses) {
+        for (String className : assessableTestClasses) {
             String fileName = className.replace(".", "/") + ".java";
             SourceFile file;
             try {
@@ -199,8 +209,7 @@ public class JUnit {
         return submission;
     }
 
-    @Pipe
-    public Collection runTests(Collection submission) {
+    private Collection runTests(Collection submission) {
         String student = submission.getResults().get("sid").toString();
 
         if (!submission.getResults().is("junit.compiles")) {
@@ -208,13 +217,12 @@ public class JUnit {
             return submission;
         }
 
-        String[] testClasses = classes.split("\\|");
         LOGGER.finest("Running student tests " + student);
-        LOGGER.finest(Arrays.toString(testClasses));
+        LOGGER.finest(assessableTestClasses.toString());
         File working = new File(submission.getSource().getUnmaskedPath());
 
         Map<String, Integer> passes = new HashMap<>();
-        for (String testClass : testClasses) {
+        for (String testClass : assessableTestClasses) {
             String classPath = solutionClassPath + ":" + submission.getWorking().getUnmaskedPath();
             Data results = JUnitRunner.runTest(testClass, classPath, working);
             if (results.get("passes") != null) {
@@ -226,7 +234,7 @@ public class JUnit {
             /* Class path for the particular solution */
             String classPath = classPaths.get(solution) + ":" + submission.getWorking().getUnmaskedPath();
 
-            for (String testClass : testClasses) {
+            for (String testClass : assessableTestClasses) {
                 String jsonRoot = SOLUTIONS_ROOT + "." + solution + "."
                         + testClass.replace(".", "\\.");
 
