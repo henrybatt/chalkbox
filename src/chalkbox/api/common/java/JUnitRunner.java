@@ -64,8 +64,9 @@ public class JUnitRunner {
             return results;
         }
 
-        results.set("score", jUnit.getPasses());
-        results.set("max_score", jUnit.getTotal());
+        results.set("extra_data.passes", jUnit.getPasses());
+        results.set("extra_data.fails", jUnit.getFails());
+        results.set("extra_data.total", jUnit.getTotal());
         results.set("output", jUnit.formatOutput());
 
         return results;

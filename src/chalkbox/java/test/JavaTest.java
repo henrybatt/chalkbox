@@ -115,6 +115,9 @@ public class JavaTest {
         for (String className : tests.getClasses("")) {
             Data results = JUnitRunner.runTest(className, classPath, new File("."));
             results.set("name", className);
+            // TODO grading logic
+            results.set("score", results.get("extra_data.passes"));
+            results.set("max_score", results.get("extra_data.total"));
             testResults.add(results);
         }
 

@@ -7,6 +7,8 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.api.files.FileLoader;
 import chalkbox.api.files.SourceFile;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +19,6 @@ import java.util.logging.Logger;
 
 public class JUnit {
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
-    private static final String SOLUTIONS_ROOT = "junit.solutions";
 
     /**
      * Path to a directory containing the sample solution
@@ -43,7 +44,7 @@ public class JUnit {
     private Bundle solutionOutput;
 
     private String solutionClassPath;
-    private Map<String, String> classPaths = new HashMap<>();
+    private Map<String, String> classPaths = new TreeMap<>();
 
     public JUnit(String solutionPath, String faultySolutionsPath,
             List<String> assessableTestClasses, String classPath) {
@@ -201,51 +202,65 @@ public class JUnit {
         boolean success = Compiler.compile(files, solutionClassPath,
                 submission.getWorking().getUnmaskedPath(), output);
          */
-        submission.getResults().set("junit.compiles", success);
-        submission.getResults().set("junit.output", output.toString());
-        submission.getResults().set("junit.error", error.toString());
+        JSONArray testResults = (JSONArray) submission.getResults().get("tests");
+        JSONObject junitResult = new JSONObject();
+        junitResult.put("name", "JUnit compilation");
+        String visibleOutput = "Compiles: " + success
+                + "\nOutput:\n" + output.toString();
+        if (!error.toString().isEmpty()) {
+            visibleOutput += "\nError:\n" + error.toString();
+        }
+        junitResult.put("output", visibleOutput);
+        testResults.add(junitResult);
+
+        submission.getResults().set("extra_data.junit.compiles", true);
+
         return submission;
     }
 
     private Collection runTests(Collection submission) {
-        String student = submission.getResults().get("sid").toString();
-
-        if (!submission.getResults().is("junit.compiles")) {
-            LOGGER.finest("Skipping running JUnit tests for " + student);
+        if (!submission.getResults().is("extra_data.junit.compiles")) {
+            LOGGER.finest("Skipping running JUnit tests");
             return submission;
         }
 
-        LOGGER.finest("Running student tests " + student);
+        LOGGER.finest("Running student tests");
         LOGGER.finest(assessableTestClasses.toString());
         File working = new File(submission.getSource().getUnmaskedPath());
 
         Map<String, Integer> passes = new HashMap<>();
         for (String testClass : assessableTestClasses) {
-            String classPath = solutionClassPath + ":" + submission.getWorking().getUnmaskedPath();
+            String classPath = solutionClassPath
+                    + System.getProperty("path.separator")
+                    + submission.getWorking().getUnmaskedPath();
             Data results = JUnitRunner.runTest(testClass, classPath, working);
-            if (results.get("passes") != null) {
-                passes.put(testClass, Integer.parseInt(results.get("passes").toString()));
+            if (results.get("extra_data.passes") != null) {
+                passes.put(testClass, Integer.parseInt(results.get("extra_data.passes").toString()));
             }
         }
 
+        JSONArray tests = (JSONArray) submission.getResults().get("tests");
         for (String solution : classPaths.keySet()) {
             /* Class path for the particular solution */
-            String classPath = classPaths.get(solution) + ":" + submission.getWorking().getUnmaskedPath();
+            String classPath = classPaths.get(solution)
+                    + System.getProperty("path.separator")
+                    + submission.getWorking().getUnmaskedPath();
 
             for (String testClass : assessableTestClasses) {
-                String jsonRoot = SOLUTIONS_ROOT + "." + solution + "."
-                        + testClass.replace(".", "\\.");
-
                 /* Run the JUnit tests */
                 Data results = JUnitRunner.runTest(testClass, classPath, working);
-                results.set("correct", false);
-                if (results.get("passes") != null) {
-                    int passed = Integer.parseInt(results.get("passes").toString());
+                results.set("extra_data.correct", false);
+                if (results.get("extra_data.passes") != null) {
+                    int passed = Integer.parseInt(results.get("extra_data.passes").toString());
                     if (passed < passes.get(testClass)) {
-                        results.set("correct", true);
+                        results.set("score", 1); // TODO grading logic
+                        results.set("extra_data.correct", true);
+                    } else {
+                        results.set("score", 0);
                     }
                 }
-                submission.getResults().set(jsonRoot, results);
+                results.set("name", "JUnit (" + solution + ") [" + testClass + "]");
+                tests.add(results);
             }
         }
 

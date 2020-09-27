@@ -7,6 +7,7 @@ import chalkbox.java.conformance.Conformance;
 import chalkbox.java.junit.JUnit;
 import chalkbox.java.test.JavaTest;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
@@ -78,12 +79,6 @@ public class CSSE2002Engine extends Engine {
         test.compileTests(null); // TODO remove unused param; move to constructor
         submission = test.runTests(submission);
 
-        if (checkstyle != null) {
-            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
-                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
-            submission = checkstyle.run(submission);
-        }
-
         // Test submitted JUnit classes
         if (faultySolutions != null) {
             JUnit jUnit = new JUnit(this.correctSolution, this.faultySolutions,
@@ -92,13 +87,21 @@ public class CSSE2002Engine extends Engine {
             submission = jUnit.run(submission);
         }
 
+        if (checkstyle != null) {
+            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
+                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
+            submission = checkstyle.run(submission);
+        }
+
         super.output(submission);
     }
 
     private String dependenciesToClasspath(List<String> dependencies) {
         StringJoiner joiner = new StringJoiner(System.getProperty("path.separator"));
         for (String dependency : dependencies) {
-            joiner.add(dependency);
+            File depFile = new File(dependency);
+            /* Convert dependency path to absolute path for classpath */
+            joiner.add(depFile.getAbsolutePath());
         }
         return joiner.toString();
     }
