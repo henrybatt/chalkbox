@@ -1,4 +1,4 @@
-package chalkbox.java.test;
+package chalkbox.api.common.java;
 
 import chalkbox.api.collections.Data;
 import org.junit.runner.Description;
@@ -8,7 +8,7 @@ import org.junit.runner.notification.RunListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestListener extends RunListener {
+public class JUnitListener extends RunListener {
     private static class TestResult {
         private final String testName;
         private boolean visible = false;
@@ -25,7 +25,7 @@ public class TestListener extends RunListener {
     private int numFailed = 0;
     private StringBuilder output;
 
-    public TestListener() {
+    public JUnitListener() {
         this.results = new ArrayList<>();
         this.output = new StringBuilder();
     }

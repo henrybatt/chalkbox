@@ -3,8 +3,6 @@ package chalkbox.api.common.java;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
-import chalkbox.java.test.TestListener;
-import org.junit.internal.TextListener;
 import org.junit.runner.JUnitCore;
 
 import java.io.File;
@@ -31,8 +29,8 @@ public class JUnitRunner {
         return run(className, classPath).getIndividualResults();
     }
 
-    private static TestListener run(String className, String classPath) {
-        TestListener listener = new TestListener();
+    private static JUnitListener run(String className, String classPath) {
+        JUnitListener listener = new JUnitListener();
         JUnitCore runner = new JUnitCore();
         runner.addListener(listener);
 
