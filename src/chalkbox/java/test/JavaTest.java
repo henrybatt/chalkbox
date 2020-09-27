@@ -13,6 +13,9 @@ import org.json.simple.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -113,12 +116,16 @@ public class JavaTest {
         String classPath = this.classPath + System.getProperty("path.separator") + submission.getWorking().getUnmaskedPath("bin");
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         for (String className : tests.getClasses("")) {
-            Data results = JUnitRunner.runTest(className, classPath, new File("."));
-            results.set("name", className);
-            // TODO grading logic
-            results.set("score", results.get("extra_data.passes"));
-            results.set("max_score", results.get("extra_data.total"));
-            testResults.add(results);
+            List<Data> results = JUnitRunner.runTests(className, classPath);
+            /* Sort alphabetically by test class then test name */
+            results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
+
+            for (Data result : results) {
+                // TODO grading logic
+                result.set("score", result.get("extra_data.passes"));
+                result.set("max_score", result.get("extra_data.total"));
+                testResults.add(result);
+            }
         }
 
         return submission;

@@ -3,9 +3,16 @@ package chalkbox.api.common.java;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.java.test.TestListener;
+import org.junit.internal.TextListener;
+import org.junit.runner.JUnitCore;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -13,6 +20,40 @@ import java.util.concurrent.TimeoutException;
  */
 public class JUnitRunner {
     private static final String JUNIT_RUNNER = "org.junit.runner.JUnitCore";
+
+    // Runs all tests in the given class and returns a single output object
+    public static Data runTestsCombined(String className, String classPath) {
+        return run(className, classPath).getResultsForClass();
+    }
+
+    // Runs all tests in the given class and returns an output object for each @Test
+    public static List<Data> runTests(String className, String classPath) {
+        return run(className, classPath).getIndividualResults();
+    }
+
+    private static TestListener run(String className, String classPath) {
+        TestListener listener = new TestListener();
+        JUnitCore runner = new JUnitCore();
+        runner.addListener(listener);
+
+        String[] classPathEntries = classPath.split(
+                System.getProperty("path.separator"));
+        URL[] classPathUrls = new URL[classPathEntries.length];
+        for (int i = 0; i < classPathEntries.length; ++i) {
+            try {
+                classPathUrls[i] = new File(classPathEntries[i]).toURI().toURL();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        URLClassLoader classLoader = new URLClassLoader(classPathUrls);
+        try {
+            runner.run(classLoader.loadClass(className));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return listener;
+    }
 
     /**
      * Run a JUnit test with the name className and a given classPath.
@@ -23,7 +64,7 @@ public class JUnitRunner {
      *
      * @return The json output of executing a JUnit test
      */
-    public static Data runTest(String className, String classPath, File working) {
+    public static Data runTest2(String className, String classPath, File working) {
         Data results = new Data();
 
         /* Execute a JUnit process */

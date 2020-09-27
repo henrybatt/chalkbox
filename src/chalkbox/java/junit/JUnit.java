@@ -233,7 +233,7 @@ public class JUnit {
             String classPath = solutionClassPath
                     + System.getProperty("path.separator")
                     + submission.getWorking().getUnmaskedPath();
-            Data results = JUnitRunner.runTest(testClass, classPath, working);
+            Data results = JUnitRunner.runTestsCombined(testClass, classPath);
             if (results.get("extra_data.passes") != null) {
                 passes.put(testClass, Integer.parseInt(results.get("extra_data.passes").toString()));
             }
@@ -248,7 +248,7 @@ public class JUnit {
 
             for (String testClass : assessableTestClasses) {
                 /* Run the JUnit tests */
-                Data results = JUnitRunner.runTest(testClass, classPath, working);
+                Data results = JUnitRunner.runTestsCombined(testClass, classPath);
                 results.set("extra_data.correct", false);
                 if (results.get("extra_data.passes") != null) {
                     int passed = Integer.parseInt(results.get("extra_data.passes").toString());
@@ -260,6 +260,7 @@ public class JUnit {
                     }
                 }
                 results.set("name", "JUnit (" + solution + ") [" + testClass + "]");
+                results.set("visibility", "after_due_date");
                 tests.add(results);
             }
         }

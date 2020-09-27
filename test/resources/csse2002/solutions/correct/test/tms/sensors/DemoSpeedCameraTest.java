@@ -78,6 +78,7 @@ public class DemoSpeedCameraTest {
     }
 
     @Test
+    @Deprecated
     public void toStringTest() {
         assertEquals("SC:60:60,70,60,30,15,0", testSensor.toString());
     }
