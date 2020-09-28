@@ -5,10 +5,13 @@ import chalkbox.collectors.GradescopeCollector;
 import chalkbox.output.GradescopeOutput;
 import org.json.simple.JSONArray;
 
+import java.util.Map;
+
 public abstract class Engine {
     private String engine;
     private String courseCode;
     private String assignment;
+    private Map<String, Integer> stages;
     private String submission;
     private String outputFile;
 
@@ -16,7 +19,8 @@ public abstract class Engine {
         return courseCode != null && !courseCode.isEmpty()
                 && assignment != null && !assignment.isEmpty()
                 && submission != null && !submission.isEmpty()
-                && outputFile != null && !outputFile.isEmpty();
+                && outputFile != null && !outputFile.isEmpty()
+                && stages != null && !stages.isEmpty();
     }
 
     public Collection collect() {
@@ -58,6 +62,14 @@ public abstract class Engine {
 
     public void setAssignment(String assignmentId) {
         this.assignment = assignmentId;
+    }
+
+    public Map<String, Integer> getStages() {
+        return stages;
+    }
+
+    public void setStages(Map<String, Integer> stages) {
+        this.stages = stages;
     }
 
     public String getSubmission() {
