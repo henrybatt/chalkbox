@@ -120,7 +120,8 @@ public class CSSE2002Engine extends Engine {
         if (this.getStages().containsKey("junit")) {
             JUnit jUnit = new JUnit(this.correctSolution, this.faultySolutions,
                     this.assessableTestClasses,
-                    dependenciesToClasspath(this.dependencies));
+                    dependenciesToClasspath(this.dependencies),
+                    getWeighting("junit"));
             submission = jUnit.run(submission);
         }
 

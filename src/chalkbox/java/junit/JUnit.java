@@ -33,25 +33,33 @@ public class JUnit {
     /**
      * JUnit classes to execute
      */
-    public List<String> assessableTestClasses;
+    private List<String> assessableTestClasses;
 
     /**
      * Class path for student tests to be compiled with
      */
     private String classPath;
 
+    /**
+     * Marks allocated to the JUnit stage
+     */
+    private int weighting;
+
     private Bundle solutionsOutput;
     private Bundle solutionOutput;
 
     private String solutionClassPath;
     private Map<String, String> classPaths = new TreeMap<>();
+    private int numFaultySolutions;
 
     public JUnit(String solutionPath, String faultySolutionsPath,
-            List<String> assessableTestClasses, String classPath) {
+            List<String> assessableTestClasses, String classPath,
+            int weighting) {
         this.solutionPath = solutionPath;
         this.faultySolutionsPath = faultySolutionsPath;
         this.assessableTestClasses = assessableTestClasses;
         this.classPath = classPath;
+        this.weighting = weighting;
 
         createCompilationOutput();
         compileSolution();
@@ -121,6 +129,17 @@ public class JUnit {
             LOGGER.severe("Unable to load the folder of broken solutions");
             return;
         }
+
+        this.numFaultySolutions = solutions.length;
+        // If "solution/" dir is in "solutions", subtract one from number of
+        // faulty solutions
+        for (File solution : solutions) {
+            if (solution.getName().equals("solution")) {
+                this.numFaultySolutions = solutions.length - 1;
+                break;
+            }
+        }
+
 
         StringWriter writer;
         for (File solutionFolder : solutions) {
@@ -246,6 +265,11 @@ public class JUnit {
                     + System.getProperty("path.separator")
                     + submission.getWorking().getUnmaskedPath();
 
+            /* JSON test result for this broken solution */
+            Data solutionResult = new Data();
+            /* Results of the JUnit runner for each submitted test class */
+            List<Data> classResults = new ArrayList<>();
+
             for (String testClass : assessableTestClasses) {
                 /* Run the JUnit tests */
                 Data results = JUnitRunner.runTestsCombined(testClass, classPath);
@@ -253,16 +277,40 @@ public class JUnit {
                 if (results.get("extra_data.passes") != null) {
                     int passed = Integer.parseInt(results.get("extra_data.passes").toString());
                     if (passed < passes.get(testClass)) {
-                        results.set("score", 1); // TODO grading logic
                         results.set("extra_data.correct", true);
-                    } else {
-                        results.set("score", 0);
                     }
                 }
-                results.set("name", "JUnit (" + solution + ") [" + testClass + "]");
-                results.set("visibility", "after_due_date");
-                tests.add(results);
+                classResults.add(results);
             }
+
+            /* Mark awarded for correctly identifying a broken solution */
+            final double solutionWeighting = 1d / this.numFaultySolutions
+                    * this.weighting;
+
+            solutionResult.set("name", "JUnit (" + solution + ")");
+            solutionResult.set("visibility", "after_due_date");
+            solutionResult.set("score", 0);
+            solutionResult.set("max_score", solutionWeighting);
+            /*
+                For each test class result JSON:
+                - Concatenate the output of all the test classes
+                - Determine whether at least one test class was "correct"
+             */
+            StringJoiner joiner = new StringJoiner("\n");
+            for (Data classResult : classResults) {
+                String classOutput = (String) classResult.get("output");
+                /* Don't add output if there is no output ("") */
+                if (!classOutput.isEmpty()) {
+                    joiner.add(classOutput);
+                }
+                if (classResult.is("extra_data.correct")) {
+                    solutionResult.set("score", solutionWeighting);
+                }
+            }
+            solutionResult.set("output", joiner.toString());
+            // TODO more informative output on how many tests passed/failed
+
+            tests.add(solutionResult);
         }
 
         return submission;
