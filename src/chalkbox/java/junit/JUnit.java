@@ -297,6 +297,16 @@ public class JUnit {
                 - Determine whether at least one test class was "correct"
              */
             StringJoiner joiner = new StringJoiner("\n");
+            /* Find the total number of tests failed for this solution */
+            int totalFailed = 0;
+            for (Data classResult : classResults) {
+                totalFailed += (Integer) classResult.get("extra_data.fails");
+            }
+            joiner.add("Number of your tests that failed when run against this "
+                    + "implementation: " + totalFailed);
+            if (totalFailed > 0) {
+                joiner.add("Tests failed for this implementation:");
+            }
             for (Data classResult : classResults) {
                 String classOutput = (String) classResult.get("output");
                 /* Don't add output if there is no output ("") */
@@ -309,7 +319,6 @@ public class JUnit {
                 }
             }
             solutionResult.set("output", joiner.toString());
-            // TODO more informative output on how many tests passed/failed
 
             tests.add(solutionResult);
         }
