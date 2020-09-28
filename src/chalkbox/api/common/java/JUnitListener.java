@@ -34,7 +34,8 @@ public class JUnitListener extends RunListener {
     public void testStarted(Description description) throws Exception {
         super.testStarted(description);
 
-        this.currentResult = new TestResult(description.getClassName()
+        this.currentResult = new TestResult(
+                description.getTestClass().getSimpleName()
                 + "." + description.getMethodName());
 
         /* Results of this test should be immediately visible */

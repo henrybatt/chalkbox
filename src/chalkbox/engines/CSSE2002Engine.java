@@ -46,13 +46,49 @@ public class CSSE2002Engine extends Engine {
 
     private List<String> dependencies;
     private List<String> resources;
-    private String linterConfig;
     private String testDirectory;
     private String correctSolution;
     private String expectedStructure;
     private CheckstyleOptions checkstyle;
     private String faultySolutions;
     private List<String> assessableTestClasses;
+
+    @Override
+    public boolean configIsValid() {
+        if (!super.configIsValid()) {
+            return false;
+        }
+
+        /* "assessableTestClasses" and "faultySolutions" are needed for JUnit */
+        // TODO refactor these keys into a single "junit" dictionary
+        if (this.getStages().containsKey("junit")) {
+            if (this.assessableTestClasses == null
+                    || this.assessableTestClasses.isEmpty()) {
+                return false;
+            }
+            if (this.faultySolutions == null
+                    || this.faultySolutions.isEmpty()) {
+                return false;
+            }
+        }
+
+        /* "checkstyle" is needed for automatic style marking */
+        if (this.getStages().containsKey("autostyle")) {
+            if (this.checkstyle == null) {
+                return false;
+            }
+        }
+
+        /* "expectedStructure" is needed for conformance checking */
+        if (this.getStages().containsKey("conformance")) {
+            if (this.expectedStructure == null
+                    || this.expectedStructure.isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     @Override
     public void run() {
@@ -67,7 +103,7 @@ public class CSSE2002Engine extends Engine {
         try {
             Conformance conformance = new Conformance(this.correctSolution,
                     this.expectedStructure,
-                    dependenciesToClasspath(this.dependencies));
+                    dependenciesToClasspath(this.dependencies), getWeighting("conformance"));
             submission = conformance.run(submission);
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,14 +116,14 @@ public class CSSE2002Engine extends Engine {
         submission = test.runTests(submission);
 
         // Test submitted JUnit classes
-        if (faultySolutions != null) {
+        if (this.getStages().containsKey("junit")) {
             JUnit jUnit = new JUnit(this.correctSolution, this.faultySolutions,
                     this.assessableTestClasses,
                     dependenciesToClasspath(this.dependencies));
             submission = jUnit.run(submission);
         }
 
-        if (checkstyle != null) {
+        if (this.getStages().containsKey("autostyle")) {
             Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
                     this.checkstyle.getConfig(), this.checkstyle.getExcluded());
             submission = checkstyle.run(submission);
@@ -120,14 +156,6 @@ public class CSSE2002Engine extends Engine {
 
     public void setResources(List<String> resources) {
         this.resources = resources;
-    }
-
-    public String getLinterConfig() {
-        return linterConfig;
-    }
-
-    public void setLinterConfig(String linterConfig) {
-        this.linterConfig = linterConfig;
     }
 
     public String getTestDirectory() {

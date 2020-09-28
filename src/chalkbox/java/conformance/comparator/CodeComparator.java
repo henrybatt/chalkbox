@@ -35,6 +35,19 @@ public abstract class CodeComparator<T> {
         return false;
     }
 
+    public int getDifferenceCount() {
+        int count = 0;
+        for (Flag flag : flags) {
+            if (flag.isSet()) {
+                count++;
+            }
+        }
+        for (CodeComparator comparator : subComparators) {
+            count += comparator.getDifferenceCount();
+        }
+        return count;
+    }
+
     protected void compareModifier(int expected, int actual) {
         Flag modifierFlag = new SingularFlag<>("Modifier does not match!",
                 Modifier.toString(expected), Modifier.toString(actual));

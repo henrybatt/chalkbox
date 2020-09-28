@@ -33,6 +33,10 @@ public abstract class Engine {
         new GradescopeOutput().output(null, submission);
     }
 
+    public int getWeighting(String stage) {
+        return this.stages.get(stage);
+    }
+
     public abstract void run();
 
     @Override
