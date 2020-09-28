@@ -1,7 +1,6 @@
 package chalkbox.java.test;
 
 import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Prior;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -13,10 +12,8 @@ import org.json.simple.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Process to execute JUnit tests on each submission.
@@ -51,27 +48,32 @@ public class JavaTest {
     protected boolean hasErrors;
 
     /** Sample solution to compile tests with */
-    public String solutionPath;
+    private String solutionPath;
 
     /** Path of JUnit test files */
-    public String testPath;
-    // TODO add distinction between visible/marking tests
+    private String testPath;
 
     /** Class path for tests to be compiled with */
-    public String classPath;
+    private String classPath;
 
-    public JavaTest(String solutionPath, String testPath, String classPath) {
+    /** Number of marks allocated to the functionality stage */
+    private int weighting;
+
+    public JavaTest(String solutionPath, String testPath, String classPath,
+            int weighting) {
         this.solutionPath = solutionPath;
         this.testPath = testPath;
         this.classPath = classPath;
+        this.weighting = weighting;
+
+        this.compileTests();
     }
 
     /**
      * Compile the sample solution and then compile the tests with the sample
      * solution.
      */
-    @Prior
-    public void compileTests(Map<String, String> config) {
+    public void compileTests() {
         tests = new Bundle(new File(testPath));
         Bundle solution = new Bundle(new File(solutionPath));
 
@@ -104,8 +106,7 @@ public class JavaTest {
     /**
      * Run the tests on a submission
      */
-    @Pipe(stream = "submissions")
-    public Collection runTests(Collection submission) {
+    public Collection run(Collection submission) {
         if (hasErrors) {
             return submission;
         }
@@ -115,17 +116,32 @@ public class JavaTest {
 
         String classPath = this.classPath + System.getProperty("path.separator") + submission.getWorking().getUnmaskedPath("bin");
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
+        int totalNumTests = 0;
+        JSONArray functionalityResults = new JSONArray();
         for (String className : tests.getClasses("")) {
             List<Data> results = JUnitRunner.runTests(className, classPath);
             /* Sort alphabetically by test class then test name */
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
 
             for (Data result : results) {
-                // TODO grading logic
-                result.set("score", result.get("extra_data.passes"));
-                result.set("max_score", result.get("extra_data.total"));
-                testResults.add(result);
+                totalNumTests++;
+                functionalityResults.add(result);
             }
+        }
+        if (totalNumTests == 0) {
+            return submission;
+        }
+
+        /* Mark awarded for passing a single test method */
+        final double individualTestWeighting = 1d / totalNumTests
+                * this.weighting;
+
+        for (Object o : functionalityResults) {
+            Data functionalityResult = (Data) o;
+            boolean didPass = (Integer) functionalityResult.get("extra_data.passes") == 1;
+            functionalityResult.set("score", didPass ? individualTestWeighting : 0);
+            functionalityResult.set("max_score", individualTestWeighting);
+            testResults.add(functionalityResult);
         }
 
         return submission;

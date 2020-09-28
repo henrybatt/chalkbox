@@ -103,7 +103,8 @@ public class CSSE2002Engine extends Engine {
         try {
             Conformance conformance = new Conformance(this.correctSolution,
                     this.expectedStructure,
-                    dependenciesToClasspath(this.dependencies), getWeighting("conformance"));
+                    dependenciesToClasspath(this.dependencies),
+                    getWeighting("conformance"));
             submission = conformance.run(submission);
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,9 +112,9 @@ public class CSSE2002Engine extends Engine {
         }
 
         JavaTest test = new JavaTest(this.correctSolution, this.testDirectory,
-                dependenciesToClasspath(this.dependencies));
-        test.compileTests(null); // TODO remove unused param; move to constructor
-        submission = test.runTests(submission);
+                dependenciesToClasspath(this.dependencies),
+                getWeighting("functionality"));
+        submission = test.run(submission);
 
         // Test submitted JUnit classes
         if (this.getStages().containsKey("junit")) {
