@@ -264,6 +264,8 @@ public class JUnit {
             Data solutionResult = new Data();
             /* Results of the JUnit runner for each submitted test class */
             List<Data> classResults = new ArrayList<>();
+            /* Is the solution being tested the correct implementation? */
+            boolean isCorrectSolution = solution.equals("solution");
 
             for (String testClass : assessableTestClasses) {
                 /* Run the JUnit tests */
@@ -284,8 +286,11 @@ public class JUnit {
 
             solutionResult.set("name", "JUnit (" + solution + ")");
             solutionResult.set("visibility", "after_due_date");
-            solutionResult.set("score", 0);
-            solutionResult.set("max_score", solutionWeighting);
+            /* The correct solution is not graded, but should still appear */
+            if (!isCorrectSolution) {
+                solutionResult.set("score", 0);
+                solutionResult.set("max_score", solutionWeighting);
+            }
             /*
                 For each test class result JSON:
                 - Concatenate the output of all the test classes
@@ -298,7 +303,8 @@ public class JUnit {
                 if (!classOutput.isEmpty()) {
                     joiner.add(classOutput);
                 }
-                if (classResult.is("extra_data.correct")) {
+                if (classResult.is("extra_data.correct")
+                        && !isCorrectSolution) {
                     solutionResult.set("score", solutionWeighting);
                 }
             }
