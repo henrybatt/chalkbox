@@ -18,6 +18,7 @@ public class CSSE2002Engine extends Engine {
         private String config;
         private String jar;
         private List<String> excluded;
+        private double violationPenalty = 1;
 
         public String getConfig() {
             return config;
@@ -41,6 +42,14 @@ public class CSSE2002Engine extends Engine {
 
         public void setExcluded(List<String> excluded) {
             this.excluded = excluded;
+        }
+
+        public double getViolationPenalty() {
+            return violationPenalty;
+        }
+
+        public void setViolationPenalty(double violationPenalty) {
+            this.violationPenalty = violationPenalty;
         }
     }
 
@@ -127,7 +136,9 @@ public class CSSE2002Engine extends Engine {
 
         if (this.getStages().containsKey("autostyle")) {
             Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
-                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
+                    this.checkstyle.getConfig(), this.checkstyle.getExcluded(),
+                    getWeighting("autostyle"),
+                    this.checkstyle.violationPenalty);
             submission = checkstyle.run(submission);
         }
 

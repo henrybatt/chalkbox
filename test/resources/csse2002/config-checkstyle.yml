@@ -16,6 +16,7 @@ checkstyle: # optional
   jar: ./test/resources/csse2002/lib/checkstyle-8.36-all.jar
   excluded:
     - ./test/resources/csse2002/submission/src/tms/display/
+  violationPenalty: 0.5
 testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional
 correctSolution: ./test/resources/csse2002/solutions/correct/src/ # optional
 expectedStructure: ./test/resources/csse2002/solutions/correct/ # optional
