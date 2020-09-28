@@ -182,57 +182,52 @@ public class JUnit {
     private Collection compileTests(Collection submission) {
         Bundle tests = submission.getSource().getBundle("test");
 
-        StringWriter output = new StringWriter();
+        StringJoiner output = new StringJoiner("\n");
         StringWriter error = new StringWriter();
 
-        boolean success = false; // new code
-        /*
-            Used to compile all together - now compiles tests individually
-            to switch back to original functionality - removed lines which are
-            marked new code.
-            uncomment commented out lines
-         */
-        //List<SourceFile> files = new ArrayList<>();
+        /* Compile each submitted test class individually */
+        boolean anyCompiles = false;
         for (String className : assessableTestClasses) {
             String fileName = className.replace(".", "/") + ".java";
+            StringWriter compileOutput = new StringWriter();
             SourceFile file;
             try {
                 file = tests.getFile(fileName);
                 List<SourceFile> files = new ArrayList<>();
                 files.add(file);
-                //start of new code
                 boolean fileSuccess = Compiler.compile(files,
                         solutionClassPath,
-                        submission.getWorking().getUnmaskedPath(), output);
+                        submission.getWorking().getUnmaskedPath(),
+                        compileOutput);
                 if (fileSuccess) {
-                    success = true;
+                    anyCompiles = true;
                 }
-                //end of new code
-                output.write("JUnit test file " + fileName + " found\n");
+                output.add("JUnit test file " + fileName + " found");
+                output.add("JUnit test file " + fileName
+                        + (fileSuccess ? " compiles" : " does not compile"));
+                output.add(compileOutput.toString());
             } catch (FileNotFoundException e) {
                 error.write("JUnit test file " + fileName + " not found\n");
             } catch (IOException e) {
                 error.write("IO Compile Error - Please contact course staff\n");
             }
-
         }
 
-        /*
-        boolean success = Compiler.compile(files, solutionClassPath,
-                submission.getWorking().getUnmaskedPath(), output);
-         */
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         JSONObject junitResult = new JSONObject();
         junitResult.put("name", "JUnit compilation");
-        String visibleOutput = "Compiles: " + success
-                + "\nOutput:\n" + output.toString();
+        String visibleOutput = "Output:\n" + output.toString();
         if (!error.toString().isEmpty()) {
             visibleOutput += "\nError:\n" + error.toString();
         }
         junitResult.put("output", visibleOutput);
         testResults.add(junitResult);
 
-        submission.getResults().set("extra_data.junit.compiles", true);
+        /*
+        Run submitted JUnit tests against broken solutions even if one or
+        more test classes don't compile, as long as at least one does.
+         */
+        submission.getResults().set("extra_data.junit.compiles", anyCompiles);
 
         return submission;
     }

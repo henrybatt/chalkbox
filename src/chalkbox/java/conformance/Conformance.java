@@ -160,7 +160,6 @@ public class Conformance {
                 continue;
             }
 
-            String jsonKey = "conformance." + className.replace(".", "\\.") + ".";
             Class expectedClass = expectedClasses.get(className);
             Class actualClass = submissionMap.get(className);
 
