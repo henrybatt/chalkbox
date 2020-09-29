@@ -154,11 +154,13 @@ public class RouteTest {
     }
 
     @Test
+    @Deprecated
     public void testToStringBasic() {
         assertEquals(id + ":60:0", route1.toString());
     }
 
     @Test
+    @Deprecated
     public void testToStringSpeedSign() {
         route1.addSpeedSign(50);
         assertEquals(id + ":60:0:50", route1.toString());

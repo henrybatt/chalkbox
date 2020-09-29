@@ -82,6 +82,7 @@ public class DemoPressurePadTest {
     }
 
     @Test
+    @Deprecated
     public void toStringTest() {
         assertEquals("PP:4:0,1,2,3,4,5,6", testSensor.toString());
     }

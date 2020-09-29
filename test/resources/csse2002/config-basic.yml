@@ -2,6 +2,10 @@ engine: chalkbox.engines.CSSE2002Engine
 ---
 courseCode: CSSE2002
 assignment: ass1
+stages:
+  conformance: 10
+  functionality: 40
+  junit: 20
 submission: ./test/resources/csse2002/submission/
 outputFile: ./test/resources/csse2002/results/results.json
 dependencies: # optional
@@ -12,7 +16,8 @@ resources: # optional
 testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional
 correctSolution: ./test/resources/csse2002/solutions/correct/src/ # optional
 expectedStructure: ./test/resources/csse2002/solutions/correct/ # optional
-#faultySolutions: ./test/resources/csse2002/solutions/faulty/ # optional
+faultySolutions: ./test/resources/csse2002/solutions/faulty/ # optional
 assessableTestClasses: # optional
   - tms.intersection.IntersectionTest
   - tms.sensors.DemoPressurePadTest
+

@@ -62,7 +62,7 @@ public class CSSE2002EngineTest {
             for (Object test : tests) {
                 JSONObject jsonObject = (JSONObject) test;
                 String name = (String) jsonObject.get("name");
-                if (name.equals("checkstyle")) {
+                if (name.equals("Automated Style")) {
                     checkstyleTest = jsonObject;
                 }
             }

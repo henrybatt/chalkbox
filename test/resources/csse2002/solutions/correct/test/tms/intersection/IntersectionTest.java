@@ -255,6 +255,7 @@ public class IntersectionTest {
     }
 
     @Test
+    @Deprecated
     public void toStringTest() {
         assertEquals("A", intersection1.toString());
     }

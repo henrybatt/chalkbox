@@ -7,6 +7,7 @@ import chalkbox.java.conformance.Conformance;
 import chalkbox.java.junit.JUnit;
 import chalkbox.java.test.JavaTest;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
@@ -17,6 +18,7 @@ public class CSSE2002Engine extends Engine {
         private String config;
         private String jar;
         private List<String> excluded;
+        private double violationPenalty = 1;
 
         public String getConfig() {
             return config;
@@ -41,17 +43,61 @@ public class CSSE2002Engine extends Engine {
         public void setExcluded(List<String> excluded) {
             this.excluded = excluded;
         }
+
+        public double getViolationPenalty() {
+            return violationPenalty;
+        }
+
+        public void setViolationPenalty(double violationPenalty) {
+            this.violationPenalty = violationPenalty;
+        }
     }
 
     private List<String> dependencies;
     private List<String> resources;
-    private String linterConfig;
     private String testDirectory;
     private String correctSolution;
     private String expectedStructure;
     private CheckstyleOptions checkstyle;
     private String faultySolutions;
     private List<String> assessableTestClasses;
+
+    @Override
+    public boolean configIsValid() {
+        if (!super.configIsValid()) {
+            return false;
+        }
+
+        /* "assessableTestClasses" and "faultySolutions" are needed for JUnit */
+        // TODO refactor these keys into a single "junit" dictionary
+        if (this.getStages().containsKey("junit")) {
+            if (this.assessableTestClasses == null
+                    || this.assessableTestClasses.isEmpty()) {
+                return false;
+            }
+            if (this.faultySolutions == null
+                    || this.faultySolutions.isEmpty()) {
+                return false;
+            }
+        }
+
+        /* "checkstyle" is needed for automatic style marking */
+        if (this.getStages().containsKey("autostyle")) {
+            if (this.checkstyle == null) {
+                return false;
+            }
+        }
+
+        /* "expectedStructure" is needed for conformance checking */
+        if (this.getStages().containsKey("conformance")) {
+            if (this.expectedStructure == null
+                    || this.expectedStructure.isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     @Override
     public void run() {
@@ -66,7 +112,8 @@ public class CSSE2002Engine extends Engine {
         try {
             Conformance conformance = new Conformance(this.correctSolution,
                     this.expectedStructure,
-                    dependenciesToClasspath(this.dependencies));
+                    dependenciesToClasspath(this.dependencies),
+                    getWeighting("conformance"));
             submission = conformance.run(submission);
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,22 +121,25 @@ public class CSSE2002Engine extends Engine {
         }
 
         JavaTest test = new JavaTest(this.correctSolution, this.testDirectory,
-                dependenciesToClasspath(this.dependencies));
-        test.compileTests(null); // TODO remove unused param; move to constructor
-        submission = test.runTests(submission);
-
-        if (checkstyle != null) {
-            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
-                    this.checkstyle.getConfig(), this.checkstyle.getExcluded());
-            submission = checkstyle.run(submission);
-        }
+                dependenciesToClasspath(this.dependencies),
+                getWeighting("functionality"));
+        submission = test.run(submission);
 
         // Test submitted JUnit classes
-        if (faultySolutions != null) {
+        if (this.getStages().containsKey("junit")) {
             JUnit jUnit = new JUnit(this.correctSolution, this.faultySolutions,
                     this.assessableTestClasses,
-                    dependenciesToClasspath(this.dependencies));
+                    dependenciesToClasspath(this.dependencies),
+                    getWeighting("junit"));
             submission = jUnit.run(submission);
+        }
+
+        if (this.getStages().containsKey("autostyle")) {
+            Checkstyle checkstyle = new Checkstyle(this.checkstyle.getJar(),
+                    this.checkstyle.getConfig(), this.checkstyle.getExcluded(),
+                    getWeighting("autostyle"),
+                    this.checkstyle.violationPenalty);
+            submission = checkstyle.run(submission);
         }
 
         super.output(submission);
@@ -98,7 +148,9 @@ public class CSSE2002Engine extends Engine {
     private String dependenciesToClasspath(List<String> dependencies) {
         StringJoiner joiner = new StringJoiner(System.getProperty("path.separator"));
         for (String dependency : dependencies) {
-            joiner.add(dependency);
+            File depFile = new File(dependency);
+            /* Convert dependency path to absolute path for classpath */
+            joiner.add(depFile.getAbsolutePath());
         }
         return joiner.toString();
     }
@@ -117,14 +169,6 @@ public class CSSE2002Engine extends Engine {
 
     public void setResources(List<String> resources) {
         this.resources = resources;
-    }
-
-    public String getLinterConfig() {
-        return linterConfig;
-    }
-
-    public void setLinterConfig(String linterConfig) {
-        this.linterConfig = linterConfig;
     }
 
     public String getTestDirectory() {

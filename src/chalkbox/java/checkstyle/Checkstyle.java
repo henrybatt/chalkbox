@@ -16,15 +16,20 @@ import java.util.concurrent.TimeoutException;
  * Processor to execute the Checkstyle tool on the submission.
  */
 
-public class  Checkstyle {
+public class Checkstyle {
     private String jar;
     private String config;
     private List<String> excluded;
+    private int weighting;
+    private double violationPenalty;
 
-    public Checkstyle(String jar, String config, List<String> excluded) {
+    public Checkstyle(String jar, String config, List<String> excluded,
+            int weighting, double violationPenalty) {
         this.jar = jar;
         this.config = config;
         this.excluded = excluded;
+        this.weighting = weighting;
+        this.violationPenalty = violationPenalty;
     }
 
     public Collection run(Collection collection) {
@@ -49,8 +54,9 @@ public class  Checkstyle {
             // TODO improve how this is done, maybe refactor Data
             JSONArray tests = (JSONArray) feedback.get("tests");
             Data result = new Data();
-            result.set("name", "checkstyle");
+            result.set("name", "Automated Style");
             result.set("score", 0);
+            result.set("max_score", this.weighting);
             result.set("output", "IOError when running Checkstyle");
             tests.add(result);
             return collection;
@@ -58,8 +64,9 @@ public class  Checkstyle {
             e.printStackTrace();
             JSONArray tests = (JSONArray) feedback.get("tests");
             Data result = new Data();
-            result.set("name", "checkstyle");
+            result.set("name", "Automated Style");
             result.set("score", 0);
+            result.set("max_score", this.weighting);
             result.set("output", "Timed out when running Checkstyle");
             tests.add(result);
             return collection;
@@ -68,12 +75,22 @@ public class  Checkstyle {
         // get the absolute base path of src
         String basePath = Paths.get(collection.getSource().getUnmaskedPath()).toAbsolutePath().toString();
 
+        // replace the base path to make output easier to read
+        String checkstyleOutput = process.getOutput().replace(basePath, "");
+
+        // count violations based on lines in output
+        // subtract 2 for header/footer lines
+        int numViolations = Math.max(0,
+                checkstyleOutput.split("\n").length - 2);
+
         JSONArray tests = (JSONArray) feedback.get("tests");
         Data result = new Data();
-        result.set("name", "checkstyle");
-        result.set("score", 1); // TODO processing of Checkstyle results
-        // replace the base path and set the output
-        result.set("output", process.getOutput().replace(basePath, ""));
+        result.set("name", "Automated Style");
+        result.set("score", Math.max(0,
+                this.weighting - numViolations * this.violationPenalty));
+        result.set("max_score", this.weighting);
+
+        result.set("output", checkstyleOutput);
         tests.add(result);
 
         return collection;

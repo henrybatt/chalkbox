@@ -40,6 +40,13 @@ public class Conformance {
      */
     private final String classPath;
 
+    /**
+     * Number of marks allocated to the conformance check.
+     *
+     * Used when calculating the "score" for the conformance test result.
+     */
+    private int weighting;
+
     private Map<String, Class> expectedClasses;
     private List<String> expectedFiles;
 
@@ -51,13 +58,15 @@ public class Conformance {
      *                          will be flagged based on whether they appear
      *                          in this directory
      * @param classPath class path to use when compiling the sample solution
+     * @param weighting number of marks allocated to the conformance check
      * @throws IOException if loading the expected class files fails
      */
     public Conformance(String correctSolution, String expectedStructure,
-            String classPath) throws IOException {
+            String classPath, int weighting) throws IOException {
         this.correctSolution = correctSolution;
         this.classPath = classPath;
         this.expectedFiles = FileLoader.loadFiles(expectedStructure);
+        this.weighting = weighting;
 
         loadExpected();
     }
@@ -98,10 +107,10 @@ public class Conformance {
         Data data = submission.getResults();
         JSONArray tests = (JSONArray) data.get("tests");
         Data result = new Data(); // test result representing conformance check
-        result.set("name", "conformance");
+        result.set("name", "Conformance");
         result.set("output", "");
         result.set("score", 0);
-//        result.set("max_score", 1);
+        result.set("max_score", this.weighting);
         tests.add(result);
 
         for (String expected : expectedFiles) {
@@ -144,14 +153,13 @@ public class Conformance {
             return submission;
         }
 
-        boolean allConforms = true;
+        int totalDifferences = 0;
         for (String className : expectedClasses.keySet()) {
             // Skip anon generated classes
             if (className.contains("$")) {
                 continue;
             }
 
-            String jsonKey = "conformance." + className.replace(".", "\\.") + ".";
             Class expectedClass = expectedClasses.get(className);
             Class actualClass = submissionMap.get(className);
 
@@ -167,7 +175,7 @@ public class Conformance {
                 // Class does not conform
                 result.set("output", result.get("output") + className
                         + " does not conform:\n" + comparator.toString() + "\n");
-                allConforms = false;
+                totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
                 result.set("output", result.get("output") + className
@@ -175,8 +183,7 @@ public class Conformance {
             }
         }
 
-        // TODO weighting of conformance results
-        result.set("score", allConforms ? 1 : 0);
+        result.set("score", Math.max(0, this.weighting - totalDifferences));
 
         return submission;
     }
