@@ -1,29 +1,11 @@
 package chalkbox.api;
 
-import chalkbox.api.annotations.Collector;
-import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.DataSet;
-import chalkbox.api.annotations.Finish;
-import chalkbox.api.annotations.GroupPipe;
-import chalkbox.api.annotations.Output;
-import chalkbox.api.annotations.Pipe;
-import chalkbox.api.annotations.Prior;
 import chalkbox.api.config.ChalkboxConfig;
-import chalkbox.api.config.ConfigParseException;
-import chalkbox.api.config.ConfigParser;
-import chalkbox.api.config.FieldAssigner;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Engine;
 import chalkbox.engines.EngineLoader;
 
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +60,7 @@ public class ChalkBox {
 
 
     public static void main(String[] args) throws ConfigFormatException {
+        /*
         if (args.length == 2) {
             if (!args[0].equals("help")) {
                 System.err.println(USAGE);
@@ -86,6 +69,7 @@ public class ChalkBox {
 
             return;
         }
+         */
 
         if (args.length != 1) {
             System.err.println(USAGE);

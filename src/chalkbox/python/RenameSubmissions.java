@@ -33,18 +33,21 @@ public class RenameSubmissions {
             description = "Rename only files matching the given extension")
     public String expectedExtension;
 
-    @Pipe
+    public RenameSubmissions(String fileName, String expectedExtension) {
+        this.fileName = fileName;
+        this.expectedExtension = expectedExtension;
+    }
+
+
     public Collection run(Collection collection) throws IOException {
         if (fileName == null) {
             return collection;
         }
         List<String> files = collection.getWorking().getFileNames(expectedExtension);
-        String sid = collection.getResults().get("sid").toString();
 
         if (files.size() == 1 && !files.get(0).equals(fileName)) {
             String file = files.get(0);
             if (!file.equals(fileName)) {
-                LOGGER.info("Renaming " + file + " from " + sid + " to " + fileName);
                 Path fromPath = Paths.get(collection.getWorking().getUnmaskedPath(file));
                 Path toPath = Paths.get(collection.getWorking().getUnmaskedPath(fileName));
                 Files.move(fromPath, toPath);

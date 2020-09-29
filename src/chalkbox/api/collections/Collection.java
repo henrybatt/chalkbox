@@ -39,6 +39,10 @@ public class Collection {
         return results;
     }
 
+    public void setWorking(Bundle working) {
+        this.working = working;
+    }
+
     @Override
     public String toString() {
         return results.toString() + " " + source.toString() + " " + working.toString();

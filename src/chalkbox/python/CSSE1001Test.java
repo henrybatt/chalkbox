@@ -1,7 +1,6 @@
 package chalkbox.python;
 
 import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.Pipe;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -16,27 +15,34 @@ import java.util.concurrent.TimeoutException;
 //todo(issue:#21) Refactor this to not be CSSE1001
 
 //dependancies RenameSubmission.class
-public class CSSE1001Test {
+public class  CSSE1001Test {
+
+
     @ConfigItem(key = "python", required = false,
             description = "Command to execute python from terminal")
     public String PYTHON = "python3";
 
     @ConfigItem(key = "runner", description = "Name of the test runner")
-    public File runner;
+    public String runner;
 
     @ConfigItem(key = "included", description = "Path to supplied assignment files")
-    public File included;
+    public String included;
 
-    @Pipe
+
+    public CSSE1001Test (String runner, String included) {
+        this.runner = runner;
+        this.included = included;
+    }
+
     public Collection run(Collection collection) {
         Data feedback = collection.getResults();
         ProcessExecution process;
         Map<String, String> environment = new HashMap<>();
-        environment.put("PYTHONPATH", included.getPath());
+        environment.put("PYTHONPATH", included);
         File working = new File(collection.getWorking().getUnmaskedPath());
 
         try {
-            collection.getWorking().copyFolder(included);
+            collection.getWorking().copyFolder(new File(included));
         } catch (IOException e) {
             e.printStackTrace();
             feedback.set("test.error", "Unable to copy supplied directory");
@@ -45,7 +51,7 @@ public class CSSE1001Test {
 
         try {
             process = Execution.runProcess(working, environment, 10000,
-                    PYTHON, runner.getAbsolutePath(), "--json");
+                    PYTHON, runner , "--json");
         } catch (IOException e) {
             System.err.println("Error occurred trying to spawn the test runner process (in json mode)");
             e.printStackTrace();
@@ -63,7 +69,7 @@ public class CSSE1001Test {
 
         try {
             process = Execution.runProcess(working, environment, 10000,
-                    PYTHON, runner.getPath());
+                    PYTHON, runner);
         } catch (IOException e) {
             System.err.println("Error occurred trying to spawn the test runner process");
             e.printStackTrace();
