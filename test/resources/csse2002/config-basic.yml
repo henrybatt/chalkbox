@@ -1,23 +1,30 @@
-engine: chalkbox.engines.CSSE2002Engine
+engine: chalkbox.engines.JavaEngine
 ---
 courseCode: CSSE2002
 assignment: ass1
-stages:
-  conformance: 10
-  functionality: 40
-  junit: 20
 submission: ./test/resources/csse2002/submission/
 outputFile: ./test/resources/csse2002/results/results.json
-dependencies: # optional
+correctSolution: ./test/resources/csse2002/solutions/correct/src/
+dependencies:
   - ./test/resources/csse2002/lib/hamcrest-core-1.3.jar
   - ./test/resources/csse2002/lib/junit-4.12.jar
-resources: # optional
-  - networks/
-testDirectory: ./test/resources/csse2002/solutions/correct/test/ # optional
-correctSolution: ./test/resources/csse2002/solutions/correct/src/ # optional
-expectedStructure: ./test/resources/csse2002/solutions/correct/ # optional
-faultySolutions: ./test/resources/csse2002/solutions/faulty/ # optional
-assessableTestClasses: # optional
-  - tms.intersection.IntersectionTest
-  - tms.sensors.DemoPressurePadTest
+
+conformance:
+  weighting: 10
+  expectedStructure: ./test/resources/csse2002/solutions/correct/
+  violationPenalty: 1
+
+functionality:
+  weighting: 40
+  testDirectory: ./test/resources/csse2002/solutions/correct/test/
+
+junit:
+  weighting: 20
+  faultySolutions: ./test/resources/csse2002/solutions/faulty/
+  assessableTestClasses:
+    - tms.intersection.IntersectionTest
+    - tms.sensors.DemoPressurePadTest
+
+#resources:
+#  - networks/
 

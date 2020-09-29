@@ -17,19 +17,74 @@ import java.util.concurrent.TimeoutException;
  */
 
 public class Checkstyle {
-    private String jar;
-    private String config;
-    private List<String> excluded;
-    private int weighting;
-    private double violationPenalty;
 
-    public Checkstyle(String jar, String config, List<String> excluded,
-            int weighting, double violationPenalty) {
-        this.jar = jar;
-        this.config = config;
-        this.excluded = excluded;
-        this.weighting = weighting;
-        this.violationPenalty = violationPenalty;
+    public static class CheckstyleOptions {
+
+        private int weighting;
+
+        private String config;
+
+        private String jar;
+
+        private List<String> excluded;
+
+        private double violationPenalty = 1;
+
+        public boolean isValid() {
+            return weighting != 0
+                    && config != null && !config.isEmpty()
+                    && jar != null && !jar.isEmpty();
+        }
+
+        //<editor-fold desc="JavaBeans getters/setters">
+
+        public int getWeighting() {
+            return weighting;
+        }
+
+        public void setWeighting(int weighting) {
+            this.weighting = weighting;
+        }
+
+        public String getConfig() {
+            return config;
+        }
+
+        public void setConfig(String config) {
+            this.config = config;
+        }
+
+        public String getJar() {
+            return jar;
+        }
+
+        public void setJar(String jar) {
+            this.jar = jar;
+        }
+
+        public List<String> getExcluded() {
+            return excluded;
+        }
+
+        public void setExcluded(List<String> excluded) {
+            this.excluded = excluded;
+        }
+
+        public double getViolationPenalty() {
+            return violationPenalty;
+        }
+
+        public void setViolationPenalty(double violationPenalty) {
+            this.violationPenalty = violationPenalty;
+        }
+
+        //</editor-fold>
+    }
+
+    private CheckstyleOptions options;
+
+    public Checkstyle(CheckstyleOptions options) {
+        this.options = options;
     }
 
     public Collection run(Collection collection) {
@@ -41,10 +96,10 @@ public class Checkstyle {
             List<String> processArgs = new ArrayList<>();
             processArgs.add("java");
             processArgs.add("-jar");
-            processArgs.add(this.jar);
+            processArgs.add(options.jar);
             processArgs.add("-c");
-            processArgs.add(this.config);
-            processArgs.addAll(generateExcludedArgs(this.excluded));
+            processArgs.add(options.config);
+            processArgs.addAll(generateExcludedArgs(options.excluded));
             processArgs.add(collection.getSource().getUnmaskedPath("src"));
 
             process = Execution.runProcess(10000,
@@ -56,7 +111,7 @@ public class Checkstyle {
             Data result = new Data();
             result.set("name", "Automated Style");
             result.set("score", 0);
-            result.set("max_score", this.weighting);
+            result.set("max_score", options.weighting);
             result.set("output", "IOError when running Checkstyle");
             tests.add(result);
             return collection;
@@ -66,7 +121,7 @@ public class Checkstyle {
             Data result = new Data();
             result.set("name", "Automated Style");
             result.set("score", 0);
-            result.set("max_score", this.weighting);
+            result.set("max_score", options.weighting);
             result.set("output", "Timed out when running Checkstyle");
             tests.add(result);
             return collection;
@@ -87,8 +142,8 @@ public class Checkstyle {
         Data result = new Data();
         result.set("name", "Automated Style");
         result.set("score", Math.max(0,
-                this.weighting - numViolations * this.violationPenalty));
-        result.set("max_score", this.weighting);
+                options.weighting - numViolations * options.violationPenalty));
+        result.set("max_score", options.weighting);
 
         result.set("output", checkstyleOutput);
         tests.add(result);

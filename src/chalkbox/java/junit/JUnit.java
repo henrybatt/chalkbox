@@ -18,32 +18,89 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class JUnit {
+
+    public static class JUnitOptions {
+
+        /**
+         * Path to a directory containing the sample solution
+         */
+        private String correctSolution;
+
+        /**
+         * Class path for student tests to be compiled with
+         */
+        private String classPath;
+
+        /**
+         * Marks allocated to the JUnit stage
+         */
+        private int weighting;
+
+        /**
+         * Path to a directory containing various broken sample solutions
+         */
+        private String faultySolutions;
+
+        /**
+         * JUnit classes to execute
+         */
+        private List<String> assessableTestClasses;
+
+        public boolean isValid() {
+            return faultySolutions != null && !faultySolutions.isEmpty()
+                    && assessableTestClasses != null
+                    && !assessableTestClasses.isEmpty()
+                    && weighting != 0;
+        }
+
+        //<editor-fold desc="JavaBeans getters/setters">
+
+        public String getCorrectSolution() {
+            return correctSolution;
+        }
+
+        public void setCorrectSolution(String correctSolution) {
+            this.correctSolution = correctSolution;
+        }
+
+        public String getClassPath() {
+            return classPath;
+        }
+
+        public void setClassPath(String classPath) {
+            this.classPath = classPath;
+        }
+
+        public int getWeighting() {
+            return weighting;
+        }
+
+        public void setWeighting(int weighting) {
+            this.weighting = weighting;
+        }
+
+        public String getFaultySolutions() {
+            return faultySolutions;
+        }
+
+        public void setFaultySolutions(String faultySolutions) {
+            this.faultySolutions = faultySolutions;
+        }
+
+        public List<String> getAssessableTestClasses() {
+            return assessableTestClasses;
+        }
+
+        public void setAssessableTestClasses(List<String> assessableTestClasses) {
+            this.assessableTestClasses = assessableTestClasses;
+        }
+
+        //</editor-fold>
+    }
+
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
-    /**
-     * Path to a directory containing the sample solution
-     */
-    private String solutionPath;
-
-    /**
-     * Path to a directory containing various broken sample solutions
-     */
-    private String faultySolutionsPath;
-
-    /**
-     * JUnit classes to execute
-     */
-    private List<String> assessableTestClasses;
-
-    /**
-     * Class path for student tests to be compiled with
-     */
-    private String classPath;
-
-    /**
-     * Marks allocated to the JUnit stage
-     */
-    private int weighting;
+    private JUnitOptions options;
 
     private Bundle solutionsOutput;
     private Bundle solutionOutput;
@@ -52,14 +109,8 @@ public class JUnit {
     private Map<String, String> classPaths = new TreeMap<>();
     private int numFaultySolutions;
 
-    public JUnit(String solutionPath, String faultySolutionsPath,
-            List<String> assessableTestClasses, String classPath,
-            int weighting) {
-        this.solutionPath = solutionPath;
-        this.faultySolutionsPath = faultySolutionsPath;
-        this.assessableTestClasses = assessableTestClasses;
-        this.classPath = classPath;
-        this.weighting = weighting;
+    public JUnit(JUnitOptions options) {
+        this.options = options;
 
         createCompilationOutput();
         compileSolution();
@@ -108,7 +159,7 @@ public class JUnit {
 
         /* Compile the solution */
         boolean compiled = Compiler.compile(Arrays.asList(files),
-                classPath, output, writer);
+                options.classPath, output, writer);
         if (!compiled) {
             LOGGER.severe("Unable to compile solution: " + name);
             LOGGER.severe(writer.toString());
@@ -122,7 +173,7 @@ public class JUnit {
      */
     private void compileSolutions() {
         /* Collect the list of broken solution folders */
-        File solutionsFolder = new File(this.faultySolutionsPath);
+        File solutionsFolder = new File(options.faultySolutions);
         /* Only include directories as faulty solutions (e.g. not .DS_Store) */
         File[] solutions = solutionsFolder.listFiles(File::isDirectory);
         if (solutions == null) {
@@ -153,7 +204,7 @@ public class JUnit {
             compileSolution(solutionBundle, solutionName, solutionOut, writer);
 
             /* Add an entry for this solution to the class path mapping */
-            classPaths.put(solutionName, classPath
+            classPaths.put(solutionName, options.classPath
                     + System.getProperty("path.separator") + solutionOut);
         }
     }
@@ -162,14 +213,14 @@ public class JUnit {
      * Compile the sample solution.
      */
     private void compileSolution() {
-        Bundle solutionSource = new Bundle(new File(solutionPath));
+        Bundle solutionSource = new Bundle(new File(options.correctSolution));
 
         /* Compile the sample solution */
         StringWriter writer = new StringWriter();
         compileSolution(solutionSource, "sample solution",
                 solutionOutput.getUnmaskedPath(), writer);
 
-        solutionClassPath = classPath + System.getProperty("path.separator")
+        solutionClassPath = options.classPath + System.getProperty("path.separator")
                 + solutionOutput.getUnmaskedPath();
     }
 
@@ -187,7 +238,7 @@ public class JUnit {
 
         /* Compile each submitted test class individually */
         boolean anyCompiles = false;
-        for (String className : assessableTestClasses) {
+        for (String className : options.assessableTestClasses) {
             String fileName = className.replace(".", "/") + ".java";
             StringWriter compileOutput = new StringWriter();
             SourceFile file;
@@ -239,11 +290,11 @@ public class JUnit {
         }
 
         LOGGER.finest("Running student tests");
-        LOGGER.finest(assessableTestClasses.toString());
+        LOGGER.finest(options.assessableTestClasses.toString());
         File working = new File(submission.getSource().getUnmaskedPath());
 
         Map<String, Integer> passes = new HashMap<>();
-        for (String testClass : assessableTestClasses) {
+        for (String testClass : options.assessableTestClasses) {
             String classPath = solutionClassPath
                     + System.getProperty("path.separator")
                     + submission.getWorking().getUnmaskedPath();
@@ -267,7 +318,7 @@ public class JUnit {
             /* Is the solution being tested the correct implementation? */
             boolean isCorrectSolution = solution.equals("solution");
 
-            for (String testClass : assessableTestClasses) {
+            for (String testClass : options.assessableTestClasses) {
                 /* Run the JUnit tests */
                 Data results = JUnitRunner.runTestsCombined(testClass, classPath);
                 results.set("extra_data.correct", false);
@@ -282,7 +333,7 @@ public class JUnit {
 
             /* Mark awarded for correctly identifying a broken solution */
             final double solutionWeighting = 1d / this.numFaultySolutions
-                    * this.weighting;
+                    * options.weighting;
 
             solutionResult.set("name", "JUnit (" + solution + ")");
             solutionResult.set("visibility", "after_due_date");

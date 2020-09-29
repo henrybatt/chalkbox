@@ -19,8 +19,7 @@ public abstract class Engine {
         return courseCode != null && !courseCode.isEmpty()
                 && assignment != null && !assignment.isEmpty()
                 && submission != null && !submission.isEmpty()
-                && outputFile != null && !outputFile.isEmpty()
-                && stages != null && !stages.isEmpty();
+                && outputFile != null && !outputFile.isEmpty();
     }
 
     public Collection collect() {

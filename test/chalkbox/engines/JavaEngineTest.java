@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
-public class CSSE2002EngineTest {
+public class JavaEngineTest {
     private static final String BASE_FOLDER = "./test/resources/csse2002/";
 
     private static final String CONFIG_BASIC_PATH = BASE_FOLDER + "config-basic.yml";

@@ -1,6 +1,5 @@
-package chalkbox.java.test;
+package chalkbox.java.functionality;
 
-import chalkbox.api.annotations.Pipe;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -18,53 +17,74 @@ import java.util.List;
 /**
  * Process to execute JUnit tests on each submission.
  *
- * <p>Requires {@link JavaCompilation} process to be executed first.
- * Checks if compilation.compiles is true.
- *
- * <p>An example output is shown below, where ... is the raw test output:
- * <pre>
- * "tests": {
- *     "package1.ClassOneTest": {
- *         "output": "...",
- *         "total": 12,
- *         "passes": 8,
- *         "fails": 4,
- *         "errors": ""
- *     }
- * }
- * </pre>
- *
- * <p>If a test class times out while being executed, the below will be given:
- * <pre>
- * "tests": {
- *     "package1.TimedOutTest": {
- *         "errors": "Timed out"
- *     }
- * }
- * </pre>
+ * Requires {@link JavaCompilation} process to be executed first.
+ * Checks if "extra_data.compilation.compiles" is true.
  */
-public class JavaTest {
+public class Functionality {
+
+    public static class FunctionalityOptions {
+
+        /** Sample solution to compile tests with */
+        private String correctSolution;
+
+        /** Class path for tests to be compiled with */
+        private String classPath;
+
+        /** Number of marks allocated to the functionality stage */
+        private int weighting;
+
+        /** Path of JUnit test files */
+        private String testDirectory;
+
+        public boolean isValid() {
+            return testDirectory != null && !testDirectory.isEmpty()
+                    && weighting != 0;
+        }
+
+        //<editor-fold desc="JavaBeans getters/setters">
+
+        public int getWeighting() {
+            return weighting;
+        }
+
+        public void setWeighting(int weighting) {
+            this.weighting = weighting;
+        }
+
+        public String getTestDirectory() {
+            return testDirectory;
+        }
+
+        public void setTestDirectory(String testDirectory) {
+            this.testDirectory = testDirectory;
+        }
+
+        public String getCorrectSolution() {
+            return correctSolution;
+        }
+
+        public void setCorrectSolution(String correctSolution) {
+            this.correctSolution = correctSolution;
+        }
+
+        public String getClassPath() {
+            return classPath;
+        }
+
+        public void setClassPath(String classPath) {
+            this.classPath = classPath;
+        }
+
+        //</editor-fold>
+    }
+
+    private FunctionalityOptions options;
+
     private Bundle tests;
     protected boolean hasErrors;
 
-    /** Sample solution to compile tests with */
-    private String solutionPath;
-
-    /** Path of JUnit test files */
-    private String testPath;
-
-    /** Class path for tests to be compiled with */
-    private String classPath;
-
-    /** Number of marks allocated to the functionality stage */
-    private int weighting;
-
-    public JavaTest(String solutionPath, String testPath, String classPath,
-            int weighting) {
-        this.solutionPath = solutionPath;
-        this.testPath = testPath;
-        this.classPath = classPath;
-        this.weighting = weighting;
+    public Functionality(FunctionalityOptions options) {
+        this.options = options;
 
         this.compileTests();
     }
@@ -74,8 +94,8 @@ public class JavaTest {
      * solution.
      */
     public void compileTests() {
-        tests = new Bundle(new File(testPath));
-        Bundle solution = new Bundle(new File(solutionPath));
+        tests = new Bundle(new File(options.testDirectory));
+        Bundle solution = new Bundle(new File(options.correctSolution));
 
         /* Load output directories for the solution and the tests */
         Bundle solutionOutput;
@@ -84,7 +104,9 @@ public class JavaTest {
             solutionOutput = new Bundle();
             testOutput = new Bundle();
             /* Add the tests to the class path for execution */
-            classPath = classPath + System.getProperty("path.separator") + testOutput.getUnmaskedPath();
+            options.setClassPath(options.classPath
+                    + System.getProperty("path.separator")
+                    + testOutput.getUnmaskedPath());
         } catch (IOException e) {
             hasErrors = true;
             e.printStackTrace();
@@ -94,12 +116,14 @@ public class JavaTest {
         StringWriter output = new StringWriter();
 
         /* Compile the sample solution */
-        Compiler.compile(Compiler.getSourceFiles(solution), classPath,
+        Compiler.compile(Compiler.getSourceFiles(solution), options.classPath,
                 solutionOutput.getUnmaskedPath(), output);
 
         /* Compile the tests with the sample solution */
         Compiler.compile(Compiler.getSourceFiles(tests),
-                classPath + System.getProperty("path.separator") + solutionOutput.getUnmaskedPath(),
+                options.classPath
+                        + System.getProperty("path.separator")
+                        + solutionOutput.getUnmaskedPath(),
                 testOutput.getUnmaskedPath(), output);
     }
 
@@ -114,7 +138,9 @@ public class JavaTest {
             return submission;
         }
 
-        String classPath = this.classPath + System.getProperty("path.separator") + submission.getWorking().getUnmaskedPath("bin");
+        String classPath = options.classPath
+                + System.getProperty("path.separator")
+                + submission.getWorking().getUnmaskedPath("bin");
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         int totalNumTests = 0;
         JSONArray functionalityResults = new JSONArray();
@@ -134,7 +160,7 @@ public class JavaTest {
 
         /* Mark awarded for passing a single test method */
         final double individualTestWeighting = 1d / totalNumTests
-                * this.weighting;
+                * options.weighting;
 
         for (Object o : functionalityResults) {
             Data functionalityResult = (Data) o;

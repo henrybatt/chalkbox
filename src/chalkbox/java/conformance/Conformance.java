@@ -25,49 +25,131 @@ import java.util.Map;
  * submission that differ to those in the correct solution.
  */
 public class Conformance {
-    /**
-     * Path of the correct solution to the assignment.
-     *
-     * Will be compiled into class files which are checked member-for-member
-     * against classes in the the provided submission.
-     */
-    private final String correctSolution;
+
+    public static class ConformanceOptions {
+        /**
+         * Path of the correct solution to the assignment.
+         *
+         * Will be compiled into class files which are checked member-for-member
+         * against classes in the the provided submission.
+         */
+        private String correctSolution;
+
+        /**
+         * Class path to use when compiling the sample solution.
+         *
+         * Any dependencies should be added here, e.g. JUnit.
+         */
+        private String classPath;
+
+        /**
+         * Path of the directory to compare against the provided submission.
+         *
+         * Extra and missing files will be flagged based on whether they appear
+         * in this directory.
+         */
+        private String expectedStructure;
+
+        /**
+         * Number of marks allocated to the conformance check.
+         *
+         * Used when calculating the "score" for the conformance test result.
+         */
+        private int weighting;
+
+        /**
+         * Number of marks to subtract for each instance of non-conformance.
+         *
+         * Defaults to 1 mark per instance.
+         */
+        private double violationPenalty = 1;
+
+        /**
+         * Returns whether this configuration is valid.
+         *
+         * Does not need classPath or correctSolution immediately - these are
+         * set later.
+         *
+         * @return true iff options are valid
+         */
+        public boolean isValid() {
+            return expectedStructure != null && !expectedStructure.isEmpty()
+                    && weighting != 0;
+        }
+
+        //<editor-fold desc="JavaBeans getters/setters">
+
+        public String getExpectedStructure() {
+            return expectedStructure;
+        }
+
+        public void setExpectedStructure(String expectedStructure) {
+            this.expectedStructure = expectedStructure;
+        }
+
+        public double getViolationPenalty() {
+            return violationPenalty;
+        }
+
+        public void setViolationPenalty(double violationPenalty) {
+            this.violationPenalty = violationPenalty;
+        }
+
+        public String getCorrectSolution() {
+            return correctSolution;
+        }
+
+        public void setCorrectSolution(String correctSolution) {
+            this.correctSolution = correctSolution;
+        }
+
+        public String getClassPath() {
+            return classPath;
+        }
+
+        public void setClassPath(String classPath) {
+            this.classPath = classPath;
+        }
+
+        public int getWeighting() {
+            return weighting;
+        }
+
+        public void setWeighting(int weighting) {
+            this.weighting = weighting;
+        }
+        //</editor-fold>
+    }
 
     /**
-     * Class path to use when compiling the sample solution.
-     *
-     * Any dependencies should be added here, e.g. JUnit.
+     * Configuration options.
      */
-    private final String classPath;
+    private ConformanceOptions options;
 
     /**
-     * Number of marks allocated to the conformance check.
-     *
-     * Used when calculating the "score" for the conformance test result.
+     * Mapping of class names to loaded classes for the expected structure.
      */
-    private int weighting;
-
     private Map<String, Class> expectedClasses;
+
+    /**
+     * List of all files present in the expected structure.
+     */
     private List<String> expectedFiles;
 
     /**
+     * Sets up the conformance checker ready to check a submission.
      *
-     * @param correctSolution path of the correct solution to the assignment
-     * @param expectedStructure path of the directory to compare against the
-     *                          provided submission. Extra and missing files
-     *                          will be flagged based on whether they appear
-     *                          in this directory
-     * @param classPath class path to use when compiling the sample solution
-     * @param weighting number of marks allocated to the conformance check
+     * @param options configuration options to use when checking conformance
      * @throws IOException if loading the expected class files fails
      */
-    public Conformance(String correctSolution, String expectedStructure,
-            String classPath, int weighting) throws IOException {
-        this.correctSolution = correctSolution;
-        this.classPath = classPath;
-        this.expectedFiles = FileLoader.loadFiles(expectedStructure);
-        this.weighting = weighting;
+    public Conformance(ConformanceOptions options) throws IOException {
+        /* Set the provided options */
+        this.options = options;
 
+        /* Load a list of all files expected to be found in a submission */
+        this.expectedFiles = FileLoader.loadFiles(options.expectedStructure);
+
+        /* Compile and store the Java classes from the expected structure */
         loadExpected();
     }
 
@@ -75,7 +157,7 @@ public class Conformance {
      * Loads the expected class files into the conformance checker
      */
     private void loadExpected() throws IOException {
-        Bundle expected = new Bundle(new File(correctSolution));
+        Bundle expected = new Bundle(new File(options.correctSolution));
         StringWriter output = new StringWriter();
 
         /* Load output directories for the solution and the tests */
@@ -88,7 +170,7 @@ public class Conformance {
         }
 
         /* Compile the sample solution */
-        Compiler.compile(Compiler.getSourceFiles(expected), classPath,
+        Compiler.compile(Compiler.getSourceFiles(expected), options.classPath,
                 out.getUnmaskedPath(), output);
 
         SourceLoader expectedLoader = new SourceLoader(out.getUnmaskedPath());
@@ -110,7 +192,7 @@ public class Conformance {
         result.set("name", "Conformance");
         result.set("output", "");
         result.set("score", 0);
-        result.set("max_score", this.weighting);
+        result.set("max_score", options.weighting);
         tests.add(result);
 
         for (String expected : expectedFiles) {
@@ -183,7 +265,13 @@ public class Conformance {
             }
         }
 
-        result.set("score", Math.max(0, this.weighting - totalDifferences));
+        /*
+         * Subtract [the number of differences multiplied by the penalty] from
+         * the total weighting allocated to the conformance stage to yield the
+         * final score.
+         */
+        result.set("score", Math.max(0, options.weighting
+                - totalDifferences * options.violationPenalty));
 
         return submission;
     }
