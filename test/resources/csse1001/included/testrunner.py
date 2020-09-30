@@ -985,7 +985,7 @@ class TestMaster:
             for _, (err_type, msg, err_msg) in self._import_errors:
                 errors.append(dict(error=err_type, error_message=f'{msg}\n{err_msg}'))
             data = dict(total=total, failed=fails, skipped=skips, passed=passed,
-                        time=runtime, results=result.to_dict(), errors=errors)
+                        results=result.to_dict(), errors=errors)
             json.dump(data, sys.stdout, indent=4)
         else:
             # Join the lists sorted by the test order
@@ -996,7 +996,7 @@ class TestMaster:
                 key=lambda t: all_tests.index(t[1]))
             self.print_results(failed_tests, result)
             print(self.separator2)
-            print(f'Ran {total} tests in {runtime:.3f} seconds with '
+            print(f'Ran {total} tests with '
                   f'{passed} passed/{skips} skipped/{fails} failed.')
 
     def run(self, test_cases: List[Union[TestCase, Type[TestCase]]]) -> Optional[TestResult]:
