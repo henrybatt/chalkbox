@@ -17,6 +17,7 @@ conformance:
 functionality:
   weighting: 40
   testDirectory: ./test/resources/csse2002/solutions/correct/test/
+  #included: ./test/resources/csse2002/solutions/correct/networks/ # not in ass1
 
 junit:
   weighting: 20
@@ -24,7 +25,4 @@ junit:
   assessableTestClasses:
     - tms.intersection.IntersectionTest
     - tms.sensors.DemoPressurePadTest
-
-#resources:
-#  - networks/
 

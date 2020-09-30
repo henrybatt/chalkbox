@@ -36,6 +36,12 @@ public class Functionality {
         /** Path of JUnit test files */
         private String testDirectory;
 
+        /**
+         * Folder containing files to include in submission working directory
+         * when running tests, e.g. save files used by initialiser class
+         */
+        private String included;
+
         public boolean isValid() {
             return testDirectory != null && !testDirectory.isEmpty()
                     && weighting != 0;
@@ -73,6 +79,14 @@ public class Functionality {
 
         public void setClassPath(String classPath) {
             this.classPath = classPath;
+        }
+
+        public String getIncluded() {
+            return included;
+        }
+
+        public void setIncluded(String included) {
+            this.included = included;
         }
 
         //</editor-fold>
@@ -136,6 +150,14 @@ public class Functionality {
         }
         if (!submission.getResults().is("extra_data.compilation.compiles")) {
             return submission;
+        }
+        /* Copy the included resources to the submission directory */
+        if (options.included != null && !options.included.isEmpty()) {
+            try {
+                submission.getWorking().copyFolder(new File(options.included));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         String classPath = options.classPath
