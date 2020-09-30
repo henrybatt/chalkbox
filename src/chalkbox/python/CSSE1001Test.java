@@ -1,6 +1,5 @@
 package chalkbox.python;
 
-import chalkbox.api.annotations.ConfigItem;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -12,20 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-//todo(issue:#21) Refactor this to not be CSSE1001
 
-//dependancies RenameSubmission.class
 public class  CSSE1001Test {
 
-
-    @ConfigItem(key = "python", required = false,
-            description = "Command to execute python from terminal")
     public String PYTHON = "python3";
 
-    @ConfigItem(key = "runner", description = "Name of the test runner")
     public String runner;
 
-    @ConfigItem(key = "included", description = "Path to supplied assignment files")
     public String included;
 
 

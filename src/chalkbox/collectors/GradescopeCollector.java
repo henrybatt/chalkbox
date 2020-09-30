@@ -1,13 +1,11 @@
 package chalkbox.collectors;
 
-import chalkbox.api.annotations.Collector;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 
 import java.io.File;
 
-@Collector
-public class GradescopeCollector extends LoadSubmissionData {
+public class GradescopeCollector {
 
     public Collection collect(String submissionPath, String outputPath) {
         File submissionFolder = new File(submissionPath);

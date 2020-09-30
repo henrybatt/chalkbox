@@ -1,6 +1,5 @@
 package chalkbox.python;
 
-import chalkbox.api.annotations.Pipe;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
@@ -11,7 +10,6 @@ import java.util.concurrent.TimeoutException;
 
 public class PythonUnitTest {
 
-    @Pipe
     public Collection run(Collection collection) {
         File working = new File(collection.getSource().getUnmaskedPath());
         String output = collection.getWorking().getUnmaskedPath("results.json");

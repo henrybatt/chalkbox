@@ -1,7 +1,5 @@
 package chalkbox.python;
 
-import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.Pipe;
 import chalkbox.api.collections.Collection;
 import chalkbox.java.junit.JUnit;
 
@@ -11,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Logger;
-//ELLA - probs can be deleted
+
 /**
  * Process to rename submissions containing only one file of with an extension
  * to the expected file name.
@@ -26,11 +24,10 @@ import java.util.logging.Logger;
 public class RenameSubmissions {
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
-    @ConfigItem(key = "file-name", required = false,
-            description = "If set, rename all submissions with only one file to the given name")
+
+    /** "If set, rename all submissions with only one file to the given name" */
     public String fileName;
-    @ConfigItem(key = "expected-extension", required = false,
-            description = "Rename only files matching the given extension")
+    /** "Rename only files matching the given extension")*/
     public String expectedExtension;
 
     public RenameSubmissions(String fileName, String expectedExtension) {

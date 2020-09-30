@@ -1,6 +1,5 @@
 package chalkbox.output;
 
-import chalkbox.api.annotations.Output;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 
@@ -11,7 +10,6 @@ import java.nio.file.Files;
 
 public class GradescopeOutput {
 
-    @Output
     public void output(PrintStream stream, Collection submission) {
         Data results = submission.getResults();
         File jsonFile = new File((String) results.get("json"));

@@ -1,7 +1,5 @@
 package chalkbox.java.compilation;
 
-import chalkbox.api.annotations.ConfigItem;
-import chalkbox.api.annotations.Pipe;
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
@@ -43,7 +41,6 @@ public class JavaCompilation {
         this.classPath = classPath;
     }
 
-    @Pipe(stream = "submissions")
     public Collection compile(Collection submission) {
         Bundle working = submission.getWorking();
         Data results = submission.getResults();
