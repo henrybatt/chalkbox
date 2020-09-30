@@ -17,6 +17,7 @@ conformance:
 functionality:
   weighting: 40
   testDirectory: ./test/resources/csse2002/solutions/correct/test/
+  #included: ./test/resources/csse2002/solutions/correct/networks/ # not in ass1
 
 checkstyle:
   weighting: 15
