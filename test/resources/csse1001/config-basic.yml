@@ -2,9 +2,10 @@ engine: chalkbox.engines.PythonEngine
 ---
 courseCode: CSSE1001
 assignment: a1
-submission: ./test/resources/csse1001/assignment/
+submission: ./test/resources/csse1001/submission/
 outputFile:  ./test/resources/csse1001/results/results.json
 fileName: a1
 expectedExtension: .py
 runner:  ./test_a1.py
-included:  ./test/resources/csse1001/assignment
+formatter: ./gradescopeJSONFormatter.py
+included:  ./test/resources/csse1001/included
