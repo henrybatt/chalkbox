@@ -218,6 +218,8 @@ public class Conformance {
 
         // Only check classes for conformance if the submission compiles
         if (!data.is("extra_data.compilation.compiles")) {
+            result.set("output", result.get("output")
+                    + "Submission did not compile, not checking for conformance");
             return submission;
         }
 
