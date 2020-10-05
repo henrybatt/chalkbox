@@ -1,0 +1,1 @@
+DemoPressurePad#getCongestion returns a negative value (-2).

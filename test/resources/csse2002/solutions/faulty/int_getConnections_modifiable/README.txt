@@ -1,0 +1,1 @@
+Intersection#getConnections returns reference to internal list, not a copy of list.
