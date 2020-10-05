@@ -16,7 +16,6 @@ public class JavaEngine extends Engine {
 
     private String correctSolution;
     private List<String> dependencies;
-    private List<String> resources; // TODO
 
     private Conformance.ConformanceOptions conformance;
     private Functionality.FunctionalityOptions functionality;
@@ -62,7 +61,7 @@ public class JavaEngine extends Engine {
         JavaCompilation compilation = new JavaCompilation(classPath);
         submission = compilation.compile(submission);
 
-        if (this.conformance != null) {
+        if (this.conformance != null && this.conformance.isEnabled()) {
             this.conformance.setCorrectSolution(correctSolution);
             this.conformance.setClassPath(classPath);
             try {
@@ -74,21 +73,21 @@ public class JavaEngine extends Engine {
             }
         }
 
-        if (this.functionality != null) {
+        if (this.functionality != null && this.functionality.isEnabled()) {
             this.functionality.setCorrectSolution(correctSolution);
             this.functionality.setClassPath(classPath);
             Functionality test = new Functionality(this.functionality);
             submission = test.run(submission);
         }
 
-        if (this.junit != null) {
+        if (this.junit != null && this.junit.isEnabled()) {
             this.junit.setCorrectSolution(correctSolution);
             this.junit.setClassPath(classPath);
             JUnit jUnit = new JUnit(this.junit);
             submission = jUnit.run(submission);
         }
 
-        if (this.checkstyle != null) {
+        if (this.checkstyle != null && this.checkstyle.isEnabled()) {
             Checkstyle checkstyle = new Checkstyle(this.checkstyle);
             submission = checkstyle.run(submission);
         }
@@ -122,14 +121,6 @@ public class JavaEngine extends Engine {
 
     public void setDependencies(List<String> dependencies) {
         this.dependencies = dependencies;
-    }
-
-    public List<String> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<String> resources) {
-        this.resources = resources;
     }
 
     public Conformance.ConformanceOptions getConformance() {

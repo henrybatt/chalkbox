@@ -22,6 +22,11 @@ public class JUnit {
     public static class JUnitOptions {
 
         /**
+         * Whether or not to run this stage
+         */
+        private boolean enabled = false;
+
+        /**
          * Path to a directory containing the sample solution
          */
         private String correctSolution;
@@ -47,10 +52,10 @@ public class JUnit {
         private List<String> assessableTestClasses;
 
         public boolean isValid() {
-            return faultySolutions != null && !faultySolutions.isEmpty()
+            return !enabled || (faultySolutions != null && !faultySolutions.isEmpty()
                     && assessableTestClasses != null
                     && !assessableTestClasses.isEmpty()
-                    && weighting != 0;
+                    && weighting >= 0 && weighting <= 100);
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -93,6 +98,14 @@ public class JUnit {
 
         public void setAssessableTestClasses(List<String> assessableTestClasses) {
             this.assessableTestClasses = assessableTestClasses;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         //</editor-fold>

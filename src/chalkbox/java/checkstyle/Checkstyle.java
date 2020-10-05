@@ -20,6 +20,11 @@ public class Checkstyle {
 
     public static class CheckstyleOptions {
 
+        /**
+         * Whether or not to run this stage
+         */
+        private boolean enabled = false;
+
         private int weighting;
 
         private String config;
@@ -31,9 +36,9 @@ public class Checkstyle {
         private double violationPenalty = 1;
 
         public boolean isValid() {
-            return weighting != 0
+            return !enabled || (weighting >= 0 && weighting <= 100
                     && config != null && !config.isEmpty()
-                    && jar != null && !jar.isEmpty();
+                    && jar != null && !jar.isEmpty());
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -76,6 +81,14 @@ public class Checkstyle {
 
         public void setViolationPenalty(double violationPenalty) {
             this.violationPenalty = violationPenalty;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         //</editor-fold>

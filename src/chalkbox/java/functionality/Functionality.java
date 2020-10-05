@@ -24,6 +24,9 @@ public class Functionality {
 
     public static class FunctionalityOptions {
 
+        /** Whether or not to run this stage */
+        private boolean enabled = false;
+
         /** Sample solution to compile tests with */
         private String correctSolution;
 
@@ -36,15 +39,9 @@ public class Functionality {
         /** Path of JUnit test files */
         private String testDirectory;
 
-        /**
-         * Folder containing files to include in submission working directory
-         * when running tests, e.g. save files used by initialiser class
-         */
-        private String included;
-
         public boolean isValid() {
-            return testDirectory != null && !testDirectory.isEmpty()
-                    && weighting != 0;
+            return !enabled || (testDirectory != null && !testDirectory.isEmpty()
+                    && weighting >= 0 && weighting <= 100);
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -81,12 +78,12 @@ public class Functionality {
             this.classPath = classPath;
         }
 
-        public String getIncluded() {
-            return included;
+        public boolean isEnabled() {
+            return enabled;
         }
 
-        public void setIncluded(String included) {
-            this.included = included;
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         //</editor-fold>
@@ -151,7 +148,9 @@ public class Functionality {
         if (!submission.getResults().is("extra_data.compilation.compiles")) {
             return submission;
         }
-        /* Copy the included resources to the submission directory */
+
+        /* No longer supported:
+           Copy the included resources to the submission directory
         if (options.included != null && !options.included.isEmpty()) {
             try {
                 submission.getWorking().copyFolder(new File(options.included));
@@ -159,6 +158,7 @@ public class Functionality {
                 e.printStackTrace();
             }
         }
+        */
 
         String classPath = options.classPath
                 + System.getProperty("path.separator")

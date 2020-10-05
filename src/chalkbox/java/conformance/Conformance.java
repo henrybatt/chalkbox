@@ -27,6 +27,12 @@ import java.util.Map;
 public class Conformance {
 
     public static class ConformanceOptions {
+
+        /**
+         * Whether or not to run this stage
+         */
+        private boolean enabled = false;
+
         /**
          * Path of the correct solution to the assignment.
          *
@@ -73,8 +79,8 @@ public class Conformance {
          * @return true iff options are valid
          */
         public boolean isValid() {
-            return expectedStructure != null && !expectedStructure.isEmpty()
-                    && weighting != 0;
+            return !enabled || (expectedStructure != null && !expectedStructure.isEmpty()
+                    && weighting >= 0 && weighting <= 100);
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -117,6 +123,14 @@ public class Conformance {
 
         public void setWeighting(int weighting) {
             this.weighting = weighting;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
         //</editor-fold>
     }

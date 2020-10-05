@@ -10,16 +10,26 @@ dependencies:
   - ./test/resources/csse2002/lib/junit-4.12.jar
 
 conformance:
+  enabled: true
   weighting: 10
   expectedStructure: ./test/resources/csse2002/solutions/correct/
   violationPenalty: 1
 
 functionality:
+  enabled: true
   weighting: 40
   testDirectory: ./test/resources/csse2002/solutions/correct/test/
-  #included: ./test/resources/csse2002/solutions/correct/networks/ # not in ass1
+
+junit:
+  enabled: false
+  weighting: 20
+  faultySolutions: ./test/resources/csse2002/solutions/faulty/
+  assessableTestClasses:
+    - tms.intersection.IntersectionTest
+    - tms.sensors.DemoPressurePadTest
 
 checkstyle:
+  enabled: true
   weighting: 15
   config: ./test/resources/csse2002/checkstyle.xml
   jar: ./test/resources/csse2002/lib/checkstyle-8.36-all.jar
