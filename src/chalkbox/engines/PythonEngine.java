@@ -5,6 +5,7 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.output.JSONFormatter;
 import chalkbox.python.CSSE1001Test;
 import chalkbox.python.RenameSubmissions;
 
@@ -27,9 +28,6 @@ public class PythonEngine extends Engine {
         System.out.println("Running Python engine");
 
         Collection submission = super.collect();
-        //submission.setWorking(new Bundle(new File(this.getSubmission())));
-
-
 
         try {
             submission.getWorking().copyFolder(new File(this.getSubmission()));
@@ -54,25 +52,9 @@ public class PythonEngine extends Engine {
 
         super.output(submission);
 
-        /*
-            Reformat the python
-         */
+        //Reformat the results
 
-        String PYTHON = "python3";
-        ProcessExecution process;
-        Map<String, String> environment = new HashMap<>();
-        File working = new File(included);
-
-        try {
-            process = Execution.runProcess(working, environment, 10000,
-                    PYTHON, formatter, new File(this.getOutputFile()).getAbsolutePath());
-        } catch (IOException e) {
-            System.err.println("Error occurred trying to spawn the test runner process");
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Error occurred");
-            e.printStackTrace();
-        }
+        JSONFormatter.runFormatter(formatter, included, this.getOutputFile());
 
 
     }
