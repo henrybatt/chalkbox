@@ -40,13 +40,9 @@ public class EngineLoader {
         documents = readConfig(configPath, yaml);
 
         Engine engine = (Engine) documents.get(1);
-        if (!engine.configIsValid()) {
-            throw new ConfigFormatException("Configuration is invalid for "
-                    + "engine \"" + engineClassName + "\"");
-            // TODO improve by having configIsValid throw an exception instead
-        }
+        engine.validateConfig();
 
-        return (Engine) documents.get(1);
+        return engine;
     }
 
     /**

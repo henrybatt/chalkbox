@@ -5,6 +5,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.files.FileLoader;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import chalkbox.java.conformance.comparator.ClassComparator;
 import chalkbox.java.conformance.comparator.CodeComparator;
 import org.json.simple.JSONArray;
@@ -26,7 +28,7 @@ import java.util.Map;
  */
 public class Conformance {
 
-    public static class ConformanceOptions {
+    public static class ConformanceOptions implements Configuration {
 
         /**
          * Whether or not to run this stage
@@ -71,16 +73,32 @@ public class Conformance {
         private double violationPenalty = 1;
 
         /**
-         * Returns whether this configuration is valid.
+         * Checks this configuration and throws an exception if it is invalid.
          *
-         * Does not need classPath or correctSolution immediately - these are
-         * set later.
-         *
-         * @return true iff options are valid
+         * @throws ConfigFormatException if the configuration is invalid
          */
-        public boolean isValid() {
-            return !enabled || (expectedStructure != null && !expectedStructure.isEmpty()
-                    && weighting >= 0 && weighting <= 100);
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /*
+             * Do not need classPath or correctSolution immediately - these are
+             * set later.
+             */
+
+            /* Must have expected structure */
+            if (expectedStructure == null || expectedStructure.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing expectedStructure in conformance stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Conformance weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">

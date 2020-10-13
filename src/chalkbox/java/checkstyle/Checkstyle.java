@@ -4,6 +4,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import org.json.simple.JSONArray;
 
 import java.io.IOException;
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeoutException;
 
 public class Checkstyle {
 
-    public static class CheckstyleOptions {
+    public static class CheckstyleOptions implements Configuration {
 
         /**
          * Whether or not to run this stage
@@ -35,10 +37,29 @@ public class Checkstyle {
 
         private double violationPenalty = 1;
 
-        public boolean isValid() {
-            return !enabled || (weighting >= 0 && weighting <= 100
-                    && config != null && !config.isEmpty()
-                    && jar != null && !jar.isEmpty());
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /* Must have a configuration file */
+            if (config == null || config.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing config in Checkstyle stage");
+            }
+
+            /* Must have a Checkstyle JAR */
+            if (jar == null || jar.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing jar in Checkstyle stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Checkstyle weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">

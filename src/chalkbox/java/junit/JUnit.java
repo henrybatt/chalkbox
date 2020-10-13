@@ -7,6 +7,8 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.api.files.FileLoader;
 import chalkbox.api.files.SourceFile;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -19,7 +21,7 @@ import java.util.logging.Logger;
 
 public class JUnit {
 
-    public static class JUnitOptions {
+    public static class JUnitOptions implements Configuration {
 
         /**
          * Whether or not to run this stage
@@ -51,11 +53,35 @@ public class JUnit {
          */
         private List<String> assessableTestClasses;
 
-        public boolean isValid() {
-            return !enabled || (faultySolutions != null && !faultySolutions.isEmpty()
-                    && assessableTestClasses != null
-                    && !assessableTestClasses.isEmpty()
-                    && weighting >= 0 && weighting <= 100);
+        /**
+         * Checks this configuration and throws an exception if it is invalid.
+         *
+         * @throws ConfigFormatException if the configuration is invalid
+         */
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /* Must have a faulty solutions directory */
+            if (faultySolutions == null || faultySolutions.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing faultySolutions in JUnit stage");
+            }
+
+            /* Must have a list of assessable test classes */
+            if (assessableTestClasses == null
+                    || assessableTestClasses.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing assessableTestClasses in JUnit stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "JUnit weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">

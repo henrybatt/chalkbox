@@ -5,6 +5,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import chalkbox.java.compilation.JavaCompilation;
 import org.json.simple.JSONArray;
 
@@ -22,7 +24,7 @@ import java.util.List;
  */
 public class Functionality {
 
-    public static class FunctionalityOptions {
+    public static class FunctionalityOptions implements Configuration {
 
         /** Whether or not to run this stage */
         private boolean enabled = false;
@@ -39,9 +41,28 @@ public class Functionality {
         /** Path of JUnit test files */
         private String testDirectory;
 
-        public boolean isValid() {
-            return !enabled || (testDirectory != null && !testDirectory.isEmpty()
-                    && weighting >= 0 && weighting <= 100);
+        /**
+         * Checks this configuration and throws an exception if it is invalid.
+         *
+         * @throws ConfigFormatException if the configuration is invalid
+         */
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /* Must have a test directory */
+            if (testDirectory == null || testDirectory.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing testDirectory in functionality stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Functionality weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">

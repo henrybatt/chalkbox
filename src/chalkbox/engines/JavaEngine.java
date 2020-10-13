@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class JavaEngine extends Engine {
+public class JavaEngine extends Engine implements Configuration {
 
     private String correctSolution;
     private List<String> dependencies;
@@ -23,30 +23,26 @@ public class JavaEngine extends Engine {
     private Checkstyle.CheckstyleOptions checkstyle;
 
     @Override
-    public boolean configIsValid() {
-        if (!super.configIsValid()) {
-            return false;
+    public void validateConfig() throws ConfigFormatException {
+        super.validateConfig();
+
+        /* All stages are optional. Validate each stage that is present. */
+
+        if (this.conformance != null) {
+            this.conformance.validateConfig();
         }
 
-        /* All stages are optional */
-
-        if (this.conformance != null && !this.conformance.isValid()) {
-            return false;
+        if (this.functionality != null) {
+            this.functionality.validateConfig();
         }
 
-        if (this.functionality != null && !this.functionality.isValid()) {
-            return false;
+        if (this.junit != null) {
+            this.junit.validateConfig();
         }
 
-        if (this.junit != null && !this.junit.isValid()) {
-            return false;
+        if (this.checkstyle != null) {
+            this.checkstyle.validateConfig();
         }
-
-        if (this.checkstyle != null && !this.checkstyle.isValid()) {
-            return false;
-        }
-
-        return true;
     }
 
     @Override
