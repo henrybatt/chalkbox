@@ -25,9 +25,6 @@ gradle-app.setting
 .gradletasknamecache
 # gradle/wrapper/gradle-wrapper.properties
 
-sample
-docs/
-
 ## VSCode Bullshit
 .classpath
 .project
