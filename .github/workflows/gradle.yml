@@ -7,7 +7,7 @@ jobs:
     name: Test
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -19,4 +19,4 @@ jobs:
     - name: Run Gradle Test
       uses: eskatos/gradle-command-action@v1
       with:
-        arguments: test --debug
+        arguments: test
