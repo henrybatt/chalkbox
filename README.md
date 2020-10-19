@@ -1,6 +1,6 @@
 # Chalkbox v3 ![Gradle Build](https://github.com/UQTools/chalkbox/workflows/Gradle%20Build/badge.svg)
 
-<img src="https://github.com/BraeWebb/chalkbox/raw/master/resources/chalkbox.png" alt="Chalkbox Logo">
+<img src="https://github.com/UQTools/chalkbox/raw/master/docs/_static/images/logo/chalkbox.png" alt="Chalkbox Logo">
 
 ## Overview
 Chalkbox is a programming courses dream tool which allows the collection and running of multiple assignments in multiple languages.
