@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Chalkbox'
-copyright = '2020, Brae Webb, Emily Bennett, Ella de Lore, Max Miller, Evan Hughes & Nicholas Lambourne'
-author = 'Brae Webb, Emily Bennett, Ella de Lore, Max Miller, Evan Hughes & Nicholas Lambourne'
+copyright = '2020, Brae Webb, Emily Bennett, Ella de Lore, Max Miller, Evan Hughes, Nicholas Lambourne & Anna Truffet'
+author = 'Brae Webb, Emily Bennett, Ella de Lore, Max Miller, Evan Hughes, Nicholas Lambourne & Anna Truffet'
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
