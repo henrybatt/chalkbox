@@ -5,12 +5,22 @@ import chalkbox.api.collections.Data;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Files;
 
+/**
+ * Outputs a submission's feedback to a JSON file in Gradescope format.
+ */
 public class GradescopeOutput {
 
-    public void output(PrintStream stream, Collection submission) {
+    /**
+     * Writes the JSON data in the given submission to a file.
+     *
+     * The file path written to is the value of the "json" key in the
+     * submission's results Data instance.
+     *
+     * @param submission submission to output
+     */
+    public static void output(Collection submission) {
         Data results = submission.getResults();
         File jsonFile = new File((String) results.get("json"));
 

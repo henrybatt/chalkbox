@@ -5,11 +5,33 @@ import chalkbox.collectors.GradescopeCollector;
 import chalkbox.output.GradescopeOutput;
 import org.json.simple.JSONArray;
 
+/**
+ * Base class for a ChalkBox engine.
+ */
 public abstract class Engine implements Configuration {
+    /**
+     * Fully-qualified class name of the concrete engine to run.
+     */
     private String engine;
+
+    /**
+     * Course code identifier.
+     */
     private String courseCode;
+
+    /**
+     * Assignment identifier.
+     */
     private String assignment;
+
+    /**
+     * Path of the directory containing the submission.
+     */
     private String submission;
+
+    /**
+     * Path to write the output JSON file to.
+     */
     private String outputFile;
 
     @Override
@@ -28,16 +50,37 @@ public abstract class Engine implements Configuration {
         }
     }
 
+    /**
+     * Returns a new Collection representing the submission and its files.
+     *
+     * A "tests" key will be added to the results JSON object, with a value
+     * of an empty array. Elements of this array are interpreted as individual
+     * tests by Gradescope.
+     *
+     * @return collected submission
+     */
     public Collection collect() {
-        Collection col = new GradescopeCollector().collect(submission, outputFile);
+        Collection col = GradescopeCollector.collect(submission, outputFile);
         col.getResults().set("tests", new JSONArray());
         return col;
     }
 
+    /**
+     * Outputs the generated results JSON object to a file, able to be read
+     * by Gradescope.
+     *
+     * @param submission submission to output
+     */
     public void output(Collection submission) {
-        new GradescopeOutput().output(null, submission);
+        GradescopeOutput.output(submission);
     }
 
+    /**
+     * Runs the engine's processing on the submission.
+     *
+     * Will be called after the engine has been loaded and all configuration
+     * has been validated successfully.
+     */
     public abstract void run();
 
     @Override
