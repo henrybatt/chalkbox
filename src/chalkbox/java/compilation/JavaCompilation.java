@@ -7,44 +7,72 @@ import chalkbox.api.common.java.Compiler;
 import org.json.simple.JSONArray;
 
 import javax.tools.JavaFileObject;
+import java.io.IOException;
 import java.io.StringWriter;
 
 /**
  * Process to compile all of the .java source files in a submission.
  *
- * <p>A compiling submission may produce the following output, where ... stands
- * for any output warnings when compiling:
+ * If the submission compiles, the results JSON will include the following,
+ * where ??? stands for any output warnings when compiling:
  * <pre>
- * "compilation": {
- *     "compiles": true,
- *     "output": "..."
+ * { ...,
+ *   "extra_data": {
+ *     "compilation": {
+ *       "compiles": true,
+ *       "output": "???"
+ *     }
+ *   }
  * }
  * </pre>
  *
- * <p>A non-compiling submission may produce the following output, where ... stands
- * for the compilation errors:
+ * If the submission compiles, the results JSON will include the following,
+ * where ??? stands for any errors when compiling:
  * <pre>
- * "compilation": {
- *     "compiles": false,
- *     "output": "..."
+ * { ...,
+ *   "extra_data": {
+ *     "compilation": {
+ *       "compiles": false,
+ *       "output": "???"
+ *     }
+ *   }
  * }
  * </pre>
- *
- * <p>A submission without any .java files will have compilation.compiles set
- * to false and compilation.output set to "Empty submission"
+ * <p>
+ * A submission without any .java files will have
+ * <code>extra_data.compilation.compiles</code> set to false and
+ * <code>extra_data.compilation.output</code> set to "Empty submission".
  */
 public class JavaCompilation {
+
+    /** Message shown in output when submission compiles */
+    private static final String FAILURE_MSG = "Submission did not compile";
+    /** Message shown in output when submission does not compile */
+    private static final String SUCCESS_MSG = "Submission successfully compiled";
 
     /** Class path to use to compile submissions */
     private String classPath;
 
-    private static final String SUCCESS_MSG = "Submission successfully compiled";
-    private static final String FAILURE_MSG = "Submission did not compile";
-
+    /**
+     * Sets up the Java compiler ready to compile a submission.
+     *
+     * @param classPath class path to use when compiling submission
+     * @throws IOException if loading the expected class files fails
+     */
     public JavaCompilation(String classPath) {
         this.classPath = classPath;
     }
 
+    /**
+     * Attempts to compile the given submission.
+     *
+     * Outputs the compiled byte code to a "bin/" directory inside the
+     * submission directory if successful, and creates a non-weighted test in
+     * the results JSON containing the result of the compilation attempt.
+     *
+     * @param submission submission containing files to compile
+     * @return submission, with compiled code in a "bin/" directory
+     */
     public Collection compile(Collection submission) {
         Bundle working = submission.getWorking();
         Data results = submission.getResults();
