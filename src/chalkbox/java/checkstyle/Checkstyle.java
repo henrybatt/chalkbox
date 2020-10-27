@@ -17,24 +17,26 @@ import java.util.concurrent.TimeoutException;
 /**
  * Processor to execute the Checkstyle tool on the submission.
  */
-
 public class Checkstyle {
 
     public static class CheckstyleOptions implements Configuration {
 
-        /**
-         * Whether or not to run this stage
-         */
+        /** Whether or not to run this stage */
         private boolean enabled = false;
 
+        /** Number of marks allocated to the Checkstyle stage */
         private int weighting;
 
+        /** Path to the Checkstyle .xml configuration file */
         private String config;
 
+        /** Path to the Checkstyle .jar */
         private String jar;
 
+        /** List of paths to ignore when checking for style issues */
         private List<String> excluded;
 
+        /** Number of marks to subtract for each Checkstyle violation */
         private double violationPenalty = 1;
 
         @Override
@@ -117,6 +119,11 @@ public class Checkstyle {
 
     private CheckstyleOptions options;
 
+    /**
+     * Sets up the Checkstyle stage ready to process a submission.
+     *
+     * @param options configuration options to use when running Checkstyle
+     */
     public Checkstyle(CheckstyleOptions options) {
         this.options = options;
     }
@@ -185,6 +192,13 @@ public class Checkstyle {
         return collection;
     }
 
+    /**
+     * Transforms the given list of excluded directories to a list of command
+     * line arguments for the Checkstyle tool.
+     *
+     * @param excluded list of excluded paths
+     * @return list of command line arguments specifying excluded paths
+     */
     private List<String> generateExcludedArgs(List<String> excluded) {
         List<String> args = new ArrayList<>();
         for (String s : excluded) {
