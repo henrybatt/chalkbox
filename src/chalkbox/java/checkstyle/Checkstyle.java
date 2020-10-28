@@ -117,6 +117,7 @@ public class Checkstyle {
         //</editor-fold>
     }
 
+    /** Configuration options */
     private CheckstyleOptions options;
 
     /**

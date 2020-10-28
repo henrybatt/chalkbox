@@ -110,11 +110,21 @@ public class Functionality {
         //</editor-fold>
     }
 
+    /** Configuration options */
     private FunctionalityOptions options;
 
+    /** Bundle containing the JUnit test files to run against the submission */
     private Bundle tests;
-    protected boolean hasErrors;
 
+    /** Whether there were issues compiling the sample solution or tests */
+    private boolean hasErrors;
+
+    /**
+     * Sets up the functionality stage ready to process a submission.
+     *
+     * @param options configuration options to use when running functionality
+     *                tests
+     */
     public Functionality(FunctionalityOptions options) {
         this.options = options;
 
@@ -160,7 +170,18 @@ public class Functionality {
     }
 
     /**
-     * Run the tests on a submission
+     * Run the tests on a submission.
+     *
+     * If there were issues compiling the sample solution or the tests, or
+     * the submission did not compile successfully, no action is taken.
+     * <p>
+     * Uses a JUnit listener to observe the passed/failed tests for each test
+     * class. One Gradescope test is created for each JUnit test method, with
+     * a mark of zero if the test failed, or a mark of
+     * <code>stageWeighting / numTests</code> if the test passed, where
+     * <code>stageWeighting</code> is the number of marks allocated to this
+     * stage, and <code>numTests</code> is the total number of JUnit test
+     * methods in all test classes.
      */
     public Collection run(Collection submission) {
         if (hasErrors) {
@@ -181,6 +202,7 @@ public class Functionality {
         }
         */
 
+        /* Class path contains dependencies and the compiled submission */
         String classPath = options.classPath
                 + System.getProperty("path.separator")
                 + submission.getWorking().getUnmaskedPath("bin");

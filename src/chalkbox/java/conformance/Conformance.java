@@ -213,6 +213,14 @@ public class Conformance {
         }
     }
 
+    /**
+     * Runs the conformance stage against the provided submission.
+     *
+     * @param submission submission to check for conformance
+     * @return given submission with extra test result for conformance results
+     * @throws IOException if the submission's compiled source files cannot be
+     * found
+     */
     public Collection run(Collection submission) throws IOException {
         List<String> missing = new ArrayList<>();
         List<String> extra = new ArrayList<>();

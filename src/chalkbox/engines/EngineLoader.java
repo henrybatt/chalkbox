@@ -11,10 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Helper class responsible for initialising Engine instances.
+ */
 public class EngineLoader {
 
+    /** No instance state */
     private EngineLoader() {}
 
+    /**
+     * Loads an Engine by parsing the given YAML configuration file.
+     *
+     * Calls {@link Engine#validateConfig()} on the engine after it has been
+     * loaded to ensure that the configuration file is valid.
+     *
+     * @param configPath path of YAML configuration file to load engine from
+     * @return loaded engine
+     * @throws ConfigFormatException if the engine's configuration is invalid
+     */
     public static Engine load(String configPath) throws ConfigFormatException {
         String cwd = System.getProperty("user.dir");
         System.out.println("Working Directory = " + cwd);

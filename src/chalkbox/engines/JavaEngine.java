@@ -12,11 +12,33 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 
+/**
+ * ChalkBox engine for Java submissions.
+ *
+ * Supports several processing "stages", including:
+ * <ul>
+ * <li>Checking conformance to a public API</li>
+ * <li>Running JUnit tests against the submission</li>
+ * <li>Assessing submitted JUnit tests by running against faulty implementations
+ * </li>
+ * <li>Checking adherence to a style guide by running the Checkstyle tool</li>
+ * </ul>
+ */
 public class JavaEngine extends Engine implements Configuration {
 
+    /**
+     * Path to the correct implementation.
+     */
     private String correctSolution;
+
+    /**
+     * Paths to libraries required as dependencies when running the engine.
+     *
+     * For example, JUnit and Hamcrest.
+     */
     private List<String> dependencies;
 
+    /* Configuration options for each stage */
     private Conformance.ConformanceOptions conformance;
     private Functionality.FunctionalityOptions functionality;
     private JUnit.JUnitOptions junit;
@@ -91,6 +113,12 @@ public class JavaEngine extends Engine implements Configuration {
         super.output(submission);
     }
 
+    /**
+     * Joins the paths in the given list by the classpath separator.
+     *
+     * @param dependencies paths to join, can be relative paths
+     * @return single classpath string
+     */
     private String dependenciesToClasspath(List<String> dependencies) {
         StringJoiner joiner = new StringJoiner(System.getProperty("path.separator"));
         for (String dependency : dependencies) {
