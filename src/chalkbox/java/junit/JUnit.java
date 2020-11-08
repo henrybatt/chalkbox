@@ -336,7 +336,7 @@ public class JUnit {
                     * options.weighting;
 
             solutionResult.set("name", "JUnit (" + solution + ")");
-            solutionResult.set("visibility", "after_due_date");
+            solutionResult.set("visibility", "after_published");
             /* The correct solution is not graded, but should still appear */
             if (!isCorrectSolution) {
                 solutionResult.set("score", 0);

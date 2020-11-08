@@ -1,19 +1,12 @@
 package chalkbox.engines;
 
-import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
-import chalkbox.api.collections.Data;
-import chalkbox.api.common.Execution;
-import chalkbox.api.common.ProcessExecution;
 import chalkbox.output.JSONFormatter;
 import chalkbox.python.CSSE1001Test;
 import chalkbox.python.RenameSubmissions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 public class PythonEngine extends Engine {
 
@@ -22,6 +15,7 @@ public class PythonEngine extends Engine {
     private String runner;
     private String included;
     private String formatter;
+    private String visibleTests;
 
     @Override
     public void run() {
@@ -54,10 +48,12 @@ public class PythonEngine extends Engine {
 
         //Reformat the results
 
-        JSONFormatter.runFormatter(formatter, included, this.getOutputFile());
+        JSONFormatter.runFormatter(formatter, included, this.getOutputFile(), visibleTests);
 
 
     }
+
+    //<editor-fold desc="JavaBeans getters/setters">
 
     public String getRunner() {
         return runner;
@@ -99,4 +95,13 @@ public class PythonEngine extends Engine {
         this.included = included;
     }
 
+    public String getVisibleTests() {
+        return visibleTests;
+    }
+
+    public void setVisibleTests(String visibleTests) {
+        this.visibleTests = visibleTests;
+    }
+
+    //</editor-fold>
 }

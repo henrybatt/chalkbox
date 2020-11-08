@@ -9,3 +9,4 @@ expectedExtension: .py
 runner:  ./test_a1.py
 formatter: ./gradescopeJSONFormatter.py
 included:  ./test/resources/csse1001/included
+visibleTests: ./visable_tests.txt

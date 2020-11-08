@@ -21,7 +21,7 @@ public class JSONFormatter {
      * @param includedPath - The file path to the included files
      * @param outputPath - The file path to the output file (the results file)
      */
-    public static void runFormatter(String formatterPath, String includedPath, String outputPath) {
+    public static void runFormatter(String formatterPath, String includedPath, String outputPath, String visibleTests) {
         String PYTHON = "python3";
         ProcessExecution process;
         Map<String, String> environment = new HashMap<>();
@@ -29,7 +29,8 @@ public class JSONFormatter {
 
         try {
             process = Execution.runProcess(working, environment, 10000,
-                    PYTHON, formatterPath, new File(outputPath).getAbsolutePath());
+                    PYTHON, formatterPath, new File(outputPath).getAbsolutePath(),
+                    visibleTests);
         } catch (IOException e) {
             System.err.println("Error occurred trying to spawn the test runner process");
             e.printStackTrace();
