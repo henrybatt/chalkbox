@@ -15,12 +15,13 @@ __author__  = "Ella de Lore"
 __date__    = "30/09/2020"
 
 
+results_dict = {}
 
 def main():
 
     #check args
-    if len(sys.argv) != 2:
-        if len(sys.argv) < 2:
+    if len(sys.argv) != 3:
+        if len(sys.argv) < 3:
             print("Not enough arguments given")
             return 1
         else:
@@ -33,7 +34,11 @@ def main():
     data = json.load(file)
     file.close()
 
-    results_dict = {}
+
+    #open and read visible test tile
+    file = open(sys.argv[2])
+    visible_tests = file.read().splitlines()
+    file.close()
 
     #set output
     results_dict["output"] = data["output"]
@@ -47,7 +52,7 @@ def main():
 
     #format test
     for test in tests:
-        results_dict["tests"].append(formatTest(data, test))
+        results_dict["tests"].append(formatTest(data, test, visible_tests))
 
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(results_dict)
@@ -58,7 +63,7 @@ def main():
 
 
 
-def formatTest(data, current_test):
+def formatTest(data, current_test, visible_tests):
     test_data = {}
 
     test_data["name"] = current_test
@@ -78,8 +83,12 @@ def formatTest(data, current_test):
     test_data["max_score"] = max_score
     test_data["output"] = output
 
-    return test_data
+    if current_test in visible_tests:
+        test_data["visibility"] = "visible"
+    else:
+        test_data["visibility"] = "after_published"
 
+    return test_data
 
 if __name__ == "__main__":
     main()

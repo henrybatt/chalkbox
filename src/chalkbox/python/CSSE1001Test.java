@@ -11,13 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-
-public class  CSSE1001Test {
+/**
+ * Class which runs the csse1001 testrunner script
+ */
+public class CSSE1001Test {
 
     public String PYTHON = "python3";
 
+    /** a path to the runner script*/
     public String runner;
 
+    /** a path to the included folder */
     public String included;
 
 

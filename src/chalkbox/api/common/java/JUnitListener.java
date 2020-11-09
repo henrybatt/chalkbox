@@ -87,7 +87,7 @@ public class JUnitListener extends RunListener {
             data.set("extra_data.total", 1);
             data.set("output", result.output);
             data.set("name", result.testName);
-            data.set("visibility", result.visible ? "visible" : "after_due_date");
+            data.set("visibility", result.visible ? "visible" : "after_published");
             results.add(data);
         }
         return results;
