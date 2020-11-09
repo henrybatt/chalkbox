@@ -5,6 +5,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.files.FileLoader;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import chalkbox.java.conformance.comparator.ClassComparator;
 import chalkbox.java.conformance.comparator.CodeComparator;
 import org.json.simple.JSONArray;
@@ -26,7 +28,13 @@ import java.util.Map;
  */
 public class Conformance {
 
-    public static class ConformanceOptions {
+    public static class ConformanceOptions implements Configuration {
+
+        /**
+         * Whether or not to run this stage
+         */
+        private boolean enabled = false;
+
         /**
          * Path of the correct solution to the assignment.
          *
@@ -65,16 +73,32 @@ public class Conformance {
         private double violationPenalty = 1;
 
         /**
-         * Returns whether this configuration is valid.
+         * Checks this configuration and throws an exception if it is invalid.
          *
-         * Does not need classPath or correctSolution immediately - these are
-         * set later.
-         *
-         * @return true iff options are valid
+         * @throws ConfigFormatException if the configuration is invalid
          */
-        public boolean isValid() {
-            return expectedStructure != null && !expectedStructure.isEmpty()
-                    && weighting != 0;
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /*
+             * Do not need classPath or correctSolution immediately - these are
+             * set later.
+             */
+
+            /* Must have expected structure */
+            if (expectedStructure == null || expectedStructure.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing expectedStructure in conformance stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Conformance weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -117,6 +141,14 @@ public class Conformance {
 
         public void setWeighting(int weighting) {
             this.weighting = weighting;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
         //</editor-fold>
     }
@@ -181,6 +213,14 @@ public class Conformance {
         }
     }
 
+    /**
+     * Runs the conformance stage against the provided submission.
+     *
+     * @param submission submission to check for conformance
+     * @return given submission with extra test result for conformance results
+     * @throws IOException if the submission's compiled source files cannot be
+     * found
+     */
     public Collection run(Collection submission) throws IOException {
         List<String> missing = new ArrayList<>();
         List<String> extra = new ArrayList<>();
@@ -218,6 +258,8 @@ public class Conformance {
 
         // Only check classes for conformance if the submission compiles
         if (!data.is("extra_data.compilation.compiles")) {
+            result.set("output", result.get("output")
+                    + "Submission did not compile, not checking for conformance");
             return submission;
         }
 

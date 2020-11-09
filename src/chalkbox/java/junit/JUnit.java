@@ -7,6 +7,8 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.api.files.FileLoader;
 import chalkbox.api.files.SourceFile;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -15,11 +17,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
+/**
+ * Assesses submitted JUnit tests by running them against faulty
+ * implementations.
+ */
 public class JUnit {
 
-    public static class JUnitOptions {
+    public static class JUnitOptions implements Configuration {
+
+        /**
+         * Whether or not to run this stage
+         */
+        private boolean enabled = false;
 
         /**
          * Path to a directory containing the sample solution
@@ -46,11 +58,35 @@ public class JUnit {
          */
         private List<String> assessableTestClasses;
 
-        public boolean isValid() {
-            return faultySolutions != null && !faultySolutions.isEmpty()
-                    && assessableTestClasses != null
-                    && !assessableTestClasses.isEmpty()
-                    && weighting != 0;
+        /**
+         * Checks this configuration and throws an exception if it is invalid.
+         *
+         * @throws ConfigFormatException if the configuration is invalid
+         */
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /* Must have a faulty solutions directory */
+            if (faultySolutions == null || faultySolutions.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing faultySolutions in JUnit stage");
+            }
+
+            /* Must have a list of assessable test classes */
+            if (assessableTestClasses == null
+                    || assessableTestClasses.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing assessableTestClasses in JUnit stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "JUnit weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -95,20 +131,46 @@ public class JUnit {
             this.assessableTestClasses = assessableTestClasses;
         }
 
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
         //</editor-fold>
     }
 
+    /** Logger */
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
+    /** Configuration options */
     private JUnitOptions options;
 
+    /** Bundle containing compiled faulty implementations */
     private Bundle solutionsOutput;
+
+    /** Bundle containing compiled correct solution */
     private Bundle solutionOutput;
 
+    /** Class path containing dependencies and correct solution byte code */
     private String solutionClassPath;
+
+    /** Mapping of faulty implementation names to their respective class path */
     private Map<String, String> classPaths = new TreeMap<>();
+
+    /**
+     * Total number of faulty implementations to run JUnit tests against,
+     * excluding the correct solution if present.
+     */
     private int numFaultySolutions;
 
+    /**
+     * Sets up the JUnit stage ready to process a submission.
+     *
+     * @param options configuration options to use when running JUnit stage
+     */
     public JUnit(JUnitOptions options) {
         this.options = options;
 
@@ -146,6 +208,15 @@ public class JUnit {
         }
     }
 
+    /**
+     * Compiles a single implementation and outputs the compiled byte code to
+     * the given location.
+     *
+     * @param source bundle containing source files to compile
+     * @param name human readable name of the implementation to be compiled
+     * @param output path to directory that will store compiled byte code
+     * @param writer writer to write compile warnings/output to
+     */
     private void compileSolution(Bundle source, String name, String output,
                                  StringWriter writer) {
         /* Collect all the source files to compile */
@@ -169,7 +240,7 @@ public class JUnit {
     }
 
     /**
-     * Compile all the broken solutions to test students junit tests on
+     * Compile all the faulty implementations to test submitted JUnit tests on
      */
     private void compileSolutions() {
         /* Collect the list of broken solution folders */
@@ -224,12 +295,31 @@ public class JUnit {
                 + solutionOutput.getUnmaskedPath();
     }
 
+    /**
+     * Runs the JUnit stage on the given submission.
+     *
+     * Firstly compiles the submitted tests, then if compilation was successful,
+     * runs them against all the faulty implementations.
+     *
+     * @param submission submission to assess
+     * @return given submission with extra test results indicating the results
+     * of the JUnit stage
+     */
     public Collection run(Collection submission) {
         compileTests(submission);
         runTests(submission);
         return submission;
     }
 
+    /**
+     * Compiles the submitted JUnit tests with the correct implementation.
+     *
+     * Sets "extra_data.junit.compiles" to true/false based on whether at least
+     * one of the submitted tests compiled.
+     *
+     * @param submission submission containing tests to compile
+     * @return given submission with extra test results
+     */
     private Collection compileTests(Collection submission) {
         Bundle tests = submission.getSource().getBundle("test");
 
@@ -283,6 +373,13 @@ public class JUnit {
         return submission;
     }
 
+    /**
+     * Runs the submitted JUnit tests against each faulty implementation.
+     *
+     * @param submission submission containing tests to run
+     * @return given submission with extra test results, one for each faulty
+     * implementation
+     */
     private Collection runTests(Collection submission) {
         if (!submission.getResults().is("extra_data.junit.compiles")) {
             LOGGER.finest("Skipping running JUnit tests");
@@ -343,9 +440,9 @@ public class JUnit {
                 solutionResult.set("max_score", solutionWeighting);
             }
             /*
-                For each test class result JSON:
-                - Concatenate the output of all the test classes
-                - Determine whether at least one test class was "correct"
+             * For each test class result JSON:
+             * - Concatenate the output of all the test classes
+             * - Determine whether at least one test class was "correct"
              */
             StringJoiner joiner = new StringJoiner("\n");
             /* Find the total number of tests failed for this solution */

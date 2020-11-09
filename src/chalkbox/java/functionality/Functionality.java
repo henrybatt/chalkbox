@@ -5,6 +5,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import chalkbox.java.compilation.JavaCompilation;
 import org.json.simple.JSONArray;
 
@@ -22,7 +24,10 @@ import java.util.List;
  */
 public class Functionality {
 
-    public static class FunctionalityOptions {
+    public static class FunctionalityOptions implements Configuration {
+
+        /** Whether or not to run this stage */
+        private boolean enabled = false;
 
         /** Sample solution to compile tests with */
         private String correctSolution;
@@ -37,14 +42,27 @@ public class Functionality {
         private String testDirectory;
 
         /**
-         * Folder containing files to include in submission working directory
-         * when running tests, e.g. save files used by initialiser class
+         * Checks this configuration and throws an exception if it is invalid.
+         *
+         * @throws ConfigFormatException if the configuration is invalid
          */
-        private String included;
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
 
-        public boolean isValid() {
-            return testDirectory != null && !testDirectory.isEmpty()
-                    && weighting != 0;
+            /* Must have a test directory */
+            if (testDirectory == null || testDirectory.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing testDirectory in functionality stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Functionality weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -81,22 +99,32 @@ public class Functionality {
             this.classPath = classPath;
         }
 
-        public String getIncluded() {
-            return included;
+        public boolean isEnabled() {
+            return enabled;
         }
 
-        public void setIncluded(String included) {
-            this.included = included;
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         //</editor-fold>
     }
 
+    /** Configuration options */
     private FunctionalityOptions options;
 
+    /** Bundle containing the JUnit test files to run against the submission */
     private Bundle tests;
-    protected boolean hasErrors;
 
+    /** Whether there were issues compiling the sample solution or tests */
+    private boolean hasErrors;
+
+    /**
+     * Sets up the functionality stage ready to process a submission.
+     *
+     * @param options configuration options to use when running functionality
+     *                tests
+     */
     public Functionality(FunctionalityOptions options) {
         this.options = options;
 
@@ -142,7 +170,18 @@ public class Functionality {
     }
 
     /**
-     * Run the tests on a submission
+     * Run the tests on a submission.
+     *
+     * If there were issues compiling the sample solution or the tests, or
+     * the submission did not compile successfully, no action is taken.
+     * <p>
+     * Uses a JUnit listener to observe the passed/failed tests for each test
+     * class. One Gradescope test is created for each JUnit test method, with
+     * a mark of zero if the test failed, or a mark of
+     * <code>stageWeighting / numTests</code> if the test passed, where
+     * <code>stageWeighting</code> is the number of marks allocated to this
+     * stage, and <code>numTests</code> is the total number of JUnit test
+     * methods in all test classes.
      */
     public Collection run(Collection submission) {
         if (hasErrors) {
@@ -151,7 +190,9 @@ public class Functionality {
         if (!submission.getResults().is("extra_data.compilation.compiles")) {
             return submission;
         }
-        /* Copy the included resources to the submission directory */
+
+        /* No longer supported:
+           Copy the included resources to the submission directory
         if (options.included != null && !options.included.isEmpty()) {
             try {
                 submission.getWorking().copyFolder(new File(options.included));
@@ -159,7 +200,9 @@ public class Functionality {
                 e.printStackTrace();
             }
         }
+        */
 
+        /* Class path contains dependencies and the compiled submission */
         String classPath = options.classPath
                 + System.getProperty("path.separator")
                 + submission.getWorking().getUnmaskedPath("bin");

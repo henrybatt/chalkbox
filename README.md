@@ -1,47 +1,43 @@
-# Chalkbox v2 ( WIP )
+# ChalkBox ![Gradle Build](https://github.com/UQTools/chalkbox/workflows/Gradle%20Build/badge.svg)
 
-<img src="https://github.com/BraeWebb/chalkbox/raw/master/resources/chalkbox.png" alt="Chalkbox Logo">
+![ChalkBox Logo](https://github.com/UQTools/chalkbox/raw/master/docs/_static/images/logo/chalkbox.png)
 
 ## Overview
-Chalkbox is a programming courses dream tool which allows the collection and running of multiple assignments in multiple languages.
+ChalkBox is a tool for processing and marking programming assignment
+submissions.
 
-**Brief Feature List**
+Common use cases include running automated tests and static analysis tools on
+submitted code.
 
-* None, we suck
+### Key Features
 
-## Who Uses Chalkbox
+- **Integrates with Gradescope**
 
-* No one, sad face
+  ChalkBox has been redesigned to work with the
+  [Gradescope](https://www.gradescope.com/) autograder platform.
+  ChalkBox runs on a single submission, so students can receive instant feedback
+  every time they submit.
 
-## How It Works
+- **Easy to use**
 
-1. 
+  Configuration for ChalkBox and its engines is specified in human-readable
+  YAML, but can be easily generated using the web-based interface of 
+  [Quickscope](https://github.com/uqtools/quickscope).
 
-## Usage
+- **Extensible**
 
-### Commands
+  A simple yet flexible Engine API allows the creation of new engines for
+  different programming languages and use cases.
 
-Chalkbox v2 has now introduced individual commands so that chalkbox can be
-integrated into new development flows.
+## Documentation
 
-
-### Pipelines
-
-Chalkbox v1 had support for box files which were the first iteration of 
-pipelines. Pipelines integrate together tasks that you would need to perform 
-to do a full chalkbox run. This is influenced greatly by modern CI/CD pipelines.
-
-## Reports
-
-Chalkbox is originally the creation of Brae Webb and Emily Bennett. Below is the
-original work done on the first chalkbox.
-
-https://docs.braewebb.com/guides/chalkbox.pdf
-
-## Integrations
-
-Coming Soon
+Javadoc for the source code of ChalkBox and guides for working with and
+extending ChalkBox can be found at
+[chalkbox.readthedocs.io](https://chalkbox.readthedocs.io).
 
 ## Copyright
 
-Chalkbox is copyright of Brae Webb and Emily Bennet. The Chalkbox logo is copyright Anna Truffet
+ChalkBox is copyright Brae Webb, Emily Bennett, Ella de Lore, Max Miller,
+Evan Hughes and Nicholas Lambourne.
+
+The ChalkBox logo is copyright Anna Truffet.

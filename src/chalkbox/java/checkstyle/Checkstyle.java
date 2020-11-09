@@ -4,6 +4,8 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.engines.ConfigFormatException;
+import chalkbox.engines.Configuration;
 import org.json.simple.JSONArray;
 
 import java.io.IOException;
@@ -15,25 +17,51 @@ import java.util.concurrent.TimeoutException;
 /**
  * Processor to execute the Checkstyle tool on the submission.
  */
-
 public class Checkstyle {
 
-    public static class CheckstyleOptions {
+    public static class CheckstyleOptions implements Configuration {
 
+        /** Whether or not to run this stage */
+        private boolean enabled = false;
+
+        /** Number of marks allocated to the Checkstyle stage */
         private int weighting;
 
+        /** Path to the Checkstyle .xml configuration file */
         private String config;
 
+        /** Path to the Checkstyle .jar */
         private String jar;
 
+        /** List of paths to ignore when checking for style issues */
         private List<String> excluded;
 
+        /** Number of marks to subtract for each Checkstyle violation */
         private double violationPenalty = 1;
 
-        public boolean isValid() {
-            return weighting != 0
-                    && config != null && !config.isEmpty()
-                    && jar != null && !jar.isEmpty();
+        @Override
+        public void validateConfig() throws ConfigFormatException {
+            if (!enabled) {
+                return;
+            }
+
+            /* Must have a configuration file */
+            if (config == null || config.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing config in Checkstyle stage");
+            }
+
+            /* Must have a Checkstyle JAR */
+            if (jar == null || jar.isEmpty()) {
+                throw new ConfigFormatException(
+                        "Missing jar in Checkstyle stage");
+            }
+
+            /* Must have a weighting between 0 and 100 */
+            if (weighting < 0 || weighting > 100) {
+                throw new ConfigFormatException(
+                        "Checkstyle weighting must be between 0 and 100");
+            }
         }
 
         //<editor-fold desc="JavaBeans getters/setters">
@@ -78,11 +106,25 @@ public class Checkstyle {
             this.violationPenalty = violationPenalty;
         }
 
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
         //</editor-fold>
     }
 
+    /** Configuration options */
     private CheckstyleOptions options;
 
+    /**
+     * Sets up the Checkstyle stage ready to process a submission.
+     *
+     * @param options configuration options to use when running Checkstyle
+     */
     public Checkstyle(CheckstyleOptions options) {
         this.options = options;
     }
@@ -151,6 +193,13 @@ public class Checkstyle {
         return collection;
     }
 
+    /**
+     * Transforms the given list of excluded directories to a list of command
+     * line arguments for the Checkstyle tool.
+     *
+     * @param excluded list of excluded paths
+     * @return list of command line arguments specifying excluded paths
+     */
     private List<String> generateExcludedArgs(List<String> excluded) {
         List<String> args = new ArrayList<>();
         for (String s : excluded) {

@@ -12,42 +12,59 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class JavaEngine extends Engine {
+/**
+ * ChalkBox engine for Java submissions.
+ *
+ * Supports several processing "stages", including:
+ * <ul>
+ * <li>Checking conformance to a public API</li>
+ * <li>Running JUnit tests against the submission</li>
+ * <li>Assessing submitted JUnit tests by running against faulty implementations
+ * </li>
+ * <li>Checking adherence to a style guide by running the Checkstyle tool</li>
+ * </ul>
+ */
+public class JavaEngine extends Engine implements Configuration {
 
+    /**
+     * Path to the correct implementation.
+     */
     private String correctSolution;
-    private List<String> dependencies;
-    private List<String> resources; // TODO
 
+    /**
+     * Paths to libraries required as dependencies when running the engine.
+     *
+     * For example, JUnit and Hamcrest.
+     */
+    private List<String> dependencies;
+
+    /* Configuration options for each stage */
     private Conformance.ConformanceOptions conformance;
     private Functionality.FunctionalityOptions functionality;
     private JUnit.JUnitOptions junit;
     private Checkstyle.CheckstyleOptions checkstyle;
 
     @Override
-    public boolean configIsValid() {
-        if (!super.configIsValid()) {
-            return false;
+    public void validateConfig() throws ConfigFormatException {
+        super.validateConfig();
+
+        /* All stages are optional. Validate each stage that is present. */
+
+        if (this.conformance != null) {
+            this.conformance.validateConfig();
         }
 
-        /* All stages are optional */
-
-        if (this.conformance != null && !this.conformance.isValid()) {
-            return false;
+        if (this.functionality != null) {
+            this.functionality.validateConfig();
         }
 
-        if (this.functionality != null && !this.functionality.isValid()) {
-            return false;
+        if (this.junit != null) {
+            this.junit.validateConfig();
         }
 
-        if (this.junit != null && !this.junit.isValid()) {
-            return false;
+        if (this.checkstyle != null) {
+            this.checkstyle.validateConfig();
         }
-
-        if (this.checkstyle != null && !this.checkstyle.isValid()) {
-            return false;
-        }
-
-        return true;
     }
 
     @Override
@@ -62,7 +79,7 @@ public class JavaEngine extends Engine {
         JavaCompilation compilation = new JavaCompilation(classPath);
         submission = compilation.compile(submission);
 
-        if (this.conformance != null) {
+        if (this.conformance != null && this.conformance.isEnabled()) {
             this.conformance.setCorrectSolution(correctSolution);
             this.conformance.setClassPath(classPath);
             try {
@@ -74,21 +91,21 @@ public class JavaEngine extends Engine {
             }
         }
 
-        if (this.functionality != null) {
+        if (this.functionality != null && this.functionality.isEnabled()) {
             this.functionality.setCorrectSolution(correctSolution);
             this.functionality.setClassPath(classPath);
             Functionality test = new Functionality(this.functionality);
             submission = test.run(submission);
         }
 
-        if (this.junit != null) {
+        if (this.junit != null && this.junit.isEnabled()) {
             this.junit.setCorrectSolution(correctSolution);
             this.junit.setClassPath(classPath);
             JUnit jUnit = new JUnit(this.junit);
             submission = jUnit.run(submission);
         }
 
-        if (this.checkstyle != null) {
+        if (this.checkstyle != null && this.checkstyle.isEnabled()) {
             Checkstyle checkstyle = new Checkstyle(this.checkstyle);
             submission = checkstyle.run(submission);
         }
@@ -96,6 +113,12 @@ public class JavaEngine extends Engine {
         super.output(submission);
     }
 
+    /**
+     * Joins the paths in the given list by the classpath separator.
+     *
+     * @param dependencies paths to join, can be relative paths
+     * @return single classpath string
+     */
     private String dependenciesToClasspath(List<String> dependencies) {
         StringJoiner joiner = new StringJoiner(System.getProperty("path.separator"));
         for (String dependency : dependencies) {
@@ -122,14 +145,6 @@ public class JavaEngine extends Engine {
 
     public void setDependencies(List<String> dependencies) {
         this.dependencies = dependencies;
-    }
-
-    public List<String> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<String> resources) {
-        this.resources = resources;
     }
 
     public Conformance.ConformanceOptions getConformance() {
