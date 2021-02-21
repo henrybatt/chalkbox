@@ -18,5 +18,6 @@ public class ChalkBox {
 
         Engine engine = EngineLoader.load(args[0]);
         engine.run();
+        System.exit(0);
     }
 }
