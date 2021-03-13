@@ -251,10 +251,19 @@ public class Conformance {
         Collections.sort(missing);
         Collections.sort(extra);
 
-        result.set("output", result.get("output") + "Missing files:\n"
-                + String.join("\n", missing) + "\n");
-        result.set("output", result.get("output") + "Extra files:\n"
-                + String.join("\n", extra) + "\n");
+        result.set("output", result.get("output") + "-------- Missing files --------\n\n");
+        if (missing.isEmpty()) {
+            result.set("output", result.get("output") + "No missing files\n\n");
+        } else {
+            result.set("output", result.get("output") + String.join("\n\n", missing) + "\n\n");
+        }
+
+        result.set("output", result.get("output") + "-------- Extra files --------\n\n");
+        if (extra.isEmpty()) {
+            result.set("output", result.get("output") + "No extra files\n\n");
+        } else {
+            result.set("output", result.get("output") + String.join("\n\n", extra) + "\n\n");
+        }
 
         // Only check classes for conformance if the submission compiles
         if (!data.is("extra_data.compilation.compiles")) {
@@ -263,7 +272,7 @@ public class Conformance {
             return submission;
         }
 
-        result.set("output", result.get("output") + "Class conformance:\n");
+        result.set("output", result.get("output") + "-------- Class conformance --------\n\n");
 
         SourceLoader submissionLoader = new SourceLoader(submission.getWorking()
                 .getUnmaskedPath("bin"));
@@ -289,7 +298,7 @@ public class Conformance {
 
             if (expectedClass == null || actualClass == null) {
                 result.set("output", result.get("output") + className
-                        + " was not found (unable to load class)\n");
+                        + " was not found (unable to load class)\n\n");
                 continue;
             }
 
@@ -298,12 +307,12 @@ public class Conformance {
             if (comparator.hasDifference()) {
                 // Class does not conform
                 result.set("output", result.get("output") + className
-                        + " does not conform:\n" + comparator.toString() + "\n");
+                        + " does not conform:\n" + comparator.toString());
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
                 result.set("output", result.get("output") + className
-                        + " conforms\n");
+                        + " conforms\n\n");
             }
         }
 

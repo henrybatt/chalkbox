@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * Assesses submitted JUnit tests by running them against faulty
@@ -400,6 +401,7 @@ public class JUnit {
                 passes.put(testClass, Integer.parseInt(results.get("extra_data.passes").toString()));
             }
         }
+        int totalSolutionPassed = passes.values().stream().mapToInt(Integer::intValue).sum();
 
         JSONArray tests = (JSONArray) submission.getResults().get("tests");
         for (String solution : classPaths.keySet()) {
@@ -445,15 +447,37 @@ public class JUnit {
              * - Determine whether at least one test class was "correct"
              */
             StringJoiner joiner = new StringJoiner("\n");
-            /* Find the total number of tests failed for this solution */
+            /* Find the total number of tests passed/failed for this solution */
+            int totalPassed = 0;
             int totalFailed = 0;
             for (Data classResult : classResults) {
+                totalPassed += (Integer) classResult.get("extra_data.passes");
                 totalFailed += (Integer) classResult.get("extra_data.fails");
             }
-            joiner.add("Number of your tests that failed when run against this "
-                    + "implementation: " + totalFailed);
+            joiner.add("-------- Result --------");
+            joiner.add("Number of your unit tests that passed when run against the correct "
+                    + "implementation: " + totalSolutionPassed);
+            if (!isCorrectSolution) {
+                joiner.add("This is a faulty implementation. This means the number of unit tests "
+                        + "you wrote which pass should be less than "
+                        + totalSolutionPassed + ".");
+            }
+            joiner.add("\nNumber of your unit tests that passed when run against this "
+                    + "implementation: " + totalPassed);
+
+            if (!isCorrectSolution) {
+                if (totalPassed < totalSolutionPassed) {
+                    joiner.add("\nOutcome: Your unit tests correctly detected that this was a "
+                            + "faulty implementation. You received marks for this implementation.");
+                } else {
+                    joiner.add("\nOutcome: Your unit tests did not correctly detect that this "
+                            + "was a faulty implementation. You did not receive any marks for "
+                            + "this implementation.");
+                }
+            }
+            joiner.add("\n-------- Details --------");
             if (totalFailed > 0) {
-                joiner.add("Tests failed for this implementation:");
+                joiner.add("Tests which did not pass for this implementation:");
             }
             for (Data classResult : classResults) {
                 String classOutput = (String) classResult.get("output");
