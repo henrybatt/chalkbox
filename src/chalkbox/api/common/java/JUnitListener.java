@@ -62,7 +62,8 @@ public class JUnitListener extends RunListener {
         if (this.currentResult != null) {
             this.output.append(failure);
             this.output.append("\n");
-            this.currentResult.output = failure.toString() + "\n\n" + failure.getTrace();
+            this.currentResult.output = failure.toString() + "\n\n"
+                    + failure.getTrace().replaceAll("\r\n", "\n");
             this.currentResult.passed = false;
         }
         this.numFailed++;
