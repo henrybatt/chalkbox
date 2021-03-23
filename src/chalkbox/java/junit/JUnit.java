@@ -434,8 +434,15 @@ public class JUnit {
             final double solutionWeighting = 1d / this.numFaultySolutions
                     * options.weighting;
 
-            solutionResult.set("name", "JUnit (" + solution + ")");
-            solutionResult.set("visibility", "after_published");
+            /* Solutions whose name ends with _VISIBLE should be visible to students immediately */
+            if (solution.endsWith("_VISIBLE")) {
+                /* Remove the _VISIBLE suffix from the final output */
+                solutionResult.set("name", "JUnit (" + solution.replaceAll("_VISIBLE", "") + ")");
+                solutionResult.set("visibility", "visible");
+            } else {
+                solutionResult.set("name", "JUnit (" + solution + ")");
+                solutionResult.set("visibility", "after_published");
+            }
             /* The correct solution is not graded, but should still appear */
             if (!isCorrectSolution) {
                 solutionResult.set("score", 0);
