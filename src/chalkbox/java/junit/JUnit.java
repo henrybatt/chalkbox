@@ -322,7 +322,13 @@ public class JUnit {
      * @return given submission with extra test results
      */
     private Collection compileTests(Collection submission) {
-        Bundle tests = submission.getSource().getBundle("test");
+        Bundle source = submission.getSource();
+        Bundle tests = null;
+        try {
+            tests = source.getBundle("test");
+        } catch (NullPointerException npe) {
+            /* Test directory was not submitted, leave 'tests' as null */
+        }
 
         StringJoiner output = new StringJoiner("\n");
         StringWriter error = new StringWriter();
@@ -334,7 +340,7 @@ public class JUnit {
             StringWriter compileOutput = new StringWriter();
             SourceFile file;
             try {
-                file = tests.getFile(fileName);
+                file = tests.getFile(fileName); // throws NPE if no test directory was found
                 List<SourceFile> files = new ArrayList<>();
                 files.add(file);
                 boolean fileSuccess = Compiler.compile(files,
@@ -348,7 +354,7 @@ public class JUnit {
                 output.add("JUnit test file " + fileName
                         + (fileSuccess ? " compiles" : " does not compile"));
                 output.add(compileOutput.toString());
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException | NullPointerException e) {
                 error.write("JUnit test file " + fileName + " not found\n");
             } catch (IOException e) {
                 error.write("IO Compile Error - Please contact course staff\n");
