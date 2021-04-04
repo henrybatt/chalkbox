@@ -180,6 +180,11 @@ public class Checkstyle {
         int numViolations = Math.max(0,
                 checkstyleOutput.split("\n").length - 2);
 
+        // if Checkstyle didn't exit successfully, give 0 marks for automated style
+        if (!checkstyleOutput.contains("Audit done.")) {
+            numViolations = Integer.MAX_VALUE; // many violations -> 0 marks
+        }
+
         JSONArray tests = (JSONArray) feedback.get("tests");
         Data result = new Data();
         result.set("name", "Automated Style");
