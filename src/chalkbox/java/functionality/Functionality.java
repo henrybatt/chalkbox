@@ -215,7 +215,9 @@ public class Functionality {
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
 
             for (Data result : results) {
-                totalNumTests++;
+                int testMultiplier = (Integer) result.get("weighting");
+                /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
+                totalNumTests += testMultiplier;
                 functionalityResults.add(result);
             }
         }
@@ -223,15 +225,15 @@ public class Functionality {
             return submission;
         }
 
-        /* Mark awarded for passing a single test method */
-        final double individualTestWeighting = 1d / totalNumTests
-                * options.weighting;
+        /* Mark awarded for passing a single test method (un-scaled by test multipliers) */
+        final double individualTestWeighting = 1d / totalNumTests * options.weighting;
 
         for (Object o : functionalityResults) {
             Data functionalityResult = (Data) o;
             boolean didPass = (Integer) functionalityResult.get("extra_data.passes") == 1;
-            functionalityResult.set("score", didPass ? individualTestWeighting : 0);
-            functionalityResult.set("max_score", individualTestWeighting);
+            int testMultiplier = (Integer) functionalityResult.get("weighting");
+            functionalityResult.set("score", didPass ? individualTestWeighting * testMultiplier : 0);
+            functionalityResult.set("max_score", individualTestWeighting * testMultiplier);
             testResults.add(functionalityResult);
         }
 

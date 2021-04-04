@@ -1,6 +1,7 @@
 package chalkbox.api.common.java;
 
 import chalkbox.api.collections.Data;
+import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -14,6 +15,7 @@ public class JUnitListener extends RunListener {
         private boolean visible = false;
         private boolean passed = true;
         private String output = "";
+        private int weighting = 1;
 
         public TestResult(String testName) {
             this.testName = testName;
@@ -43,6 +45,32 @@ public class JUnitListener extends RunListener {
         if (description.getAnnotation(Deprecated.class) != null) {
             this.currentResult.visible = true;
         }
+
+        int testWeighting;
+        var testAnnotation = description.getAnnotation(Test.class);
+        if (testAnnotation == null) {
+            return;
+        }
+        /* If no timeout was specified, then give this test a weighting of 1 (standard) */
+        if (testAnnotation.timeout() == 0) {
+            testWeighting = 1;
+        } else {
+            /*
+             * Otherwise, use the timeout modulo 10 as the weighting, ensuring that the test
+             * weighting can never be zero.
+             *
+             * This allows a weighting (marks multiplier) to be specified by adding an integer
+             * between 2 and 9 to the timeout for a JUnit test. For example,
+             * @Test(timeout = 100000 + 5)
+             * means that this test has a weighting of 5 times that of a standard test.
+             *
+             * A large number of milliseconds should be used for the timeout, so that the actual
+             * timeout is not likely to be reached (since global timeout should be used instead).
+             */
+            testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
+        }
+
+        this.currentResult.weighting = testWeighting;
     }
 
     @Override
@@ -88,6 +116,7 @@ public class JUnitListener extends RunListener {
             data.set("extra_data.total", 1);
             data.set("output", result.output);
             data.set("name", result.testName);
+            data.set("weighting", result.weighting);
             data.set("visibility", result.visible ? "visible" : "after_published");
             results.add(data);
         }

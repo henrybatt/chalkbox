@@ -17,7 +17,7 @@ public class TimedItemManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 100000 + 4) // 4x weighting
     public void oneSecondTest() {
         TimedItemManager.getTimedItemManager().oneSecond();
         TimedItemManager.getTimedItemManager().oneSecond();
@@ -26,7 +26,7 @@ public class TimedItemManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 100000 + 4) // 4x weighting
     public void singletonTest() {
         TimedItemManager manager1 = TimedItemManager.getTimedItemManager();
         TimedItemManager manager2 = TimedItemManager.getTimedItemManager();
