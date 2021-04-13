@@ -144,7 +144,7 @@ public class Checkstyle {
             processArgs.addAll(generateExcludedArgs(options.excluded));
             processArgs.add(collection.getSource().getUnmaskedPath("src"));
 
-            process = Execution.runProcess(10000,
+            process = Execution.runProcess(20000,
                     processArgs.toArray(String[]::new));
         } catch (IOException e) {
             e.printStackTrace();
