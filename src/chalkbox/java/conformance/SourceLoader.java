@@ -35,6 +35,12 @@ public class SourceLoader extends ClassLoader {
     public Map<String, Class> getClassMap() throws ClassNotFoundException {
         Map<String, Class> classes = new TreeMap<>();
         for (String file : files) {
+            // Any GUI-related classes break conformance, don't load them
+            // TODO find a better fix for this
+            if (file.contains("$") || file.contains("Canvas") || file.contains("Launcher")
+                    || file.contains("View")) {
+                continue;
+            }
             classes.put(file, loadClass(file));
         }
         return classes;
