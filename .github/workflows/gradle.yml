@@ -19,4 +19,4 @@ jobs:
     - name: Run Gradle Test
       uses: eskatos/gradle-command-action@v1
       with:
-        arguments: test
+        arguments: test --stacktrace --debug

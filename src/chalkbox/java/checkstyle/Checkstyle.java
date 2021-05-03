@@ -132,6 +132,19 @@ public class Checkstyle {
     public Collection run(Collection collection) {
         Data feedback = collection.getResults();
 
+        JSONArray tests = (JSONArray) feedback.get("tests");
+        Data result = new Data();
+        result.set("name", "Automated Style");
+
+        // if submission didn't compile, give 0 marks for automated style
+        if (!feedback.is("extra_data.compilation.compiles")) {
+            result.set("score", 0);
+            result.set("max_score", options.weighting);
+            result.set("output", "Submission did not compile, not checking automated style");
+            tests.add(result);
+            return collection;
+        }
+
         // execute the checkstyle jar on the src directory
         ProcessExecution process;
         try {
@@ -148,10 +161,6 @@ public class Checkstyle {
                     processArgs.toArray(String[]::new));
         } catch (IOException e) {
             e.printStackTrace();
-            // TODO improve how this is done, maybe refactor Data
-            JSONArray tests = (JSONArray) feedback.get("tests");
-            Data result = new Data();
-            result.set("name", "Automated Style");
             result.set("score", 0);
             result.set("max_score", options.weighting);
             result.set("output", "IOError when running Checkstyle");
@@ -159,9 +168,6 @@ public class Checkstyle {
             return collection;
         } catch (TimeoutException e) {
             e.printStackTrace();
-            JSONArray tests = (JSONArray) feedback.get("tests");
-            Data result = new Data();
-            result.set("name", "Automated Style");
             result.set("score", 0);
             result.set("max_score", options.weighting);
             result.set("output", "Timed out when running Checkstyle");
@@ -175,19 +181,20 @@ public class Checkstyle {
         // replace the base path to make output easier to read
         String checkstyleOutput = process.getOutput().replace(basePath, "");
 
+        // if Checkstyle didn't exit successfully, give 0 marks for automated style
+        if (!checkstyleOutput.contains("Audit done.")) {
+            result.set("score", 0);
+            result.set("max_score", options.weighting);
+            result.set("output", "Checkstyle did not exit successfully");
+            tests.add(result);
+            return collection;
+        }
+
         // count violations based on lines in output
         // subtract 2 for header/footer lines
         int numViolations = Math.max(0,
                 checkstyleOutput.split("\n").length - 2);
 
-        // if Checkstyle didn't exit successfully, give 0 marks for automated style
-        if (!checkstyleOutput.contains("Audit done.")) {
-            numViolations = Integer.MAX_VALUE; // many violations -> 0 marks
-        }
-
-        JSONArray tests = (JSONArray) feedback.get("tests");
-        Data result = new Data();
-        result.set("name", "Automated Style");
         result.set("score", Math.max(0,
                 options.weighting - numViolations * options.violationPenalty));
         result.set("max_score", options.weighting);
