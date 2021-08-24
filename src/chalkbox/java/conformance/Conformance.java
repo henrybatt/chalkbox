@@ -299,6 +299,7 @@ public class Conformance {
             if (expectedClass == null || actualClass == null) {
                 result.set("output", result.get("output") + className
                         + " was not found (unable to load class)\n\n");
+                totalDifferences += 1; // 1-difference penalty for class not found
                 continue;
             }
 
