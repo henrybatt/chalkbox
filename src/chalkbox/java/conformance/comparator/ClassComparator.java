@@ -31,11 +31,11 @@ public class ClassComparator extends CodeComparator<Class> {
             compareMembersOverload(expected.getMethods(), actual.getMethods(), methodFlag);
             //compareMembers(expected.getMethods(), actual.getMethods(), methodFlag);
             flags.add(methodFlag);
-
-            ListFlag<String> constructorFlag = new ListFlag<>("Class constructors do not match!");
-            compareMembersOverload(expected.getConstructors(),
-                    actual.getConstructors(), constructorFlag);
-            flags.add(constructorFlag);
+//
+//            ListFlag<String> constructorFlag = new ListFlag<>("Class constructors do not match!");
+//            compareMembersOverload(expected.getConstructors(),
+//                    actual.getConstructors(), constructorFlag);
+//            flags.add(constructorFlag);
         } catch (NoClassDefFoundError ncd) {
             flags.add(new Flag("Failed to load fields: " + ncd.getMessage(), true));
         }
@@ -80,8 +80,8 @@ public class ClassComparator extends CodeComparator<Class> {
             return new FieldComparator((Field) expected, (Field) actual);
         } else if ((expected instanceof Method) && (actual instanceof Method)) {
             return new MethodComparator((Method) expected, (Method) actual);
-        } else if ((expected instanceof Constructor) && (actual instanceof Constructor)) {
-            return new ConstructorComparator((Constructor) expected, (Constructor) actual);
+//        } else if ((expected instanceof Constructor) && (actual instanceof Constructor)) {
+//            return new ConstructorComparator((Constructor) expected, (Constructor) actual);
         }
 
         throw new RuntimeException("Unknown comparator types");
