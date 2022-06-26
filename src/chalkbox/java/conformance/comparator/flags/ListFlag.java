@@ -1,6 +1,7 @@
 package chalkbox.java.conformance.comparator.flags;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ListFlag<T> extends Flag {
@@ -21,13 +22,13 @@ public class ListFlag<T> extends Flag {
 
     public boolean isSet() {
         for (T expect : expected) {
-            if (!actual.contains(expect)) {
+            if(Collections.frequency(expected,expect) != Collections.frequency(actual, expect)) {
                 return true;
             }
         }
 
-        for (T actual : actual) {
-            if (!expected.contains(actual)) {
+        for (T act : actual) {
+            if(Collections.frequency(actual,act) != Collections.frequency(expected, act)) {
                 return true;
             }
         }
