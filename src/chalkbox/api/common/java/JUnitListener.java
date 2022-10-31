@@ -88,7 +88,7 @@ public class JUnitListener extends RunListener {
         super.testFailure(failure);
 
         String failureString = failure.toString();
-        if (failureString.endsWith("null")) {
+        if (failureString.equals(failure.getTestHeader() + ": null")) {
             failureString =
                     failureString.substring(0, failureString.length() - 4);
                     failureString += "No message given.";
