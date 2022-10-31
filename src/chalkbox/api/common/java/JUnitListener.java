@@ -91,7 +91,7 @@ public class JUnitListener extends RunListener {
         if (failureString.equals(failure.getTestHeader() + ": null")) {
             failureString =
                     failureString.substring(0, failureString.length() - 4);
-                    failureString += "No message given.";
+                    failureString += "No message given, refer to stack trace.";
         }
         
         if (this.currentResult != null) {
