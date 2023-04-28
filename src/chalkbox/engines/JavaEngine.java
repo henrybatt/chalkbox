@@ -91,6 +91,11 @@ public class JavaEngine extends Engine implements Configuration {
             }
         }
 
+        if (this.checkstyle != null && this.checkstyle.isEnabled()) {
+            Checkstyle checkstyle = new Checkstyle(this.checkstyle);
+            submission = checkstyle.run(submission);
+        }
+
         if (this.functionality != null && this.functionality.isEnabled()) {
             this.functionality.setCorrectSolution(correctSolution);
             this.functionality.setClassPath(classPath);
@@ -103,11 +108,6 @@ public class JavaEngine extends Engine implements Configuration {
             this.junit.setClassPath(classPath);
             JUnit jUnit = new JUnit(this.junit);
             submission = jUnit.run(submission);
-        }
-
-        if (this.checkstyle != null && this.checkstyle.isEnabled()) {
-            Checkstyle checkstyle = new Checkstyle(this.checkstyle);
-            submission = checkstyle.run(submission);
         }
 
         super.output(submission);

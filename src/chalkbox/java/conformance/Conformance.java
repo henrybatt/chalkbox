@@ -317,13 +317,27 @@ public class Conformance {
             }
         }
 
-        /*
-         * Subtract [the number of differences multiplied by the penalty] from
-         * the total weighting allocated to the conformance stage to yield the
-         * final score.
-         */
-        result.set("score", Math.max(0, options.weighting
-                - totalDifferences * options.violationPenalty));
+        int grade = 1;
+        if (totalDifferences <= 2) {
+            grade = 7;
+        } else if (totalDifferences <= 3) {
+            grade = 6;
+        } else if (totalDifferences <= 4) {
+            grade = 5;
+        } else if (totalDifferences <= 5) {
+            grade = 4;
+        } else if (totalDifferences <= 6) {
+            grade = 3;
+        } else if (totalDifferences <= 7) {
+            grade = 2;
+        }
+
+        result.set("score", grade);
+        result.set("max_score", 7);
+
+        result.set("output",
+                "A total of " + totalDifferences + " conformance violations resulting in a grade of " + grade
+                + "\n\n=============\n\n" + result.get("output"));
 
         return submission;
     }

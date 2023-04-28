@@ -43,7 +43,11 @@ public class JUnitRunner {
         try {
             runner.run(classLoader.loadClass(className));
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            try {
+                runner.run(classLoader.loadClass("test." + className)); // Hack for 2023s1
+            } catch (ClassNotFoundException e2) {
+                e.printStackTrace();
+            }
         }
         return listener;
     }

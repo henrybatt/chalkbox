@@ -398,6 +398,7 @@ public class JUnit {
         File working = new File(submission.getSource().getUnmaskedPath());
 
         Map<String, Integer> passes = new HashMap<>();
+//        Data junitInfo = new Data();
         for (String testClass : options.assessableTestClasses) {
             String classPath = solutionClassPath
                     + System.getProperty("path.separator")
@@ -406,9 +407,13 @@ public class JUnit {
             if (results.get("extra_data.passes") != null) {
                 passes.put(testClass, Integer.parseInt(results.get("extra_data.passes").toString()));
             }
+//            junitInfo.set("output", junitInfo.get("output") + "" +
+//                    "\n==========\n" +
+//                    testClass + " on Solution");
         }
         int totalSolutionPassed = passes.values().stream().mapToInt(Integer::intValue).sum();
 
+        int passingTests = 0;
         JSONArray tests = (JSONArray) submission.getResults().get("tests");
         for (String solution : classPaths.keySet()) {
             /* Class path for the particular solution */
@@ -450,10 +455,10 @@ public class JUnit {
                 solutionResult.set("visibility", "after_published");
             }
             /* The correct solution is not graded, but should still appear */
-            if (!isCorrectSolution) {
-                solutionResult.set("score", 0);
-                solutionResult.set("max_score", solutionWeighting);
-            }
+//            if (!isCorrectSolution) {
+//                solutionResult.set("score", 0);
+//                solutionResult.set("max_score", solutionWeighting);
+//            }
             /*
              * For each test class result JSON:
              * - Concatenate the output of all the test classes
@@ -482,10 +487,13 @@ public class JUnit {
                 if (totalPassed < totalSolutionPassed) {
                     joiner.add("\nOutcome: Your unit tests correctly detected that this was a "
                             + "faulty implementation. You received marks for this implementation.");
+                    passingTests += 1;
+                    solutionResult.set("status", "passed");
                 } else {
                     joiner.add("\nOutcome: Your unit tests did not correctly detect that this "
                             + "was a faulty implementation. You did not receive any marks for "
                             + "this implementation.");
+                    solutionResult.set("status", "failed");
                 }
             }
             joiner.add("\n-------- Details --------");
@@ -498,15 +506,41 @@ public class JUnit {
                 if (!classOutput.isEmpty()) {
                     joiner.add(classOutput);
                 }
-                if (classResult.is("extra_data.correct")
-                        && !isCorrectSolution) {
-                    solutionResult.set("score", solutionWeighting);
-                }
+//                if (classResult.is("extra_data.correct")
+//                        && !isCorrectSolution) {
+//                    solutionResult.set("score", solutionWeighting);
+//                }
             }
             solutionResult.set("output", joiner.toString());
 
             tests.add(solutionResult);
         }
+
+        double total = (passingTests / (float) numFaultySolutions) * 100;
+        int grade = 1;
+        if (total >= 85) {
+            grade = 7;
+        } else if (total >= 75) {
+            grade = 6;
+        } else if (total >= 65) {
+            grade = 5;
+        } else if (total >= 50) {
+            grade = 4;
+        } else if (total >= 30) {
+            grade = 3;
+        } else if (total >= 20) {
+            grade = 2;
+        }
+
+        Data data = new Data();
+        data.set("name", "JUnit Tests");
+        data.set("score", grade);
+        data.set("max_score", 7);
+        data.set("output", "You correctly identified bugs in " + passingTests
+                + " out of " + numFaultySolutions
+                + " buggy solutions resulting in a grade of " + grade);
+        data.set("visibility", "after_published");
+        tests.add(1, data);
 
         return submission;
     }

@@ -227,15 +227,41 @@ public class Functionality {
 
         /* Mark awarded for passing a single test method (un-scaled by test multipliers) */
         final double individualTestWeighting = 1d / totalNumTests * options.weighting;
+        int passingTests = 0;
 
         for (Object o : functionalityResults) {
             Data functionalityResult = (Data) o;
             boolean didPass = (Integer) functionalityResult.get("extra_data.passes") == 1;
             int testMultiplier = (Integer) functionalityResult.get("weighting");
-            functionalityResult.set("score", didPass ? individualTestWeighting * testMultiplier : 0);
-            functionalityResult.set("max_score", individualTestWeighting * testMultiplier);
+            functionalityResult.set("status", didPass ? "passed" : "failed");
+            passingTests += didPass ? 1 : 0;
+//            functionalityResult.set("max_score", individualTestWeighting * testMultiplier);
             testResults.add(functionalityResult);
         }
+
+        double total = (passingTests / 272.0) * 100;
+        int grade = 1;
+        if (total >= 85) {
+            grade = 7;
+        } else if (total >= 75) {
+            grade = 6;
+        } else if (total >= 65) {
+            grade = 5;
+        } else if (total >= 50) {
+            grade = 4;
+        } else if (total >= 30) {
+            grade = 3;
+        } else if (total >= 20) {
+            grade = 2;
+        }
+
+        Data data = new Data();
+        data.set("name", "Functionality Tests");
+        data.set("score", grade);
+        data.set("max_score", 7);
+        data.set("output", "You passed " + passingTests + " out of 272 tests resulting in a grade of " + grade);
+        data.set("visibility", "after_published");
+        testResults.add(0, data);
 
         return submission;
     }

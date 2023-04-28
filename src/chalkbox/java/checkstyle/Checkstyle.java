@@ -195,11 +195,28 @@ public class Checkstyle {
         int numViolations = Math.max(0,
                 checkstyleOutput.split("\n").length - 2);
 
-        result.set("score", Math.max(0,
-                options.weighting - numViolations * options.violationPenalty));
-        result.set("max_score", options.weighting);
+        int grade = 1;
+        if (numViolations <= 4) {
+            grade = 7;
+        } else if (numViolations <= 6) {
+            grade = 6;
+        } else if (numViolations <= 8) {
+            grade = 5;
+        } else if (numViolations <= 10) {
+            grade = 4;
+        } else if (numViolations <= 12) {
+            grade = 3;
+        } else if (numViolations <= 14) {
+            grade = 2;
+        }
+
+        result.set("score", grade);
+        result.set("max_score", 7);
 
         result.set("output", checkstyleOutput);
+        result.set("output",
+                "A total of " + numViolations + " style violations resulting in a grade of " + grade
+                + "\n\n=============\n\n" + result.get("output"));
         tests.add(result);
 
         return collection;
