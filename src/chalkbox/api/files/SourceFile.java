@@ -13,6 +13,8 @@ import java.util.Base64;
  * An abstraction of a source file
  */
 public abstract class SourceFile extends SimpleJavaFileObject {
+    private String path;
+
     /**
      * Construct a source file from a URI
      *
@@ -20,6 +22,7 @@ public abstract class SourceFile extends SimpleJavaFileObject {
      */
     public SourceFile(String uri) {
         super(buildUri(uri), Kind.SOURCE);
+        this.path = uri;
     }
 
     /**
@@ -56,6 +59,10 @@ public abstract class SourceFile extends SimpleJavaFileObject {
         }
 
         return URI.create("source:///" + uri);
+    }
+
+    protected String getURI() {
+        return path;
     }
 
     /**

@@ -7,6 +7,7 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.api.files.FileLoader;
 import chalkbox.api.files.SourceFile;
+import chalkbox.api.files.StringSourceFile;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Configuration;
 import org.json.simple.JSONArray;
@@ -337,12 +338,20 @@ public class JUnit {
         boolean anyCompiles = false;
         for (String className : options.assessableTestClasses) {
             String fileName = className.replace(".", "/") + ".java";
+            String packageName = className.substring(0, className.lastIndexOf("."));
             StringWriter compileOutput = new StringWriter();
             SourceFile file;
             try {
                 file = tests.getFile(fileName); // throws NPE if no test directory was found
+                StringSourceFile stringFile = StringSourceFile.copyOf(file);
+                stringFile.replaceAll("^package (.+);(.*)", "package " + packageName + ";");
+                String contents = stringFile.getContent();
+                if (!contents.contains("package")) {
+                    contents = "package " + packageName + ";" + System.lineSeparator() + contents;
+                    stringFile = stringFile.update(contents);
+                }
                 List<SourceFile> files = new ArrayList<>();
-                files.add(file);
+                files.add(stringFile);
                 boolean fileSuccess = Compiler.compile(files,
                         solutionClassPath,
                         submission.getWorking().getUnmaskedPath(),
