@@ -20,6 +20,8 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 /**
@@ -346,7 +348,9 @@ public class JUnit {
                 StringSourceFile stringFile = StringSourceFile.copyOf(file);
                 stringFile.replaceAll("^package (.+);(.*)", "package " + packageName + ";");
                 String contents = stringFile.getContent();
-                if (!contents.matches("^package")) {
+                Pattern packageHeader = Pattern.compile("^package");
+                Matcher matcher = packageHeader.matcher(contents);
+                if (!matcher.find()) {
                     contents = "package " + packageName + ";" + System.lineSeparator() + contents;
                     stringFile = stringFile.update(contents);
                 }
