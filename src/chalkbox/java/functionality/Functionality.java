@@ -239,7 +239,7 @@ public class Functionality {
             testResults.add(functionalityResult);
         }
 
-        double total = (passingTests / 272.0) * 100;
+        double total = Math.ceil((passingTests / 272.0) * 100);
         int grade = 1;
         if (total >= 85) {
             grade = 7;

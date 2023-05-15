@@ -525,7 +525,7 @@ public class JUnit {
             tests.add(solutionResult);
         }
 
-        double total = (passingTests / (float) numFaultySolutions) * 100;
+        double total = Math.ceil((passingTests / (float) numFaultySolutions) * 100);
         int grade = 1;
         if (total >= 85) {
             grade = 7;
