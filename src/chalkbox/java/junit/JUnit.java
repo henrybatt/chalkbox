@@ -346,7 +346,7 @@ public class JUnit {
                 StringSourceFile stringFile = StringSourceFile.copyOf(file);
                 stringFile.replaceAll("^package (.+);(.*)", "package " + packageName + ";");
                 String contents = stringFile.getContent();
-                if (!contents.contains("package")) {
+                if (!contents.matches("^package")) {
                     contents = "package " + packageName + ";" + System.lineSeparator() + contents;
                     stringFile = stringFile.update(contents);
                 }
