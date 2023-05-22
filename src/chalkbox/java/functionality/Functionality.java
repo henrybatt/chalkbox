@@ -38,6 +38,9 @@ public class Functionality {
         /** Number of marks allocated to the functionality stage */
         private int weighting;
 
+        /** Total amount of unit tests */
+        private int overrideTotalTests;
+
         /** Path of JUnit test files */
         private String testDirectory;
 
@@ -73,6 +76,14 @@ public class Functionality {
 
         public void setWeighting(int weighting) {
             this.weighting = weighting;
+        }
+
+        public int getOverrideTotalTests() {
+            return overrideTotalTests;
+        }
+
+        public void setOverrideTotalTests(int overrideTotalTests) {
+            this.overrideTotalTests = overrideTotalTests;
         }
 
         public String getTestDirectory() {
@@ -239,7 +250,7 @@ public class Functionality {
             testResults.add(functionalityResult);
         }
 
-        double total = Math.ceil((passingTests / 272.0) * 100);
+        double total = Math.ceil((passingTests / (float) options.overrideTotalTests) * 100);
         int grade = 1;
         if (total >= 85) {
             grade = 7;
@@ -259,7 +270,7 @@ public class Functionality {
         data.set("name", "Functionality Tests");
         data.set("score", grade);
         data.set("max_score", 7);
-        data.set("output", "You passed " + passingTests + " out of 272 tests resulting in a grade of " + grade);
+        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests resulting in a grade of " + grade);
         data.set("visibility", "after_published");
         testResults.add(0, data);
 
