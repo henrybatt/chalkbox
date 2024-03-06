@@ -11,8 +11,10 @@ import org.json.simple.JSONArray;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 /**
  * Processor to execute the Checkstyle tool on the submission.
@@ -195,28 +197,19 @@ public class Checkstyle {
         int numViolations = Math.max(0,
                 checkstyleOutput.split("\n").length - 2);
 
-        int grade = 1;
-        if (numViolations <= 4) {
-            grade = 7;
-        } else if (numViolations <= 6) {
-            grade = 6;
-        } else if (numViolations <= 8) {
-            grade = 5;
-        } else if (numViolations <= 10) {
-            grade = 4;
-        } else if (numViolations <= 12) {
-            grade = 3;
-        } else if (numViolations <= 14) {
-            grade = 2;
-        }
+        int grade = Math.max(0, 10 - numViolations);
 
         result.set("score", grade);
-        result.set("max_score", 7);
+        result.set("max_score", 10);
 
-        result.set("output", checkstyleOutput);
+        String formattedOutput = Arrays.stream(checkstyleOutput.split("\n"))
+                .filter(n -> !n.contains("Starting audit") && !n.contains("Audit done"))
+                        .map(n -> n.replace("[WARN] ", "❌ "))
+                                .collect(Collectors.joining("\n"));
+
         result.set("output",
-                "A total of " + numViolations + " style violations resulting in a grade of " + grade
-                + "\n\n=============\n\n" + result.get("output"));
+                "A total of " + numViolations + " style violations."
+                + "\n\n=============\n\n" + formattedOutput);
         tests.add(result);
 
         return collection;

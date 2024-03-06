@@ -250,27 +250,13 @@ public class Functionality {
             testResults.add(functionalityResult);
         }
 
-        double total = Math.ceil((passingTests / (float) options.overrideTotalTests) * 100);
-        int grade = 1;
-        if (total >= 85) {
-            grade = 7;
-        } else if (total >= 75) {
-            grade = 6;
-        } else if (total >= 65) {
-            grade = 5;
-        } else if (total >= 50) {
-            grade = 4;
-        } else if (total >= 30) {
-            grade = 3;
-        } else if (total >= 20) {
-            grade = 2;
-        }
+        double total = Math.ceil((passingTests / (float) options.overrideTotalTests) * options.weighting);
 
         Data data = new Data();
         data.set("name", "Functionality Tests");
-        data.set("score", grade);
-        data.set("max_score", 7);
-        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests resulting in a grade of " + grade);
+        data.set("score", total);
+        data.set("max_score", options.weighting);
+        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests");
         data.set("visibility", "after_published");
         testResults.add(0, data);
 

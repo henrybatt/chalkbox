@@ -15,7 +15,7 @@ public class ConstructorComparator extends CodeComparator<Constructor> {
     protected void compare(Constructor expected, Constructor actual) {
         compareModifier(expected.getModifiers(), actual.getModifiers());
 
-        ListFlag<String> exceptionFlag = new ListFlag<>("Thrown exceptions do not match!");
+        ListFlag<String> exceptionFlag = new ListFlag<>("Thrown exceptions do not match.");
         for (Class parameter : expected.getExceptionTypes()) {
             exceptionFlag.addExpected(parameter.getName());
         }
@@ -24,7 +24,7 @@ public class ConstructorComparator extends CodeComparator<Constructor> {
         }
         flags.add(exceptionFlag);
 
-        ListFlag<String> parametersFlag = new ListFlag<>("Constructor parameters do not match!");
+        ListFlag<String> parametersFlag = new ListFlag<>("Constructor parameters do not match.");
         for (Class parameter : expected.getParameterTypes()) {
             parametersFlag.addExpected(parameter.getName());
         }

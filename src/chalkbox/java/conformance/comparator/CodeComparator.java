@@ -49,7 +49,7 @@ public abstract class CodeComparator<T> {
     }
 
     protected void compareModifier(int expected, int actual) {
-        Flag modifierFlag = new SingularFlag<>("Modifier does not match!",
+        Flag modifierFlag = new SingularFlag<>("Modifier does not match.",
                 Modifier.toString(expected), Modifier.toString(actual));
         modifierFlag.setFlag(expected != actual);
         flags.add(modifierFlag);

@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
@@ -338,7 +340,9 @@ public class JUnit {
 
         /* Compile each submitted test class individually */
         boolean anyCompiles = false;
+        boolean allCompiles = true;
         for (String className : options.assessableTestClasses) {
+            boolean success = false;
             String fileName = className.replace(".", "/") + ".java";
             String packageName = className.substring(0, className.lastIndexOf("."));
             StringWriter compileOutput = new StringWriter();
@@ -363,26 +367,35 @@ public class JUnit {
                 if (fileSuccess) {
                     anyCompiles = true;
                 }
-                output.add("JUnit test file " + fileName + " found");
-                output.add("JUnit test file " + fileName
-                        + (fileSuccess ? " compiles" : " does not compile"));
+                output.add("✅ JUnit test file `" + fileName + "` found.");
+                if (fileSuccess) {
+                    output.add("✅ JUnit test file `" + fileName + "` compiles.");
+                    success = true;
+                } else {
+                    output.add("❌ JUnit test file `" + fileName + "` does not compile.");
+                }
                 output.add(compileOutput.toString());
             } catch (FileNotFoundException | NullPointerException e) {
-                error.write("JUnit test file " + fileName + " not found\n");
+                error.write("❌ JUnit test file `" + fileName + "` not found.\n");
             } catch (IOException e) {
                 error.write("IO Compile Error - Please contact course staff\n");
+            }
+            if (!success) {
+                allCompiles = false;
             }
         }
 
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         JSONObject junitResult = new JSONObject();
         junitResult.put("name", "JUnit compilation");
-        String visibleOutput = "Output:\n" + output.toString();
+        junitResult.put("output_format", "md");
+        junitResult.put("status", allCompiles ? "passed" : "failed");
+        String visibleOutput = output.toString();
         if (!error.toString().isEmpty()) {
-            visibleOutput += "\nError:\n" + error.toString();
+            visibleOutput += error.toString();
         }
         junitResult.put("output", visibleOutput);
-        testResults.add(junitResult);
+        testResults.add(3, junitResult);
 
         /*
         Run submitted JUnit tests against broken solutions even if one or
@@ -426,6 +439,7 @@ public class JUnit {
         }
         int totalSolutionPassed = passes.values().stream().mapToInt(Integer::intValue).sum();
 
+        File solutionsFolder = new File(options.faultySolutions);
         int passingTests = 0;
         JSONArray tests = (JSONArray) submission.getResults().get("tests");
         for (String solution : classPaths.keySet()) {
@@ -485,33 +499,39 @@ public class JUnit {
                 totalPassed += (Integer) classResult.get("extra_data.passes");
                 totalFailed += (Integer) classResult.get("extra_data.fails");
             }
-            joiner.add("-------- Result --------");
-            joiner.add("Number of your unit tests that passed when run against the correct "
-                    + "implementation: " + totalSolutionPassed);
-            if (!isCorrectSolution) {
-                joiner.add("This is a faulty implementation. This means the number of unit tests "
-                        + "you wrote which pass should be less than "
-                        + totalSolutionPassed + ".");
-            }
-            joiner.add("\nNumber of your unit tests that passed when run against this "
-                    + "implementation: " + totalPassed);
 
             if (!isCorrectSolution) {
                 if (totalPassed < totalSolutionPassed) {
-                    joiner.add("\nOutcome: Your unit tests correctly detected that this was a "
-                            + "faulty implementation. You received marks for this implementation.");
+                    joiner.add("\n✅ Outcome: Your unit tests correctly detected that this was a "
+                            + "faulty implementation.");
                     passingTests += 1;
                     solutionResult.set("status", "passed");
                 } else {
-                    joiner.add("\nOutcome: Your unit tests did not correctly detect that this "
-                            + "was a faulty implementation. You did not receive any marks for "
-                            + "this implementation.");
+                    joiner.add("\n❌ Outcome: Your unit tests did not correctly detect that this "
+                            + "was a faulty implementation.");
                     solutionResult.set("status", "failed");
                 }
             }
-            joiner.add("\n-------- Details --------");
+            joiner.add("\nTests that passed when run against a correct "
+                    + "implementation: **" + totalSolutionPassed + "**");
+            joiner.add("Tests that passed when run against this faulty "
+                    + "implementation: **" + totalPassed + "**");
+
+            String description = solutionsFolder.getAbsolutePath() + "/" + solution + "/README.txt";
+            if (Files.exists(Path.of(description))) {
+                String content = "";
+                try {
+                    content = Files.readString(Path.of(description));
+                } catch (IOException e) {
+                    System.out.println("Could not find solution description: " + description);
+                }
+                joiner.add("\n### Scenario");
+                joiner.add(content);
+            }
+
+            joiner.add("\n### Details");
             if (totalFailed > 0) {
-                joiner.add("Tests which did not pass for this implementation:");
+                joiner.add("Tests which did not pass for this implementation:\n```text");
             }
             for (Data classResult : classResults) {
                 String classOutput = (String) classResult.get("output");
@@ -524,34 +544,22 @@ public class JUnit {
 //                    solutionResult.set("score", solutionWeighting);
 //                }
             }
+            joiner.add("```");
             solutionResult.set("output", joiner.toString());
+            solutionResult.set("output_format", "md");
 
             tests.add(solutionResult);
         }
 
-        double total = Math.ceil((passingTests / (float) numFaultySolutions) * 100);
-        int grade = 1;
-        if (total >= 85) {
-            grade = 7;
-        } else if (total >= 75) {
-            grade = 6;
-        } else if (total >= 65) {
-            grade = 5;
-        } else if (total >= 50) {
-            grade = 4;
-        } else if (total >= 30) {
-            grade = 3;
-        } else if (total >= 20) {
-            grade = 2;
-        }
+        double total = Math.ceil((passingTests / (float) numFaultySolutions) * options.weighting);
 
         Data data = new Data();
         data.set("name", "JUnit Tests");
-        data.set("score", grade);
-        data.set("max_score", 7);
+        data.set("score", total);
+        data.set("max_score", options.weighting);
         data.set("output", "You correctly identified bugs in " + passingTests
                 + " out of " + numFaultySolutions
-                + " buggy solutions resulting in a grade of " + grade);
+                + " buggy solutions");
         data.set("visibility", "after_published");
         tests.add(1, data);
 

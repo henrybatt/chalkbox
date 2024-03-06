@@ -97,8 +97,8 @@ public class JUnitListener extends RunListener {
         if (this.currentResult != null) {
             this.output.append(failureString);
             this.output.append("\n");
-            this.currentResult.output = failureString + "\n\n"
-                    + failure.getTrace().replaceAll("\r\n", "\n");
+            this.currentResult.output = failureString + "\n\n```text\n"
+                    + failure.getTrace().replaceAll("\r\n", "\n") + "```";
             this.currentResult.passed = false;
         }
         this.numFailed++;
@@ -122,6 +122,7 @@ public class JUnitListener extends RunListener {
             data.set("extra_data.fails", result.passed ? 0 : 1);
             data.set("extra_data.total", 1);
             data.set("output", result.output);
+            data.set("output_format", "md");
             data.set("name", result.testName);
             data.set("weighting", result.weighting);
             data.set("visibility", result.visible ? "visible" : "after_published");

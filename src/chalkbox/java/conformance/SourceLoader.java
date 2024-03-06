@@ -11,7 +11,8 @@ public class SourceLoader extends ClassLoader {
     private File classDirectory;
     private List<String> files;
 
-    public SourceLoader(String classDirectory) throws IOException {
+    public SourceLoader(String classDirectory, ClassLoader parent) throws IOException {
+        super(parent);
         File file = new File(classDirectory);
 
         if (!file.exists() || !file.isDirectory()) {
@@ -28,6 +29,10 @@ public class SourceLoader extends ClassLoader {
         }
     }
 
+    public SourceLoader(String classDirectory) throws IOException {
+        this(classDirectory, getSystemClassLoader());
+    }
+
     public List<String> getSourceFiles() {
         return files;
     }
@@ -37,8 +42,7 @@ public class SourceLoader extends ClassLoader {
         for (String file : files) {
             // Any GUI-related classes break conformance, don't load them
             // TODO find a better fix for this
-            if (file.contains("$") || file.contains("Canvas") || file.contains("Launcher")
-                    || file.contains("View")) {
+            if (file.contains("$") || file.contains("Canvas") || file.contains("Launcher")) {
                 continue;
             }
             classes.put(file, loadClass(file));

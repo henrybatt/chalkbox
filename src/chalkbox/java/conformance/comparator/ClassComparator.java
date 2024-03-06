@@ -23,16 +23,16 @@ public class ClassComparator extends CodeComparator<Class> {
         compareModifier(expected.getModifiers(), actual.getModifiers());
 
         try {
-            ListFlag<String> fieldFlag = new ListFlag<>("Class fields do not match!");
+            ListFlag<String> fieldFlag = new ListFlag<>("Class fields do not match.");
             compareMembers(expected.getFields(), actual.getFields(), fieldFlag);
             flags.add(fieldFlag);
 
-            ListFlag<String> methodFlag = new ListFlag<>("Class methods do not match!");
+            ListFlag<String> methodFlag = new ListFlag<>("Class methods do not match.");
             compareMembersOverload(expected.getMethods(), actual.getMethods(), methodFlag);
             //compareMembers(expected.getMethods(), actual.getMethods(), methodFlag);
             flags.add(methodFlag);
 
-            ListFlag<String> constructorFlag = new ListFlag<>("Class constructors do not match!");
+            ListFlag<String> constructorFlag = new ListFlag<>("Class constructors do not match.");
             compareMembersOverload(expected.getConstructors(),
                     actual.getConstructors(), constructorFlag);
             flags.add(constructorFlag);

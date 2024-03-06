@@ -46,9 +46,9 @@ import java.io.StringWriter;
 public class JavaCompilation {
 
     /** Message shown in output when submission compiles */
-    private static final String FAILURE_MSG = "Submission did not compile";
+    private static final String FAILURE_MSG = "❌ Submission did not compile.";
     /** Message shown in output when submission does not compile */
-    private static final String SUCCESS_MSG = "Submission successfully compiled";
+    private static final String SUCCESS_MSG = "✅ Submission successfully compiled.";
 
     /** Class path to use to compile submissions */
     private String classPath;
@@ -113,8 +113,10 @@ public class JavaCompilation {
         results.set("extra_data.compilation.compiles", success);
         if (success) {
             compilationResult.set("output", SUCCESS_MSG + "\n" + output.toString());
+            compilationResult.set("status", "passed");
         } else {
             compilationResult.set("output", FAILURE_MSG + "\n" + output.toString());
+            compilationResult.set("status", "failed");
         }
 
         working.refresh();

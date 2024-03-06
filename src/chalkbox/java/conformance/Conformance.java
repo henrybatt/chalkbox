@@ -14,10 +14,10 @@ import org.json.simple.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 /**
  * Checks whether a submission conforms exactly to the specified public API.
@@ -189,7 +189,7 @@ public class Conformance {
      * Loads the expected class files into the conformance checker
      */
     private void loadExpected() throws IOException {
-        Bundle expected = new Bundle(new File(options.correctSolution));
+        Bundle expected = new Bundle(new File(options.expectedStructure + "/src"));
         StringWriter output = new StringWriter();
 
         /* Load output directories for the solution and the tests */
@@ -205,12 +205,25 @@ public class Conformance {
         Compiler.compile(Compiler.getSourceFiles(expected), options.classPath,
                 out.getUnmaskedPath(), output);
 
-        SourceLoader expectedLoader = new SourceLoader(out.getUnmaskedPath());
+        SourceLoader expectedLoader = loaderWithDeps(out.getUnmaskedPath());
         try {
             expectedClasses = expectedLoader.getClassMap();
         } catch (ClassNotFoundException cnf) {
             throw new RuntimeException("Failed to load expected class");
         }
+    }
+
+    private SourceLoader loaderWithDeps(String directory) throws IOException {
+        URL[] urls = Arrays.stream(options.classPath.split(":"))
+                .map(e -> {
+                    try {
+                        return new URL("file://" + e);
+                    } catch (MalformedURLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }).toArray(URL[]::new);
+        URLClassLoader loader = new URLClassLoader(urls);
+        return new SourceLoader(directory, loader);
     }
 
     /**
@@ -229,10 +242,8 @@ public class Conformance {
         Data data = submission.getResults();
         JSONArray tests = (JSONArray) data.get("tests");
         Data result = new Data(); // test result representing conformance check
-        result.set("name", "Conformance");
+        result.set("name", "Conformance: File Structure");
         result.set("output", "");
-        result.set("score", 0);
-        result.set("max_score", options.weighting);
         tests.add(result);
 
         for (String expected : expectedFiles) {
@@ -251,37 +262,49 @@ public class Conformance {
         Collections.sort(missing);
         Collections.sort(extra);
 
-        result.set("output", result.get("output") + "-------- Missing files --------\n\n");
         if (missing.isEmpty()) {
-            result.set("output", result.get("output") + "No missing files\n\n");
+            result.set("output", result.get("output") + "✅ No missing files\n");
+            result.set("status", "passed");
         } else {
-            result.set("output", result.get("output") + String.join("\n\n", missing) + "\n\n");
+            result.set("output", result.get("output") + "❌ Missing files \n\n");
+            result.set("output", result.get("output") + String.join("\n", missing) + "\n\n");
         }
 
-        result.set("output", result.get("output") + "-------- Extra files --------\n\n");
         if (extra.isEmpty()) {
-            result.set("output", result.get("output") + "No extra files\n\n");
+            result.set("output", result.get("output") + "✅ No extra files\n");
         } else {
-            result.set("output", result.get("output") + String.join("\n\n", extra) + "\n\n");
+            result.set("output", result.get("output") + "❌ Extra files\n\n");
+            result.set("output", result.get("output") + String.join("\n", extra) + "\n\n");
+        }
+
+        if (missing.isEmpty() && extra.isEmpty()) {
+            result.set("status", "passed");
+        } else {
+            result.set("status", "failed");
         }
 
         // Only check classes for conformance if the submission compiles
         if (!data.is("extra_data.compilation.compiles")) {
-            result.set("output", result.get("output")
-                    + "Submission did not compile, not checking for conformance");
+            result = new Data();
+            result.set("name", "Conformance");
+            result.set("output", "❌ Submission did not compile, cannot check for conformance");
+            tests.add(result);
             return submission;
         }
 
-        result.set("output", result.get("output") + "-------- Class conformance --------\n\n");
+//        result.set("output", result.get("output") + "-------- Class conformance --------\n\n");
 
-        SourceLoader submissionLoader = new SourceLoader(submission.getWorking()
+
+        SourceLoader submissionLoader = loaderWithDeps(submission.getWorking()
                 .getUnmaskedPath("bin"));
         Map<String, Class> submissionMap;
         try {
             submissionMap = submissionLoader.getClassMap();
         } catch (ClassNotFoundException|NoClassDefFoundError cnf) {
-            result.set("output", result.get("output")
-                    + "Unable to find a class in submission\n");
+            result = new Data();
+            result.set("name", "Conformance");
+            result.set("output", "❌ Unable to find a class in submission");
+            tests.add(result);
             cnf.printStackTrace();
             return submission;
         }
@@ -293,12 +316,19 @@ public class Conformance {
                 continue;
             }
 
+            result = new Data();
+            result.set("name", "Conformance: " + className);
+            result.set("output", "");
+            tests.add(result);
+
             Class expectedClass = expectedClasses.get(className);
             Class actualClass = submissionMap.get(className);
 
             if (expectedClass == null || actualClass == null) {
-                result.set("output", result.get("output") + className
-                        + " was not found (unable to load class)\n\n");
+                result.set("output", "❌ `" + className
+                        + "` was not found (unable to load class)\n");
+                result.set("output_format", "md");
+                result.set("status", "failed");
                 totalDifferences += 1; // 1-difference penalty for class not found
                 continue;
             }
@@ -307,37 +337,19 @@ public class Conformance {
                     actualClass);
             if (comparator.hasDifference()) {
                 // Class does not conform
-                result.set("output", result.get("output") + className
-                        + " does not conform:\n" + comparator.toString());
+                result.set("output", "❌ `" + className
+                        + "` does not conform:\n\n```text\n" + comparator.toString() + "```");
+                result.set("output_format", "md");
+                result.set("status", "failed");
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
-                result.set("output", result.get("output") + className
-                        + " conforms\n\n");
+                result.set("output", "✅ `" + className
+                        + "` conforms.\n");
+                result.set("output_format", "md");
+                result.set("status", "passed");
             }
         }
-
-        int grade = 1;
-        if (totalDifferences <= 2) {
-            grade = 7;
-        } else if (totalDifferences <= 3) {
-            grade = 6;
-        } else if (totalDifferences <= 4) {
-            grade = 5;
-        } else if (totalDifferences <= 5) {
-            grade = 4;
-        } else if (totalDifferences <= 6) {
-            grade = 3;
-        } else if (totalDifferences <= 7) {
-            grade = 2;
-        }
-
-        result.set("score", grade);
-        result.set("max_score", 7);
-
-        result.set("output",
-                "A total of " + totalDifferences + " conformance violations resulting in a grade of " + grade
-                + "\n\n=============\n\n" + result.get("output"));
 
         return submission;
     }

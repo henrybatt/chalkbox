@@ -47,6 +47,7 @@ public class Compiler {
         options.add(classPath);
         options.add("-d");
         options.add(outputPath);
+        options.add("-Xlint:-options");
 
         return compile(files, output, options);
     }
