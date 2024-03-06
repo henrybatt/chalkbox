@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
+//@org.junit.Ignore
 public class JavaEngineTest {
     private static final String BASE_FOLDER = "./test/resources/csse2002/";
 

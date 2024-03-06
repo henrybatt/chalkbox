@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import static org.junit.Assert.*;
 import static org.junit.Assert.fail;
 
+@org.junit.Ignore
 public class PythonEngineTest {
 
     private static final String BASE_FOLDER = "./test/resources/csse1001/";

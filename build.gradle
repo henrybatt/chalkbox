@@ -5,15 +5,15 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-sourceCompatibility = 1.17
-targetCompatibility = 1.17
+sourceCompatibility = 1.21
+targetCompatibility = 1.21
 
 repositories {
     mavenCentral()
 }
 
 javafx {
-    version = "17"
+    version = "21"
     modules = [ 'javafx.controls', 'javafx.base', 'javafx.fxml', 'javafx.graphics', 'javafx.media']
 }
 
@@ -38,22 +38,22 @@ sourceSets {
 sourceSets.test.resources
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'junit', name: 'junit', version: '4.12'
     // Library for JSON
-    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
     // Command line argument parsing
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
     // Reflect for loading class in the GUI
-    compile "org.reflections:reflections:0.9.11"
+    implementation "org.reflections:reflections:0.9.11"
     // MongoDB Driver
-    compile 'org.mongodb:mongodb-driver:3.4.3'
+    implementation 'org.mongodb:mongodb-driver:3.4.3'
     // File IO library for copying directories
-    compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
+    implementation group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     // Library for parsing the java AST
-    compile 'com.github.javaparser:javaparser-core:3.5.2'
+    implementation 'com.github.javaparser:javaparser-core:3.5.2'
     // YAML parser
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.26'
+    implementation group: 'org.yaml', name: 'snakeyaml', version: '1.26'
 
     // V2 Dependencies
     implementation 'info.picocli:picocli:4.2.0'
@@ -70,23 +70,25 @@ mainClassName = 'chalkbox.api.ChalkBox'
 
 javadoc {
     source = sourceSets.main.allJava
-    classpath = configurations.compile
+    classpath = configurations.implementation
 }
 
 jar {
     manifest {
         attributes 'Main-Class': mainClassName
     }
-    baseName = project.name
+    archiveBaseName = project.name
 }
 
 task fatJar(type: Jar) {
     manifest {
         attributes 'Main-Class': mainClassName
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    archiveBaseName = project.name + '-all'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
