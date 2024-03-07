@@ -187,7 +187,11 @@ public class Checkstyle {
         if (!checkstyleOutput.contains("Audit done.")) {
             result.set("score", 0);
             result.set("max_score", options.weighting);
-            result.set("output", "Checkstyle did not exit successfully");
+            result.set("output", "❌ Checkstyle did not exit successfully. " +
+                    "This can indicate a syntax error or missing files." +
+                    "\n### Details");
+            result.set("output", result.get("output") + "\n```text\n" + checkstyleOutput + "\n```");
+            result.set("output_format", "md");
             tests.add(result);
             return collection;
         }
