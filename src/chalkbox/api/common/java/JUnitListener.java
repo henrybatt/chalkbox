@@ -6,6 +6,7 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class JUnitListener extends RunListener {
         private boolean passed = true;
         private String output = "";
         private int weighting = 1;
+        private int classWeighting = 1;
 
         public TestResult(String testName) {
             this.testName = testName;
@@ -70,7 +72,23 @@ public class JUnitListener extends RunListener {
             testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
         }
 
+        int classWeighting = 1;
+
+        if (hasField(description.getTestClass().getFields(), "testWeight")) {
+            classWeighting = description.getTestClass().getField("testWeight").getInt(null);
+        }
+
         this.currentResult.weighting = testWeighting;
+        this.currentResult.classWeighting = classWeighting;
+    }
+
+    private boolean hasField(Field[] fields, String fieldName) {
+        for (Field field : fields) {
+            if (field.getName().equals(fieldName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -125,6 +143,7 @@ public class JUnitListener extends RunListener {
             data.set("output_format", "md");
             data.set("name", result.testName);
             data.set("weighting", result.weighting);
+            data.set("classWeighting", result.classWeighting);
             data.set("visibility", result.visible ? "visible" : "after_published");
             results.add(data);
         }

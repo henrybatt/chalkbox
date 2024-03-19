@@ -13,8 +13,7 @@ import org.json.simple.JSONArray;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Process to execute JUnit tests on each submission.
@@ -121,6 +120,14 @@ public class Functionality {
         //</editor-fold>
     }
 
+    private record TestClassInfo(
+            String className,
+            int totalTests,
+            int passingTests,
+            int weight,
+            List<Data> tests
+    ) {}
+
     /** Configuration options */
     private FunctionalityOptions options;
 
@@ -220,17 +227,27 @@ public class Functionality {
         JSONArray testResults = (JSONArray) submission.getResults().get("tests");
         int totalNumTests = 0;
         JSONArray functionalityResults = new JSONArray();
+        Map<String, TestClassInfo> testInfo = new HashMap<>();
         for (String className : tests.getClasses("")) {
             List<Data> results = JUnitRunner.runTests(className, classPath);
             /* Sort alphabetically by test class then test name */
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
+            int classTests = 0;
+            int classPassing = 0;
+            int classWeighting = 1;
+            List<Data> testCases = new ArrayList<>();
 
             for (Data result : results) {
                 int testMultiplier = (Integer) result.get("weighting");
                 /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
                 totalNumTests += testMultiplier;
                 functionalityResults.add(result);
+                classTests++;
+                classWeighting = (Integer) result.get("classWeighting");
+                classPassing += (Integer) result.get("extra_data.passes") == 1 ? 1 : 0;
+                testCases.add(result);
             }
+            testInfo.put(className, new TestClassInfo(className, classTests, classPassing, classWeighting, testCases));
         }
         if (totalNumTests == 0) {
             return submission;
@@ -250,13 +267,29 @@ public class Functionality {
             testResults.add(functionalityResult);
         }
 
-        double total = Math.ceil((passingTests / (float) options.overrideTotalTests) * options.weighting);
+        String results = "| TestClass | Weighting | Passing Tests | Total |";
+        results += "\n| ----------- | ----------- | ----------- | ----------- |\n";
+        double total = 0;
+        double possible = 0;
+
+        for (TestClassInfo info : testInfo.values()) {
+            double score = (info.passingTests / (float) info.totalTests) * info.weight;
+            total += score;
+            possible += info.weight;
+            results += "| " + info.className + " | " + info.weight + " | " + info.passingTests + "/" + info.totalTests + " | " + score + "|\n";
+        }
+        double scaled = Math.ceil((total / (float) possible) * options.weighting);
 
         Data data = new Data();
         data.set("name", "Functionality Tests");
-        data.set("score", total);
+        data.set("score", scaled);
         data.set("max_score", options.weighting);
-        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests");
+        data.set("output", results);
+        data.set("output_format", "md");
+//        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests");
+//        for (TestClassInfo info : testInfo.values()) {
+//            data.set("output", data.get("output") + "\n" + info.toString());
+//        }
         data.set("visibility", "after_published");
         testResults.add(0, data);
 
