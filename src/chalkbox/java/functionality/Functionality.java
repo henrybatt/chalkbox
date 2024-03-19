@@ -8,6 +8,9 @@ import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Configuration;
 import chalkbox.java.compilation.JavaCompilation;
+import chalkbox.java.conformance.SourceLoader;
+import com.github.therapi.runtimejavadoc.ClassJavadoc;
+import com.github.therapi.runtimejavadoc.MethodJavadoc;
 import org.json.simple.JSONArray;
 
 import java.io.File;
@@ -137,6 +140,9 @@ public class Functionality {
     /** Whether there were issues compiling the sample solution or tests */
     private boolean hasErrors;
 
+    /** Directory containing compiled test files */
+    private String testCompiledOutputDirectory;
+
     /**
      * Sets up the functionality stage ready to process a submission.
      *
@@ -185,6 +191,7 @@ public class Functionality {
                         + System.getProperty("path.separator")
                         + solutionOutput.getUnmaskedPath(),
                 testOutput.getUnmaskedPath(), output);
+        testCompiledOutputDirectory = testOutput.getUnmaskedPath();
     }
 
     /**
@@ -238,6 +245,23 @@ public class Functionality {
             List<Data> testCases = new ArrayList<>();
 
             for (Data result : results) {
+                boolean isPassing = (Integer) result.get("extra_data.passes") == 1;
+                // Get Test class JavaDoc
+                try {
+                    String testDescription = "";
+                    ClassJavadoc javaDoc = new SourceLoader(testCompiledOutputDirectory).getTestJavadoc(className);
+                    for (MethodJavadoc method : javaDoc.getMethods()) {
+                        if (method.getName().equals(result.get("name").toString().split("\\.")[1])) {
+                            testDescription += "" + method.getComment() + "\n";
+                        }
+                    }
+                    if (!isPassing && !testDescription.equals("")) {
+                        result.set("output", "❌ Test scenario fails\n### Scenario\n" + testDescription + "### Details\n" + result.get("output"));
+                    }
+                } catch (IOException ignored) {
+                    // Do Nothing
+                }
+
                 int testMultiplier = (Integer) result.get("weighting");
                 /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
                 totalNumTests += testMultiplier;

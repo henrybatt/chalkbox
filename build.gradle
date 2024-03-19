@@ -54,6 +54,9 @@ dependencies {
     implementation 'com.github.javaparser:javaparser-core:3.5.2'
     // YAML parser
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.26'
+    // JavaDoc reverse lookup
+    implementation 'com.github.therapi:therapi-runtime-javadoc:0.15.0'
+    implementation 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0'
 
     // V2 Dependencies
     implementation 'info.picocli:picocli:4.2.0'

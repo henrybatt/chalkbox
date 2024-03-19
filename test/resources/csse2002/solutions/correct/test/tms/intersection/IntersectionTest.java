@@ -40,6 +40,9 @@ public class IntersectionTest {
         }
     }
 
+    /**
+     * A connection does not exist.
+     */
     @Test (expected = RouteNotFoundException.class)
     public void getConnectionDoesNotExistsTest() throws RouteNotFoundException {
         Intersection intersection2 = new Intersection("B");

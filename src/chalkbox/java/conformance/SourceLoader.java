@@ -1,8 +1,14 @@
 package chalkbox.java.conformance;
 
+import com.github.therapi.runtimejavadoc.ClassJavadoc;
+import com.github.therapi.runtimejavadoc.internal.JsonJavadocReader;
+import com.github.therapi.runtimejavadoc.repack.com.eclipsesource.json.Json;
+import com.github.therapi.runtimejavadoc.repack.com.eclipsesource.json.JsonObject;
 import chalkbox.api.files.FileLoader;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
@@ -74,5 +80,21 @@ public class SourceLoader extends ClassLoader {
         }
 
         return null;
+    }
+
+    private File loadJavaDoc(String className) {
+        return new File(classDirectory.getPath() + File.separator
+                + className.replace(".", File.separator) + "__Javadoc.json");
+    }
+
+    public ClassJavadoc getTestJavadoc(String className) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(loadJavaDoc(className)));
+            JsonObject json = Json.parse(reader).asObject();
+            return JsonJavadocReader.readClassJavadoc(className, json);
+        } catch (Exception ignored) {
+            System.out.println(ignored);
+        }
+        return ClassJavadoc.createEmpty(className);
     }
 }

@@ -43,6 +43,8 @@ public class Compiler {
         }
 
         List<String> options = new ArrayList<>();
+        options.add("-processor");
+        options.add("com.github.therapi.runtimejavadoc.scribe.JavadocAnnotationProcessor");
         options.add("-cp");
         options.add(classPath);
         options.add("-d");
