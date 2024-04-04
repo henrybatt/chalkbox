@@ -190,6 +190,8 @@ public class Checkstyle {
             result.set("output", "❌ Checkstyle did not exit successfully. " +
                     "This can indicate a syntax error or missing files." +
                     "\n### Details");
+            System.out.println(process.getOutput());
+            System.out.println(process.getError());
             result.set("output", result.get("output") + "\n```text\n" + checkstyleOutput + "\n```");
             result.set("output_format", "md");
             tests.add(result);

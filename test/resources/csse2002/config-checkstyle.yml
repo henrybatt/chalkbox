@@ -32,7 +32,7 @@ checkstyle:
   enabled: true
   weighting: 15
   config: ./test/resources/csse2002/checkstyle.xml
-  jar: ./test/resources/csse2002/lib/checkstyle-8.36-all.jar
+  jar: ./test/resources/csse2002/lib/checkstyle-10.14.1-all.jar
   excluded:
     - ./test/resources/csse2002/submission/src/tms/display/
   violationPenalty: 0.5
