@@ -17,7 +17,7 @@ public class JUnitListener extends RunListener {
         private boolean passed = true;
         private String output = "";
         private int weighting = 1;
-        private int classWeighting = 1;
+        private double classWeighting = 1;
 
         public TestResult(String testName) {
             this.testName = testName;
@@ -72,10 +72,10 @@ public class JUnitListener extends RunListener {
             testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
         }
 
-        int classWeighting = 1;
+        double classWeighting = 1.0;
 
         if (hasField(description.getTestClass().getFields(), "testWeight")) {
-            classWeighting = description.getTestClass().getField("testWeight").getInt(null);
+            classWeighting = description.getTestClass().getField("testWeight").getDouble(null);
         }
 
         this.currentResult.weighting = testWeighting;

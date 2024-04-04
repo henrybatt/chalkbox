@@ -127,7 +127,7 @@ public class Functionality {
             String className,
             int totalTests,
             int passingTests,
-            int weight,
+            double weight,
             List<Data> tests
     ) {}
 
@@ -241,7 +241,7 @@ public class Functionality {
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
             int classTests = 0;
             int classPassing = 0;
-            int classWeighting = 1;
+            double classWeighting = 1;
             List<Data> testCases = new ArrayList<>();
 
             for (Data result : results) {
@@ -267,7 +267,7 @@ public class Functionality {
                 totalNumTests += testMultiplier;
                 functionalityResults.add(result);
                 classTests++;
-                classWeighting = (Integer) result.get("classWeighting");
+                classWeighting = (Double) result.get("classWeighting");
                 classPassing += (Integer) result.get("extra_data.passes") == 1 ? 1 : 0;
                 testCases.add(result);
             }
