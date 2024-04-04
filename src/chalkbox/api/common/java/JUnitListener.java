@@ -50,26 +50,26 @@ public class JUnitListener extends RunListener {
 
         int testWeighting;
         var testAnnotation = description.getAnnotation(Test.class);
-        if (testAnnotation == null) {
-            return;
-        }
-        /* If no timeout was specified, then give this test a weighting of 1 (standard) */
-        if (testAnnotation.timeout() == 0) {
-            testWeighting = 1;
-        } else {
-            /*
-             * Otherwise, use the timeout modulo 10 as the weighting, ensuring that the test
-             * weighting can never be zero.
-             *
-             * This allows a weighting (marks multiplier) to be specified by adding an integer
-             * between 2 and 9 to the timeout for a JUnit test. For example,
-             * @Test(timeout = 100000 + 5)
-             * means that this test has a weighting of 5 times that of a standard test.
-             *
-             * A large number of milliseconds should be used for the timeout, so that the actual
-             * timeout is not likely to be reached (since global timeout should be used instead).
-             */
-            testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
+        if (testAnnotation != null) {
+            /* If no timeout was specified, then give this test a weighting of 1 (standard) */
+            if (testAnnotation.timeout() == 0) {
+                testWeighting = 1;
+            } else {
+                /*
+                 * Otherwise, use the timeout modulo 10 as the weighting, ensuring that the test
+                 * weighting can never be zero.
+                 *
+                 * This allows a weighting (marks multiplier) to be specified by adding an integer
+                 * between 2 and 9 to the timeout for a JUnit test. For example,
+                 * @Test(timeout = 100000 + 5)
+                 * means that this test has a weighting of 5 times that of a standard test.
+                 *
+                 * A large number of milliseconds should be used for the timeout, so that the actual
+                 * timeout is not likely to be reached (since global timeout should be used instead).
+                 */
+                testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
+            }
+            this.currentResult.weighting = testWeighting;
         }
 
         double classWeighting = 1.0;
@@ -78,7 +78,6 @@ public class JUnitListener extends RunListener {
             classWeighting = description.getTestClass().getField("testWeight").getDouble(null);
         }
 
-        this.currentResult.weighting = testWeighting;
         this.currentResult.classWeighting = classWeighting;
     }
 

@@ -271,7 +271,7 @@ public class Functionality {
                 classPassing += (Integer) result.get("extra_data.passes") == 1 ? 1 : 0;
                 testCases.add(result);
             }
-            testInfo.put(className, new TestClassInfo(className, classTests, classPassing, classWeighting, testCases));
+            testInfo.put(className, new TestClassInfo(className, classTests > 0 ? classTests : 1, classPassing, classWeighting, testCases));
         }
         if (totalNumTests == 0) {
             return submission;
@@ -302,7 +302,9 @@ public class Functionality {
             possible += info.weight;
             results += "| " + info.className + " | " + info.weight + " | " + info.passingTests + "/" + info.totalTests + " | " + score + "|\n";
         }
-        double scaled = Math.ceil((total / (float) possible) * options.weighting);
+        double scaled = Math.ceil((total / (float) 100) * options.weighting);
+
+        results += "\n(" + total + "/100) * " + options.weighting + " =" + scaled;
 
         Data data = new Data();
         data.set("name", "Functionality Tests");

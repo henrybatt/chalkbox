@@ -93,7 +93,7 @@ public class SourceLoader extends ClassLoader {
             JsonObject json = Json.parse(reader).asObject();
             return JsonJavadocReader.readClassJavadoc(className, json);
         } catch (Exception ignored) {
-            System.out.println(ignored);
+//            System.out.println(ignored);
         }
         return ClassJavadoc.createEmpty(className);
     }
