@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@4.1.4
       - name: Generate Artifacts
-        uses: eskatos/gradle-command-action@v1.4
+        uses: eskatos/gradle-command-action@v1.4.0
         with:
           arguments: build
       - name: Upload Artifacts
