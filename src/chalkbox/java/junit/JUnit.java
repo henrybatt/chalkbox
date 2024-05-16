@@ -35,7 +35,7 @@ public class JUnit {
     public static class JUnitOptions implements Configuration {
 
         /**
-         * Whether or not to run this stage
+         * Whether to run this stage or not
          */
         private boolean enabled = false;
 
@@ -367,16 +367,16 @@ public class JUnit {
                 if (fileSuccess) {
                     anyCompiles = true;
                 }
-                output.add("✅ JUnit test file `" + fileName + "` found.");
+                output.add("\u2705 JUnit test file `" + fileName + "` found.");
                 if (fileSuccess) {
-                    output.add("✅ JUnit test file `" + fileName + "` compiles.");
+                    output.add("\u2705 JUnit test file `" + fileName + "` compiles.");
                     success = true;
                 } else {
-                    output.add("❌ JUnit test file `" + fileName + "` does not compile.");
+                    output.add("\u274C JUnit test file `" + fileName + "` does not compile.");
                 }
                 output.add(compileOutput.toString());
             } catch (FileNotFoundException | NullPointerException e) {
-                error.write("❌ JUnit test file `" + fileName + "` not found.\n");
+                error.write("\u274C JUnit test file `" + fileName + "` not found.\n");
             } catch (IOException e) {
                 error.write("IO Compile Error - Please contact course staff\n");
             }
@@ -398,8 +398,8 @@ public class JUnit {
         testResults.add(3, junitResult);
 
         /*
-        Run submitted JUnit tests against broken solutions even if one or
-        more test classes don't compile, as long as at least one does.
+         * Run submitted JUnit tests against broken solutions even if one or
+         * more test classes don't compile, as long as at least one does.
          */
         submission.getResults().set("extra_data.junit.compiles", anyCompiles);
 
@@ -410,8 +410,7 @@ public class JUnit {
      * Runs the submitted JUnit tests against each faulty implementation.
      *
      * @param submission submission containing tests to run
-     * @return given submission with extra test results, one for each faulty
-     * implementation
+     * @return given submission with extra test results, one for each faulty implementation
      */
     private Collection runTests(Collection submission) {
         if (!submission.getResults().is("extra_data.junit.compiles")) {
@@ -502,12 +501,12 @@ public class JUnit {
 
             if (!isCorrectSolution) {
                 if (totalPassed < totalSolutionPassed) {
-                    joiner.add("\n✅ Outcome: Your unit tests correctly detected that this was a "
+                    joiner.add("\n\u2705 Outcome: Your unit tests correctly detected that this was a "
                             + "faulty implementation.");
                     passingTests += 1;
                     solutionResult.set("status", "passed");
                 } else {
-                    joiner.add("\n❌ Outcome: Your unit tests did not correctly detect that this "
+                    joiner.add("\n\u274C Outcome: Your unit tests did not correctly detect that this "
                             + "was a faulty implementation.");
                     solutionResult.set("status", "failed");
                 }

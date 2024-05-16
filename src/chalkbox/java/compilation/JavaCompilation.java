@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 /**
- * Process to compile all of the .java source files in a submission.
+ * Process to compile all the .java source files in a submission.
  *
  * If the submission compiles, the results JSON will include the following,
  * where ??? stands for any output warnings when compiling:
@@ -46,9 +46,9 @@ import java.io.StringWriter;
 public class JavaCompilation {
 
     /** Message shown in output when submission compiles */
-    private static final String FAILURE_MSG = "❌ Submission did not compile.";
+    private static final String FAILURE_MSG = "\u274C Submission did not compile.";
     /** Message shown in output when submission does not compile */
-    private static final String SUCCESS_MSG = "✅ Submission successfully compiled.";
+    private static final String SUCCESS_MSG = "\u2705 Submission successfully compiled.";
 
     /** Class path to use to compile submissions */
     private String classPath;

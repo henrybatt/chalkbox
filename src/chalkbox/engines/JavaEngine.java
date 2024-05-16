@@ -69,7 +69,7 @@ public class JavaEngine extends Engine implements Configuration {
 
     @Override
     public void run() {
-        System.out.println("Running CSSE2002 engine");
+        System.out.println("Running CSSE7023 engine");
 
         Collection submission = super.collect();
 

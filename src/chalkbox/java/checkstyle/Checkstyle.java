@@ -187,7 +187,7 @@ public class Checkstyle {
         if (!checkstyleOutput.contains("Audit done.")) {
             result.set("score", 0);
             result.set("max_score", options.weighting);
-            result.set("output", "❌ Checkstyle did not exit successfully. " +
+            result.set("output", "\u274C Checkstyle did not exit successfully. " +
                     "This can indicate a syntax error or missing files." +
                     "\n### Details");
             System.out.println(process.getOutput());
@@ -210,7 +210,7 @@ public class Checkstyle {
 
         String formattedOutput = Arrays.stream(checkstyleOutput.split("\n"))
                 .filter(n -> !n.contains("Starting audit") && !n.contains("Audit done"))
-                        .map(n -> n.replace("[WARN] ", "❌ "))
+                        .map(n -> n.replace("[WARN] ", "\u274C "))
                                 .collect(Collectors.joining("\n"));
 
         result.set("output",

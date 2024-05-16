@@ -256,7 +256,7 @@ public class Functionality {
                         }
                     }
                     if (!isPassing && !testDescription.equals("")) {
-                        result.set("output", "❌ Test scenario fails\n### Scenario\n" + testDescription + "### Details\n" + result.get("output"));
+                        result.set("output", "\u274C Test scenario fails\n### Scenario\n" + testDescription + "### Details\n" + result.get("output"));
                     }
                 } catch (IOException ignored) {
                     // Do Nothing

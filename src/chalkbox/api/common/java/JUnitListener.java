@@ -56,7 +56,7 @@ public class JUnitListener extends RunListener {
                 testWeighting = 1;
             } else {
                 /*
-                 * Otherwise, use the timeout modulo 10 as the weighting, ensuring that the test
+                 * Otherwise, use timeout modulo 10 as the weighting, ensuring that the test
                  * weighting can never be zero.
                  *
                  * This allows a weighting (marks multiplier) to be specified by adding an integer

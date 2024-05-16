@@ -21,7 +21,7 @@ public class Compiler {
     /**
      * Compile java source files into java byte code files.
      *
-     * If the output path doesn't exist it will attempt to be created.
+     * If the output path doesn't exist, it will attempt to be created.
      *
      * @param files The source java files to compile.
      * @param classPath The classpath to compile with.

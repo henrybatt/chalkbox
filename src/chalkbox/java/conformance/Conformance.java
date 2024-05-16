@@ -263,17 +263,17 @@ public class Conformance {
         Collections.sort(extra);
 
         if (missing.isEmpty()) {
-            result.set("output", result.get("output") + "✅ No missing files\n");
+            result.set("output", result.get("output") + "\u2705 No missing files\n");
             result.set("status", "passed");
         } else {
-            result.set("output", result.get("output") + "❌ Missing files \n\n");
+            result.set("output", result.get("output") + "\u274C Missing files \n\n");
             result.set("output", result.get("output") + String.join("\n", missing) + "\n\n");
         }
 
         if (extra.isEmpty()) {
-            result.set("output", result.get("output") + "✅ No extra files\n");
+            result.set("output", result.get("output") + "\u2705 No extra files\n");
         } else {
-            result.set("output", result.get("output") + "❌ Extra files\n\n");
+            result.set("output", result.get("output") + "\u274C Extra files\n\n");
             result.set("output", result.get("output") + String.join("\n", extra) + "\n\n");
         }
 
@@ -287,7 +287,7 @@ public class Conformance {
         if (!data.is("extra_data.compilation.compiles")) {
             result = new Data();
             result.set("name", "Conformance");
-            result.set("output", "❌ Submission did not compile, cannot check for conformance");
+            result.set("output", "\u274C Submission did not compile, cannot check for conformance");
             tests.add(result);
             return submission;
         }
@@ -303,7 +303,7 @@ public class Conformance {
         } catch (ClassNotFoundException|NoClassDefFoundError cnf) {
             result = new Data();
             result.set("name", "Conformance");
-            result.set("output", "❌ Unable to find a class in submission");
+            result.set("output", "\u274C Unable to find a class in submission");
             tests.add(result);
             cnf.printStackTrace();
             return submission;
@@ -325,7 +325,7 @@ public class Conformance {
             Class actualClass = submissionMap.get(className);
 
             if (expectedClass == null || actualClass == null) {
-                result.set("output", "❌ `" + className
+                result.set("output", "\u274C `" + className
                         + "` was not found (unable to load class)\n");
                 result.set("output_format", "md");
                 result.set("status", "failed");
@@ -337,14 +337,14 @@ public class Conformance {
                     actualClass);
             if (comparator.hasDifference()) {
                 // Class does not conform
-                result.set("output", "❌ `" + className
+                result.set("output", "\u274C `" + className
                         + "` does not conform:\n\n```text\n" + comparator.toString() + "```");
                 result.set("output_format", "md");
                 result.set("status", "failed");
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
-                result.set("output", "✅ `" + className
+                result.set("output", "\u2705 `" + className
                         + "` conforms.\n");
                 result.set("output_format", "md");
                 result.set("status", "passed");
