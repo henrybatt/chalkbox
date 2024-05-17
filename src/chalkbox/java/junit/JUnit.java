@@ -27,47 +27,46 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 /**
- * Assesses submitted JUnit tests by running them against faulty
- * implementations.
+ * Assesses submitted JUnit tests by running them against faulty implementations.
  */
 public class JUnit {
 
     public static class JUnitOptions implements Configuration {
 
         /**
-         * Whether to run this stage or not
+         * Whether to run this stage or not.
          */
         private boolean enabled = false;
 
         /**
-         * Path to a directory containing the sample solution
+         * Path to a directory containing the sample solution.
          */
         private String correctSolution;
 
         /**
-         * Class path for student tests to be compiled with
+         * Class path for student tests to be compiled with.
          */
         private String classPath;
 
         /**
-         * Marks allocated to the JUnit stage
+         * Marks allocated to the JUnit stage.
          */
         private int weighting;
 
         /**
-         * Path to a directory containing various broken sample solutions
+         * Path to a directory containing various broken sample solutions.
          */
         private String faultySolutions;
 
         /**
-         * JUnit classes to execute
+         * JUnit classes to execute.
          */
         private List<String> assessableTestClasses;
 
         /**
          * Checks this configuration and throws an exception if it is invalid.
          *
-         * @throws ConfigFormatException if the configuration is invalid
+         * @throws ConfigFormatException if the configuration is invalid.
          */
         @Override
         public void validateConfig() throws ConfigFormatException {
@@ -77,21 +76,17 @@ public class JUnit {
 
             /* Must have a faulty solutions directory */
             if (faultySolutions == null || faultySolutions.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing faultySolutions in JUnit stage");
+                throw new ConfigFormatException("Missing faultySolutions in JUnit stage.");
             }
 
             /* Must have a list of assessable test classes */
-            if (assessableTestClasses == null
-                    || assessableTestClasses.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing assessableTestClasses in JUnit stage");
+            if (assessableTestClasses == null || assessableTestClasses.isEmpty()) {
+                throw new ConfigFormatException("Missing assessableTestClasses in JUnit stage.");
             }
 
             /* Must have a weighting between 0 and 100 */
             if (weighting < 0 || weighting > 100) {
-                throw new ConfigFormatException(
-                        "JUnit weighting must be between 0 and 100");
+                throw new ConfigFormatException("JUnit weighting must be between 0 and 100.");
             }
         }
 
@@ -151,19 +146,19 @@ public class JUnit {
     /** Logger */
     private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
-    /** Configuration options */
+    /** Configuration options. */
     private JUnitOptions options;
 
-    /** Bundle containing compiled faulty implementations */
+    /** Bundle containing compiled faulty implementations. */
     private Bundle solutionsOutput;
 
-    /** Bundle containing compiled correct solution */
+    /** Bundle containing compiled correct solution. */
     private Bundle solutionOutput;
 
-    /** Class path containing dependencies and correct solution byte code */
+    /** Class path containing dependencies and correct solution byte code. */
     private String solutionClassPath;
 
-    /** Mapping of faulty implementation names to their respective class path */
+    /** Mapping of faulty implementation names to their respective class path. */
     private Map<String, String> classPaths = new TreeMap<>();
 
     /**
@@ -175,7 +170,7 @@ public class JUnit {
     /**
      * Sets up the JUnit stage ready to process a submission.
      *
-     * @param options configuration options to use when running JUnit stage
+     * @param options configuration options to use when running JUnit stage.
      */
     public JUnit(JUnitOptions options) {
         this.options = options;
@@ -194,7 +189,7 @@ public class JUnit {
         try {
             compilationOutput = new Bundle();
         } catch (IOException e) {
-            LOGGER.severe("Unable to create compilation output directory");
+            LOGGER.severe("Unable to create compilation output directory.");
             return;
         }
 
@@ -202,7 +197,7 @@ public class JUnit {
         try {
             solutionsOutput = compilationOutput.makeBundle("solutions");
         } catch (IOException e) {
-            LOGGER.severe("Unable to create solutions directory in compilation output directory");
+            LOGGER.severe("Unable to create solutions directory in compilation output directory.");
             return;
         }
 
@@ -210,27 +205,25 @@ public class JUnit {
         try {
             solutionOutput = compilationOutput.makeBundle("solution");
         } catch (IOException e) {
-            LOGGER.severe("Unable to create solution directory in compilation output directory");
+            LOGGER.severe("Unable to create solution directory in compilation output directory.");
         }
     }
 
     /**
-     * Compiles a single implementation and outputs the compiled byte code to
-     * the given location.
+     * Compiles a single implementation and outputs the compiled byte code to the given location.
      *
      * @param source bundle containing source files to compile
      * @param name human readable name of the implementation to be compiled
      * @param output path to directory that will store compiled byte code
      * @param writer writer to write compile warnings/output to
      */
-    private void compileSolution(Bundle source, String name, String output,
-                                 StringWriter writer) {
-        /* Collect all the source files to compile */
+    private void compileSolution(Bundle source, String name, String output, StringWriter writer) {
+        /* Collect all the source files to compile. */
         SourceFile[] files;
         try {
             files = source.getFiles(".java");
         } catch (IOException e) {
-            LOGGER.severe("Unable to load the source files within solution");
+            LOGGER.severe("Unable to load the source files within solution.");
             return;
         }
 
@@ -246,21 +239,20 @@ public class JUnit {
     }
 
     /**
-     * Compile all the faulty implementations to test submitted JUnit tests on
+     * Compile all the faulty implementations to test submitted JUnit tests against.
      */
     private void compileSolutions() {
-        /* Collect the list of broken solution folders */
+        /* Collect the list of broken solution folders. */
         File solutionsFolder = new File(options.faultySolutions);
-        /* Only include directories as faulty solutions (e.g. not .DS_Store) */
+        /* Only include directories as faulty solutions (e.g. not .DS_Store). */
         File[] solutions = solutionsFolder.listFiles(File::isDirectory);
         if (solutions == null) {
-            LOGGER.severe("Unable to load the folder of broken solutions");
+            LOGGER.severe("Unable to load the folder of broken solutions.");
             return;
         }
 
         this.numFaultySolutions = solutions.length;
-        // If "solution/" dir is in "solutions", subtract one from number of
-        // faulty solutions
+        // If "solution/" dir is in "solutions", subtract one from number of faulty solutions.
         for (File solution : solutions) {
             if (solution.getName().equals("solution")) {
                 this.numFaultySolutions = solutions.length - 1;
@@ -273,14 +265,14 @@ public class JUnit {
         for (File solutionFolder : solutions) {
             String solutionName = FileLoader.truncatePath(solutionsFolder, solutionFolder);
 
-            /* Get the folder for compilation output of this solution */
+            /* Get the folder for compilation output of this solution. */
             Bundle solutionBundle = new Bundle(new File(solutionFolder.getPath()));
             String solutionOut = solutionsOutput.getAbsolutePath(solutionFolder.getName());
 
             writer = new StringWriter();
             compileSolution(solutionBundle, solutionName, solutionOut, writer);
 
-            /* Add an entry for this solution to the class path mapping */
+            /* Add an entry for this solution to the class path mapping. */
             classPaths.put(solutionName, options.classPath
                     + System.getProperty("path.separator") + solutionOut);
         }
@@ -307,9 +299,8 @@ public class JUnit {
      * Firstly compiles the submitted tests, then if compilation was successful,
      * runs them against all the faulty implementations.
      *
-     * @param submission submission to assess
-     * @return given submission with extra test results indicating the results
-     * of the JUnit stage
+     * @param submission submission to assess.
+     * @return Given submission with extra test results indicating the results of the JUnit stage.
      */
     public Collection run(Collection submission) {
         compileTests(submission);
@@ -323,8 +314,8 @@ public class JUnit {
      * Sets "extra_data.junit.compiles" to true/false based on whether at least
      * one of the submitted tests compiled.
      *
-     * @param submission submission containing tests to compile
-     * @return given submission with extra test results
+     * @param submission submission containing tests to compile.
+     * @return Given submission with extra test results.
      */
     private Collection compileTests(Collection submission) {
         Bundle source = submission.getSource();
@@ -332,13 +323,13 @@ public class JUnit {
         try {
             tests = source.getBundle("test");
         } catch (NullPointerException npe) {
-            /* Test directory was not submitted, leave 'tests' as null */
+            /* Test directory was not submitted, leave 'tests' as null. */
         }
 
         StringJoiner output = new StringJoiner("\n");
         StringWriter error = new StringWriter();
 
-        /* Compile each submitted test class individually */
+        /* Compile each submitted test class individually. */
         boolean anyCompiles = false;
         boolean allCompiles = true;
         for (String className : options.assessableTestClasses) {
@@ -348,7 +339,7 @@ public class JUnit {
             StringWriter compileOutput = new StringWriter();
             SourceFile file;
             try {
-                file = tests.getFile(fileName); // throws NPE if no test directory was found
+                file = tests.getFile(fileName); // Throws NPE if no test directory was found.
                 StringSourceFile stringFile = StringSourceFile.copyOf(file);
                 stringFile.replaceAll("^package (.+);(.*)", "package " + packageName + ";");
                 String contents = stringFile.getContent();
@@ -378,7 +369,7 @@ public class JUnit {
             } catch (FileNotFoundException | NullPointerException e) {
                 error.write("\u274C JUnit test file `" + fileName + "` not found.\n");
             } catch (IOException e) {
-                error.write("IO Compile Error - Please contact course staff\n");
+                error.write("IO Compile Error - Please contact course staff.\n");
             }
             if (!success) {
                 allCompiles = false;
@@ -409,12 +400,12 @@ public class JUnit {
     /**
      * Runs the submitted JUnit tests against each faulty implementation.
      *
-     * @param submission submission containing tests to run
-     * @return given submission with extra test results, one for each faulty implementation
+     * @param submission submission containing tests to run.
+     * @return Given submission with extra test results, one for each faulty implementation.
      */
     private Collection runTests(Collection submission) {
         if (!submission.getResults().is("extra_data.junit.compiles")) {
-            LOGGER.finest("Skipping running JUnit tests");
+            LOGGER.finest("Skipping running JUnit tests.");
             return submission;
         }
 
@@ -447,15 +438,15 @@ public class JUnit {
                     + System.getProperty("path.separator")
                     + submission.getWorking().getUnmaskedPath();
 
-            /* JSON test result for this broken solution */
+            /* JSON test result for this broken solution. */
             Data solutionResult = new Data();
-            /* Results of the JUnit runner for each submitted test class */
+            /* Results of the JUnit runner for each submitted test class. */
             List<Data> classResults = new ArrayList<>();
-            /* Is the solution being tested the correct implementation? */
+            /* Is the solution being tested against the correct implementation? */
             boolean isCorrectSolution = solution.equals("solution");
 
             for (String testClass : options.assessableTestClasses) {
-                /* Run the JUnit tests */
+                /* Run the JUnit tests. */
                 Data results = JUnitRunner.runTestsCombined(testClass, classPath);
                 results.set("extra_data.correct", false);
                 if (results.get("extra_data.passes") != null) {
@@ -467,31 +458,30 @@ public class JUnit {
                 classResults.add(results);
             }
 
-            /* Mark awarded for correctly identifying a broken solution */
-            final double solutionWeighting = 1d / this.numFaultySolutions
-                    * options.weighting;
+            /* Mark awarded for correctly identifying a broken solution. */
+            final double solutionWeighting = 1d / this.numFaultySolutions * options.weighting;
 
-            /* Solutions whose name ends with _VISIBLE should be visible to students immediately */
+            /* Solutions whose name ends with _VISIBLE should be visible to students immediately. */
             if (solution.endsWith("_VISIBLE")) {
-                /* Remove the _VISIBLE suffix from the final output */
+                /* Remove the _VISIBLE suffix from the final output. */
                 solutionResult.set("name", "JUnit (" + solution.replaceAll("_VISIBLE", "") + ")");
                 solutionResult.set("visibility", "visible");
             } else {
                 solutionResult.set("name", "JUnit (" + solution + ")");
                 solutionResult.set("visibility", "after_published");
             }
-            /* The correct solution is not graded, but should still appear */
+            /* The correct solution is not graded, but should still appear. */
 //            if (!isCorrectSolution) {
 //                solutionResult.set("score", 0);
 //                solutionResult.set("max_score", solutionWeighting);
 //            }
             /*
              * For each test class result JSON:
-             * - Concatenate the output of all the test classes
-             * - Determine whether at least one test class was "correct"
+             *  - Concatenate the output of all the test classes.
+             *  - Determine whether at least one test class was "correct".
              */
             StringJoiner joiner = new StringJoiner("\n");
-            /* Find the total number of tests passed/failed for this solution */
+            /* Find the total number of tests passed/failed for this solution. */
             int totalPassed = 0;
             int totalFailed = 0;
             for (Data classResult : classResults) {
@@ -501,13 +491,13 @@ public class JUnit {
 
             if (!isCorrectSolution) {
                 if (totalPassed < totalSolutionPassed) {
-                    joiner.add("\n\u2705 Outcome: Your unit tests correctly detected that this was a "
-                            + "faulty implementation.");
+                    joiner.add("\n\u2705 Outcome: Your unit tests correctly detected that this "
+                            + "was a faulty implementation.");
                     passingTests += 1;
                     solutionResult.set("status", "passed");
                 } else {
-                    joiner.add("\n\u274C Outcome: Your unit tests did not correctly detect that this "
-                            + "was a faulty implementation.");
+                    joiner.add("\n\u274C Outcome: Your unit tests did not correctly detect that "
+                            + "this was a faulty implementation.");
                     solutionResult.set("status", "failed");
                 }
             }
@@ -534,12 +524,11 @@ public class JUnit {
             }
             for (Data classResult : classResults) {
                 String classOutput = (String) classResult.get("output");
-                /* Don't add output if there is no output ("") */
+                /* Don't add output if there is no output (""). */
                 if (!classOutput.isEmpty()) {
                     joiner.add(classOutput);
                 }
-//                if (classResult.is("extra_data.correct")
-//                        && !isCorrectSolution) {
+//                if (classResult.is("extra_data.correct") && !isCorrectSolution) {
 //                    solutionResult.set("score", solutionWeighting);
 //                }
             }
@@ -558,7 +547,7 @@ public class JUnit {
         data.set("max_score", options.weighting);
         data.set("output", "You correctly identified bugs in " + passingTests
                 + " out of " + numFaultySolutions
-                + " buggy solutions");
+                + " buggy solutions.");
         data.set("visibility", "after_published");
         tests.add(1, data);
 
