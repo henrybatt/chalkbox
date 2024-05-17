@@ -17,11 +17,10 @@ import java.util.StringJoiner;
  *
  * Supports several processing "stages", including:
  * <ul>
- * <li>Checking conformance to a public API</li>
- * <li>Running JUnit tests against the submission</li>
- * <li>Assessing submitted JUnit tests by running against faulty implementations
- * </li>
- * <li>Checking adherence to a style guide by running the Checkstyle tool</li>
+ * <li>Checking conformance to a public API.</li>
+ * <li>Running JUnit tests against the submission.</li>
+ * <li>Assessing submitted JUnit tests by running against faulty implementations.</li>
+ * <li>Checking adherence to a style guide by running the Checkstyle tool.</li>
  * </ul>
  */
 public class JavaEngine extends Engine implements Configuration {
@@ -38,7 +37,7 @@ public class JavaEngine extends Engine implements Configuration {
      */
     private List<String> dependencies;
 
-    /* Configuration options for each stage */
+    /* Configuration options for each stage. */
     private Conformance.ConformanceOptions conformance;
     private Functionality.FunctionalityOptions functionality;
     private JUnit.JUnitOptions junit;
@@ -69,11 +68,11 @@ public class JavaEngine extends Engine implements Configuration {
 
     @Override
     public void run() {
-        System.out.println("Running CSSE7023 engine");
+        System.out.println("Running CSSE7023 engine.");
 
         Collection submission = super.collect();
 
-        /* Convert list of dependencies to a single classpath string */
+        /* Convert list of dependencies to a single classpath string. */
         String classPath = dependenciesToClasspath(this.dependencies);
 
         JavaCompilation compilation = new JavaCompilation(classPath);

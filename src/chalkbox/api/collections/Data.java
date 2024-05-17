@@ -11,20 +11,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A mapping of keys to values in a JSON format
+ * A mapping of keys to values in a JSON format.
  */
 public class Data {
     private JSONObject json;
 
     /**
-     * Construct a new empty data collection
+     * Construct a new empty data collection.
      */
     public Data() {
         json = new JSONObject();
     }
 
     /**
-     * Construct a new data collection from a JSON string
+     * Construct a new data collection from a JSON string.
      */
     public Data(String json) {
         JSONParser parser = new JSONParser();
@@ -36,19 +36,19 @@ public class Data {
     }
 
     /**
-     * Construct a data collection that is a copy of the parameter
+     * Construct a data collection that is a copy of the parameter.
      *
-     * @param data The data to copy
+     * @param data The data to copy.
      */
     public Data(Data data) {
         this(data.json.toJSONString());
     }
 
     /**
-     * Construct a data collection from a json file
+     * Construct a data collection from a JSON file.
      *
-     * @param file The JSON file to import
-     * @throws IOException If there is an error parsing the file
+     * @param file The JSON file to import.
+     * @throws IOException If there is an error parsing the file.
      */
     public Data(File file) throws IOException {
         FileReader reader = new FileReader(file);
@@ -62,7 +62,7 @@ public class Data {
                 throw new IOException();
             }
         } catch (IOException | ParseException pe) {
-            throw new IOException("Unable to parse JSON file");
+            throw new IOException("Unable to parse JSON file.");
         } finally {
             reader.close();
         }
@@ -94,8 +94,8 @@ public class Data {
     /**
      * Return a boolean value at key, if key doesn't hold a boolean returns false.
      *
-     * @param key The key to search for
-     * @return true if key holds a value true boolean value
+     * @param key The key to search for.
+     * @return true if key holds a value true boolean value.
      */
     public boolean is(String key) {
         Object value = get(key);
@@ -106,10 +106,10 @@ public class Data {
     }
 
     /**
-     * Get a value stored at the given key
+     * Get a value stored at the given key.
      *
-     * @param key The key to lookup
-     * @return The value stored in this data collection
+     * @param key The key to lookup.
+     * @return The value stored in this data collection.
      */
     public Object get(String key) {
         if (!key.contains(".")) {
@@ -135,10 +135,10 @@ public class Data {
     }
 
     /**
-     * Store a value at the given key
+     * Store a value at the given key.
      *
-     * @param key The key to store value at
-     * @param value The value to store
+     * @param key The key to store value at.
+     * @param value The value to store.
      */
     public void set(String key, Object value) {
         if (!key.contains(".")) {
@@ -169,7 +169,7 @@ public class Data {
     /**
      * Deletes the value at the given key.
      *
-     * @param key key to delete value at
+     * @param key key to delete value at.
      */
     public void delete(String key) {
         this.json.remove(key);

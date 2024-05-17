@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class EngineLoader {
 
-    /** No instance state */
+    /** No instance state. */
     private EngineLoader() {}
 
     /**
@@ -41,7 +41,7 @@ public class EngineLoader {
             engineClass = Class.forName(engineClassName);
         } catch (ClassNotFoundException e) {
             throw new ConfigFormatException("Engine \"" + engineClassName
-                    + "\" not found", e);
+                    + "\" not found.", e);
         }
 
         /*
@@ -68,8 +68,8 @@ public class EngineLoader {
      * @param configPath file path of config file to read
      * @param yaml YAML instance to use when reading file
      * @return a list of Objects where each Object is a YAML document
-     * @throws ConfigFormatException if the file could not be found, or if
-     * there is an incorrect number of documents in the file
+     * @throws ConfigFormatException if the file could not be found, or if there is
+     *                               an incorrect number of documents in the file.
      * @ensures \result.size() == 2
      */
     private static List<Object> readConfig(String configPath, Yaml yaml)
@@ -78,16 +78,15 @@ public class EngineLoader {
         try {
             reader = new BufferedReader(new FileReader(configPath));
         } catch (FileNotFoundException e) {
-            throw new ConfigFormatException("YAML config not found", e);
+            throw new ConfigFormatException("YAML config not found.", e);
         }
         List<Object> documents = new ArrayList<>();
         for (Object document : yaml.loadAll(reader)) {
             documents.add(document);
         }
         if (documents.size() != 2) {
-            throw new ConfigFormatException(
-                    "Incorrect number of documents in YAML config: "
-                            + "expected 2, found " + documents.size());
+            throw new ConfigFormatException("Incorrect number of documents in YAML config: "
+                                            + "expected 2, found " + documents.size() + ".");
         }
         return documents;
     }

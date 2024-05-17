@@ -37,25 +37,24 @@ public abstract class Engine implements Configuration {
     @Override
     public void validateConfig() throws ConfigFormatException {
         if (courseCode == null || courseCode.isEmpty()) {
-            throw new ConfigFormatException("Missing course code");
+            throw new ConfigFormatException("Missing course code.");
         }
         if (assignment == null || assignment.isEmpty()) {
-            throw new ConfigFormatException("Missing assessment identifier");
+            throw new ConfigFormatException("Missing assessment identifier.");
         }
         if (submission == null || submission.isEmpty()) {
-            throw new ConfigFormatException("Missing submission path");
+            throw new ConfigFormatException("Missing submission path.");
         }
         if (outputFile == null || outputFile.isEmpty()) {
-            throw new ConfigFormatException("Missing output JSON path");
+            throw new ConfigFormatException("Missing output JSON path.");
         }
     }
 
     /**
      * Returns a new Collection representing the submission and its files.
      *
-     * A "tests" key will be added to the results JSON object, with a value
-     * of an empty array. Elements of this array are interpreted as individual
-     * tests by Gradescope.
+     * A "tests" key will be added to the results JSON object, with a value of an empty array.
+     * Elements of this array are interpreted as individual tests by Gradescope.
      *
      * @return collected submission
      */
@@ -66,8 +65,7 @@ public abstract class Engine implements Configuration {
     }
 
     /**
-     * Outputs the generated results JSON object to a file, able to be read
-     * by Gradescope.
+     * Outputs the generated results JSON object to a file, able to be read by Gradescope.
      *
      * @param submission submission to output
      */

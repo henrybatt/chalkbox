@@ -23,22 +23,22 @@ public class Checkstyle {
 
     public static class CheckstyleOptions implements Configuration {
 
-        /** Whether or not to run this stage */
+        /** Whether to run this stage or not. */
         private boolean enabled = false;
 
-        /** Number of marks allocated to the Checkstyle stage */
+        /** Number of marks allocated to the Checkstyle stage. */
         private int weighting;
 
-        /** Path to the Checkstyle .xml configuration file */
+        /** Path to the Checkstyle .xml configuration file. */
         private String config;
 
-        /** Path to the Checkstyle .jar */
+        /** Path to the Checkstyle .jar. */
         private String jar;
 
-        /** List of paths to ignore when checking for style issues */
+        /** List of paths to ignore when checking for style issues. */
         private List<String> excluded;
 
-        /** Number of marks to subtract for each Checkstyle violation */
+        /** Number of marks to subtract for each Checkstyle violation. */
         private double violationPenalty = 1;
 
         @Override
@@ -47,22 +47,19 @@ public class Checkstyle {
                 return;
             }
 
-            /* Must have a configuration file */
+            /* Must have a configuration file. */
             if (config == null || config.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing config in Checkstyle stage");
+                throw new ConfigFormatException("Missing config in Checkstyle stage.");
             }
 
-            /* Must have a Checkstyle JAR */
+            /* Must have a Checkstyle JAR. */
             if (jar == null || jar.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing jar in Checkstyle stage");
+                throw new ConfigFormatException("Missing jar in Checkstyle stage.");
             }
 
-            /* Must have a weighting between 0 and 100 */
+            /* Must have a weighting between 0 and 100. */
             if (weighting < 0 || weighting > 100) {
-                throw new ConfigFormatException(
-                        "Checkstyle weighting must be between 0 and 100");
+                throw new ConfigFormatException("Checkstyle weighting must be between 0 and 100.");
             }
         }
 
@@ -119,13 +116,13 @@ public class Checkstyle {
         //</editor-fold>
     }
 
-    /** Configuration options */
+    /** Configuration options. */
     private CheckstyleOptions options;
 
     /**
      * Sets up the Checkstyle stage ready to process a submission.
      *
-     * @param options configuration options to use when running Checkstyle
+     * @param options configuration options to use when running Checkstyle.
      */
     public Checkstyle(CheckstyleOptions options) {
         this.options = options;
@@ -138,16 +135,16 @@ public class Checkstyle {
         Data result = new Data();
         result.set("name", "Automated Style");
 
-        // if submission didn't compile, give 0 marks for automated style
+        // If submission didn't compile, give 0 marks for automated style.
         if (!feedback.is("extra_data.compilation.compiles")) {
             result.set("score", 0);
             result.set("max_score", options.weighting);
-            result.set("output", "Submission did not compile, not checking automated style");
+            result.set("output", "Submission did not compile, not checking automated style.");
             tests.add(result);
             return collection;
         }
 
-        // execute the checkstyle jar on the src directory
+        // Execute the checkstyle jar on the src directory.
         ProcessExecution process;
         try {
             List<String> processArgs = new ArrayList<>();
@@ -165,25 +162,25 @@ public class Checkstyle {
             e.printStackTrace();
             result.set("score", 0);
             result.set("max_score", options.weighting);
-            result.set("output", "IOError when running Checkstyle");
+            result.set("output", "IOError when running Checkstyle.");
             tests.add(result);
             return collection;
         } catch (TimeoutException e) {
             e.printStackTrace();
             result.set("score", 0);
             result.set("max_score", options.weighting);
-            result.set("output", "Timed out when running Checkstyle");
+            result.set("output", "Timed out when running Checkstyle.");
             tests.add(result);
             return collection;
         }
 
-        // get the absolute base path of src
+        // Get the absolute base path of src.
         String basePath = Paths.get(collection.getSource().getUnmaskedPath()).toAbsolutePath().toString();
 
-        // replace the base path to make output easier to read
+        // Replace the base path to make output easier to read.
         String checkstyleOutput = process.getOutput().replace(basePath, "");
 
-        // if Checkstyle didn't exit successfully, give 0 marks for automated style
+        // If Checkstyle didn't exit successfully, give 0 marks for automated style.
         if (!checkstyleOutput.contains("Audit done.")) {
             result.set("score", 0);
             result.set("max_score", options.weighting);
@@ -198,10 +195,9 @@ public class Checkstyle {
             return collection;
         }
 
-        // count violations based on lines in output
-        // subtract 2 for header/footer lines
-        int numViolations = Math.max(0,
-                checkstyleOutput.split("\n").length - 2);
+        // Count violations based on lines in output.
+        // Subtract 2 for header/footer lines.
+        int numViolations = Math.max(0, checkstyleOutput.split("\n").length - 2);
 
         int grade = Math.max(0, 10 - numViolations);
 
