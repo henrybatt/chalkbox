@@ -9,8 +9,10 @@ import chalkbox.java.functionality.Functionality;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.logging.Logger;
 
 /**
  * ChalkBox engine for Java submissions.
@@ -19,20 +21,20 @@ import java.util.StringJoiner;
  * <ul>
  * <li>Checking conformance to a public API.</li>
  * <li>Running JUnit tests against the submission.</li>
- * <li>Assessing submitted JUnit tests by running against faulty implementations.</li>
  * <li>Checking adherence to a style guide by running the Checkstyle tool.</li>
+ * <li>Assessing submitted JUnit tests by running against faulty implementations.</li>
  * </ul>
  */
 public class JavaEngine extends Engine implements Configuration {
 
-    /**
-     * Path to the correct implementation.
-     */
+    /** The jar file containing code provided to students. */
+    public static final String PROVIDED_JAR = "provided.jar";
+
+    /** Path to the correct implementation. */
     private String correctSolution;
 
     /**
      * Paths to libraries required as dependencies when running the engine.
-     *
      * For example, JUnit and Hamcrest.
      */
     private List<String> dependencies;
@@ -42,6 +44,9 @@ public class JavaEngine extends Engine implements Configuration {
     private Functionality.FunctionalityOptions functionality;
     private JUnit.JUnitOptions junit;
     private Checkstyle.CheckstyleOptions checkstyle;
+
+    /** Logger to record events in processing submissions. */
+    private static final Logger LOGGER = Logger.getLogger(JUnit.class.getName());
 
     @Override
     public void validateConfig() throws ConfigFormatException {
@@ -102,6 +107,22 @@ public class JavaEngine extends Engine implements Configuration {
             submission = test.run(submission);
         }
 
+        /*
+         * Remove code provided to students, which is in PROVIDED_JAR, from list of dependencies.
+         * Ensures that it is not included in classpath when testing students' JUnit tests.
+         * This is necessary so that students' JUnit tests can run against faulty implementations.
+         * The classpath for the faulty implementations is set in the JUnit class.
+         *
+         * This needs to be the last stage run on the submission.
+         * The previous stages need to have "provided.jar" in the classpath.
+         */
+        List<String> dependenciesForJUnitTests = new ArrayList<>(dependencies);
+        dependenciesForJUnitTests.removeIf(path -> path.contains(PROVIDED_JAR));
+        classPath = dependenciesToClasspath(dependenciesForJUnitTests);
+        LOGGER.fine("The classpath to be used when running students' JUnit tests is: "
+                + classPath);
+
+        // Run tests of students' JUnit tests against faulty implementations of the solution.
         if (this.junit != null && this.junit.isEnabled()) {
             this.junit.setCorrectSolution(correctSolution);
             this.junit.setClassPath(classPath);

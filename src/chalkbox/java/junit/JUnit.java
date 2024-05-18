@@ -24,7 +24,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 /**
  * Assesses submitted JUnit tests by running them against faulty implementations.
@@ -184,7 +183,7 @@ public class JUnit {
      * Creates the compilation output directory.
      */
     private void createCompilationOutput() {
-        /* Create a new temporary directory for compilation output */
+        /* Create a new temporary directory for compilation output. */
         Bundle compilationOutput;
         try {
             compilationOutput = new Bundle();
@@ -193,7 +192,7 @@ public class JUnit {
             return;
         }
 
-        /* Create a subdirectory for broken solutions compilation */
+        /* Create a subdirectory for broken solutions compilation. */
         try {
             solutionsOutput = compilationOutput.makeBundle("solutions");
         } catch (IOException e) {
@@ -201,7 +200,7 @@ public class JUnit {
             return;
         }
 
-        /* Create a subdirectory for sample solution compilation */
+        /* Create a subdirectory for sample solution compilation. */
         try {
             solutionOutput = compilationOutput.makeBundle("solution");
         } catch (IOException e) {
@@ -227,7 +226,7 @@ public class JUnit {
             return;
         }
 
-        /* Compile the solution */
+        /* Compile the solution. */
         boolean compiled = Compiler.compile(Arrays.asList(files),
                 options.classPath, output, writer);
         if (!compiled) {
@@ -260,7 +259,6 @@ public class JUnit {
             }
         }
 
-
         StringWriter writer;
         for (File solutionFolder : solutions) {
             String solutionName = FileLoader.truncatePath(solutionsFolder, solutionFolder);
@@ -284,7 +282,7 @@ public class JUnit {
     private void compileSolution() {
         Bundle solutionSource = new Bundle(new File(options.correctSolution));
 
-        /* Compile the sample solution */
+        /* Compile the sample solution. */
         StringWriter writer = new StringWriter();
         compileSolution(solutionSource, "sample solution",
                 solutionOutput.getUnmaskedPath(), writer);
@@ -433,10 +431,12 @@ public class JUnit {
         int passingTests = 0;
         JSONArray tests = (JSONArray) submission.getResults().get("tests");
         for (String solution : classPaths.keySet()) {
-            /* Class path for the particular solution */
+            /* Class path for the particular solution. */
             String classPath = classPaths.get(solution)
                     + System.getProperty("path.separator")
                     + submission.getWorking().getUnmaskedPath();
+            LOGGER.fine("The classpath used for faulty solution '" + solution
+                    + "' was: " + classPath);
 
             /* JSON test result for this broken solution. */
             Data solutionResult = new Data();
@@ -502,9 +502,9 @@ public class JUnit {
                 }
             }
             joiner.add("\nTests that passed when run against a correct "
-                    + "implementation: **" + totalSolutionPassed + "**");
+                    + "implementation: **" + totalSolutionPassed + "**.");
             joiner.add("Tests that passed when run against this faulty "
-                    + "implementation: **" + totalPassed + "**");
+                    + "implementation: **" + totalPassed + "**.");
 
             String description = solutionsFolder.getAbsolutePath() + "/" + solution + "/README.txt";
             if (Files.exists(Path.of(description))) {
@@ -512,7 +512,7 @@ public class JUnit {
                 try {
                     content = Files.readString(Path.of(description));
                 } catch (IOException e) {
-                    System.out.println("Could not find solution description: " + description);
+                    LOGGER.severe("Could not find solution description: " + description + ".");
                 }
                 joiner.add("\n### Scenario");
                 joiner.add(content);
