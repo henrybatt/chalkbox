@@ -28,28 +28,28 @@ public class Functionality {
 
     public static class FunctionalityOptions implements Configuration {
 
-        /** Whether or not to run this stage */
+        /** Whether to run this stage or not. */
         private boolean enabled = false;
 
-        /** Sample solution to compile tests with */
+        /** Sample solution to compile tests with. */
         private String correctSolution;
 
-        /** Class path for tests to be compiled with */
+        /** Class path for tests to be compiled with. */
         private String classPath;
 
-        /** Number of marks allocated to the functionality stage */
+        /** Number of marks allocated to the functionality stage. */
         private int weighting;
 
-        /** Total amount of unit tests */
+        /** Total amount of unit tests. */
         private int overrideTotalTests;
 
-        /** Path of JUnit test files */
+        /** Path of JUnit test files. */
         private String testDirectory;
 
         /**
          * Checks this configuration and throws an exception if it is invalid.
          *
-         * @throws ConfigFormatException if the configuration is invalid
+         * @throws ConfigFormatException if the configuration is invalid.
          */
         @Override
         public void validateConfig() throws ConfigFormatException {
@@ -57,16 +57,15 @@ public class Functionality {
                 return;
             }
 
-            /* Must have a test directory */
+            /* Must have a test directory. */
             if (testDirectory == null || testDirectory.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing testDirectory in functionality stage");
+                throw new ConfigFormatException("Missing testDirectory in functionality stage.");
             }
 
-            /* Must have a weighting between 0 and 100 */
+            /* Must have a weighting between 0 and 100. */
             if (weighting < 0 || weighting > 100) {
                 throw new ConfigFormatException(
-                        "Functionality weighting must be between 0 and 100");
+                        "Functionality weighting must be between 0 and 100.");
             }
         }
 
@@ -134,42 +133,39 @@ public class Functionality {
     /** Configuration options */
     private FunctionalityOptions options;
 
-    /** Bundle containing the JUnit test files to run against the submission */
+    /** Bundle containing the JUnit test files to run against the submission. */
     private Bundle tests;
 
-    /** Whether there were issues compiling the sample solution or tests */
+    /** Whether there were issues compiling the sample solution or tests. */
     private boolean hasErrors;
 
-    /** Directory containing compiled test files */
+    /** Directory containing compiled test files. */
     private String testCompiledOutputDirectory;
 
     /**
      * Sets up the functionality stage ready to process a submission.
      *
-     * @param options configuration options to use when running functionality
-     *                tests
+     * @param options configuration options to use when running functionality tests.
      */
     public Functionality(FunctionalityOptions options) {
         this.options = options;
-
         this.compileTests();
     }
 
     /**
-     * Compile the sample solution and then compile the tests with the sample
-     * solution.
+     * Compile the sample solution and then compile the tests with the sample solution.
      */
     public void compileTests() {
         tests = new Bundle(new File(options.testDirectory));
         Bundle solution = new Bundle(new File(options.correctSolution));
 
-        /* Load output directories for the solution and the tests */
+        /* Load output directories for the solution and the tests. */
         Bundle solutionOutput;
         Bundle testOutput;
         try {
             solutionOutput = new Bundle();
             testOutput = new Bundle();
-            /* Add the tests to the class path for execution */
+            /* Add the tests to the class path for execution. */
             options.setClassPath(options.classPath
                     + System.getProperty("path.separator")
                     + testOutput.getUnmaskedPath());
@@ -181,11 +177,11 @@ public class Functionality {
 
         StringWriter output = new StringWriter();
 
-        /* Compile the sample solution */
+        /* Compile the sample solution. */
         Compiler.compile(Compiler.getSourceFiles(solution), options.classPath,
-                solutionOutput.getUnmaskedPath(), output);
+                         solutionOutput.getUnmaskedPath(), output);
 
-        /* Compile the tests with the sample solution */
+        /* Compile the tests with the sample solution. */
         Compiler.compile(Compiler.getSourceFiles(tests),
                 options.classPath
                         + System.getProperty("path.separator")
@@ -200,13 +196,12 @@ public class Functionality {
      * If there were issues compiling the sample solution or the tests, or
      * the submission did not compile successfully, no action is taken.
      * <p>
-     * Uses a JUnit listener to observe the passed/failed tests for each test
-     * class. One Gradescope test is created for each JUnit test method, with
-     * a mark of zero if the test failed, or a mark of
+     * Uses a JUnit listener to observe the passed/failed tests for each test class.
+     * One Gradescope test is created for each JUnit test method,
+     * with a mark of zero if the test failed, or a mark of
      * <code>stageWeighting / numTests</code> if the test passed, where
-     * <code>stageWeighting</code> is the number of marks allocated to this
-     * stage, and <code>numTests</code> is the total number of JUnit test
-     * methods in all test classes.
+     * <code>stageWeighting</code> is the number of marks allocated to this stage, and
+     * <code>numTests</code> is the total number of JUnit test methods in all test classes.
      */
     public Collection run(Collection submission) {
         if (hasErrors) {
@@ -227,7 +222,7 @@ public class Functionality {
         }
         */
 
-        /* Class path contains dependencies and the compiled submission */
+        /* Class path contains dependencies and the compiled submission. */
         String classPath = options.classPath
                 + System.getProperty("path.separator")
                 + submission.getWorking().getUnmaskedPath("bin");
@@ -237,7 +232,7 @@ public class Functionality {
         Map<String, TestClassInfo> testInfo = new HashMap<>();
         for (String className : tests.getClasses("")) {
             List<Data> results = JUnitRunner.runTests(className, classPath);
-            /* Sort alphabetically by test class then test name */
+            /* Sort alphabetically by test class then test name. */
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
             int classTests = 0;
             int classPassing = 0;
@@ -246,7 +241,7 @@ public class Functionality {
 
             for (Data result : results) {
                 boolean isPassing = (Integer) result.get("extra_data.passes") == 1;
-                // Get Test class JavaDoc
+                // Get test class JavaDoc.
                 try {
                     String testDescription = "";
                     ClassJavadoc javaDoc = new SourceLoader(testCompiledOutputDirectory).getTestJavadoc(className);
@@ -263,7 +258,7 @@ public class Functionality {
                 }
 
                 int testMultiplier = (Integer) result.get("weighting");
-                /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
+                /* e.g. A test worth 5 "units" will increase the total number of tests by 5. */
                 totalNumTests += testMultiplier;
                 functionalityResults.add(result);
                 classTests++;
@@ -277,7 +272,7 @@ public class Functionality {
             return submission;
         }
 
-        /* Mark awarded for passing a single test method (un-scaled by test multipliers) */
+        /* Mark awarded for passing a single test method (un-scaled by test multipliers). */
         final double individualTestWeighting = 1d / totalNumTests * options.weighting;
         int passingTests = 0;
 
@@ -304,7 +299,7 @@ public class Functionality {
         }
         double scaled = Math.ceil((total / (float) 100) * options.weighting);
 
-        results += "\n(" + total + "/100) * " + options.weighting + " =" + scaled;
+        results += "\n(" + total + "/100) * " + options.weighting + " = " + scaled;
 
         Data data = new Data();
         data.set("name", "Functionality Tests");
