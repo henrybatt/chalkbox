@@ -199,10 +199,10 @@ public class Checkstyle {
         // Subtract 2 for header/footer lines.
         int numViolations = Math.max(0, checkstyleOutput.split("\n").length - 2);
 
-        int grade = Math.max(0, 10 - numViolations);
+        int grade = Math.max(0, options.weighting - numViolations);
 
         result.set("score", grade);
-        result.set("max_score", 10);
+        result.set("max_score", options.weighting);
 
         String formattedOutput = Arrays.stream(checkstyleOutput.split("\n"))
                 .filter(n -> !n.contains("Starting audit") && !n.contains("Audit done"))
