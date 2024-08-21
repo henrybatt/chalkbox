@@ -304,7 +304,7 @@ public class Functionality {
         }
         double scaled = Math.ceil((total / (float) 100) * options.weighting);
 
-        results += "\n(" + total + "/100) * " + options.weighting + " =" + scaled;
+        results += "\n$$\n\\dfrac{" + total + "}{100} \\times " + options.weighting + " = " + scaled + "\n$$";
 
         Data data = new Data();
         data.set("name", "Functionality Tests");
