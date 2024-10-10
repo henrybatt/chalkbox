@@ -395,8 +395,10 @@ public class JUnit {
             visibleOutput += error.toString();
         }
         junitResult.put("output", visibleOutput);
-        testResults.add(3, junitResult);
-
+        if (testResults.size() >= 3) {
+            testResults.add(3, junitResult);
+        }
+        
         /*
         Run submitted JUnit tests against broken solutions even if one or
         more test classes don't compile, as long as at least one does.
