@@ -38,8 +38,8 @@ sourceSets {
 sourceSets.test.resources
 
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-    implementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    implementation group: 'junit', name: 'junit', version: '4.13'
     // Library for JSON
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
     // Command line argument parsing
