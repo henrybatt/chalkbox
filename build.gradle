@@ -1,12 +1,14 @@
 plugins {
     id 'java'
     id 'application'
-    id "org.sonarqube" version "2.7.1"
-    id 'org.openjfx.javafxplugin' version '0.0.8'
+    id "org.sonarqube" version "5.0.0.4638"
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
-sourceCompatibility = 1.21
-targetCompatibility = 1.21
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
 repositories {
     mavenCentral()
@@ -69,7 +71,9 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.27'
 }
 
-mainClassName = 'chalkbox.api.ChalkBox'
+application {
+    mainClass = 'chalkbox.api.ChalkBox'
+}
 
 javadoc {
     source = sourceSets.main.allJava
@@ -78,14 +82,14 @@ javadoc {
 
 jar {
     manifest {
-        attributes 'Main-Class': mainClassName
+        attributes 'Main-Class': application.mainClass
     }
     archiveBaseName = project.name
 }
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Main-Class': mainClassName
+        attributes 'Main-Class': application.mainClass
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
@@ -94,4 +98,3 @@ task fatJar(type: Jar) {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
-
