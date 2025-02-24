@@ -302,9 +302,9 @@ public class Functionality {
             possible += info.weight;
             results += "| " + info.className + " | " + info.weight + " | " + info.passingTests + "/" + info.totalTests + " | " + score + "|\n";
         }
-        double scaled = Math.ceil((total / (float) 100) * options.weighting);
+        double scaled = Math.ceil((total / possible) * options.weighting);
 
-        results += "\n$$\n\\dfrac{" + total + "}{100} \\times " + options.weighting + " = " + scaled + "\n$$";
+        results += "\n$$\n\\dfrac{" + total + "}{" + possible + "} \\times " + options.weighting + " = " + scaled + "\n$$";
 
         Data data = new Data();
         data.set("name", "Functionality Tests");
