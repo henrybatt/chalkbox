@@ -131,6 +131,11 @@ public class Functionality {
             List<Data> tests
     ) {}
 
+    private record SolutionSummary(
+            int totalTests,
+            double classWeight
+    ) {}
+
     /** Configuration options */
     private FunctionalityOptions options;
 
@@ -142,6 +147,9 @@ public class Functionality {
 
     /** Directory containing compiled test files */
     private String testCompiledOutputDirectory;
+
+    /** Mapping of testing classes to summaries. */
+    private Map<String, SolutionSummary> testSummaries = new HashMap<>();
 
     /**
      * Sets up the functionality stage ready to process a submission.
@@ -185,13 +193,20 @@ public class Functionality {
         Compiler.compile(Compiler.getSourceFiles(solution), options.classPath,
                 solutionOutput.getUnmaskedPath(), output);
 
+        String classPath = options.classPath
+                + System.getProperty("path.separator")
+                + solutionOutput.getUnmaskedPath();
+
         /* Compile the tests with the sample solution */
-        Compiler.compile(Compiler.getSourceFiles(tests),
-                options.classPath
-                        + System.getProperty("path.separator")
-                        + solutionOutput.getUnmaskedPath(),
+        Compiler.compile(Compiler.getSourceFiles(tests), classPath,
                 testOutput.getUnmaskedPath(), output);
         testCompiledOutputDirectory = testOutput.getUnmaskedPath();
+
+        /* Summarise tests using the solution. */
+        for (String className : tests.getClasses("")) {
+            List<Data> results = JUnitRunner.runTests(className, classPath);
+            testSummaries.put(className, new SolutionSummary(results.size(), (Double) results.getLast().get("classWeighting")));
+        }
     }
 
     /**
@@ -239,9 +254,10 @@ public class Functionality {
             List<Data> results = JUnitRunner.runTests(className, classPath);
             /* Sort alphabetically by test class then test name */
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
-            int classTests = 0;
             int classPassing = 0;
-            double classWeighting = 1;
+            /* Use test summaries to collect information even if test fails to compile. */
+            int classTests = testSummaries.get(className).totalTests;
+            double classWeighting = testSummaries.get(className).classWeight;
             List<Data> testCases = new ArrayList<>();
 
             for (Data result : results) {
@@ -266,12 +282,10 @@ public class Functionality {
                 /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
                 totalNumTests += testMultiplier;
                 functionalityResults.add(result);
-                classTests++;
-                classWeighting = (Double) result.get("classWeighting");
                 classPassing += (Integer) result.get("extra_data.passes") == 1 ? 1 : 0;
                 testCases.add(result);
             }
-            testInfo.put(className, new TestClassInfo(className, classTests > 0 ? classTests : 1, classPassing, classWeighting, testCases));
+            testInfo.put(className, new TestClassInfo(className, classTests, classPassing, classWeighting, testCases));
         }
         if (totalNumTests == 0) {
             return submission;
@@ -297,6 +311,10 @@ public class Functionality {
         double possible = 0;
 
         for (TestClassInfo info : testInfo.values()) {
+            // Skip classes that have no tests.
+            if (info.totalTests <= 0) {
+                continue;
+            }
             double score = (info.passingTests / (float) info.totalTests) * info.weight;
             total += score;
             possible += info.weight;
