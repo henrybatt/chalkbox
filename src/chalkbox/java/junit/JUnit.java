@@ -341,6 +341,21 @@ public class JUnit {
         /* Compile each submitted test class individually */
         boolean anyCompiles = false;
         boolean allCompiles = true;
+        
+        // If JUnit is enables but the assessable classes are empty or contain nulls instead infer the test classes 
+        if (options.enabled && (options.assessableTestClasses.isEmpty() || options.assessableTestClasses.contains(null))) {
+            // Find all .java files uploaded in submission 'test/' dir and use them as inferred JUnit test classNames
+            List<String> inferredTestClasses = new ArrayList<>();
+            try {
+                for (String fileName : tests.getFileNames(".java")){
+                    inferredTestClasses.add(fileName.replace(".java", "").replace("/", "."));
+                }
+            } catch (NullPointerException e) {
+                error.write("❌ Failed to find test directory - Ensure your submission structure is correct.\n");
+            }
+            options.setAssessableTestClasses(inferredTestClasses);
+        }
+
         for (String className : options.assessableTestClasses) {
             boolean success = false;
             String fileName = className.replace(".", "/") + ".java";
