@@ -11,6 +11,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class IntersectionTest {
+    public static final double testWeight = 30;
+
+
     private Intersection intersection1;
 
     @Before
