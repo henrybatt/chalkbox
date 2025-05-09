@@ -40,6 +40,11 @@ public class JUnit {
         private boolean enabled = false;
 
         /**
+         * Whether or not to infer test class names
+         */
+        private boolean inferred = false;
+
+        /**
          * Path to a directory containing the sample solution
          */
         private String correctSolution;
@@ -81,9 +86,12 @@ public class JUnit {
                         "Missing faultySolutions in JUnit stage");
             }
 
-            /* Must have a list of assessable test classes */
-            if (assessableTestClasses == null
-                    || assessableTestClasses.isEmpty()) {
+            /* Strip possible nulls from assessableTestClasses */
+            assessableTestClasses.removeIf(i -> i == null);
+
+            /* Must have a valid list of assessable test classes or be in infer mode */
+            if (!inferred && (assessableTestClasses == null
+                    || assessableTestClasses.isEmpty())) {
                 throw new ConfigFormatException(
                         "Missing assessableTestClasses in JUnit stage");
             }
@@ -145,6 +153,13 @@ public class JUnit {
             this.enabled = enabled;
         }
 
+        public boolean isInferred() {
+            return inferred;
+        }
+
+        public void setInferred(boolean inferred) {
+            this.inferred = inferred;
+        }
         //</editor-fold>
     }
 
@@ -342,18 +357,23 @@ public class JUnit {
         boolean anyCompiles = false;
         boolean allCompiles = true;
         
-        // If JUnit is enables but the assessable classes are empty or contain nulls instead infer the test classes 
-        if (options.enabled && (options.assessableTestClasses.isEmpty() || options.assessableTestClasses.contains(null))) {
-            // Find all .java files uploaded in submission 'test/' dir and use them as inferred JUnit test classNames
-            List<String> inferredTestClasses = new ArrayList<>();
+        /* If running in inferred mode find all .java files uploaded in submission 'test/' dir and use them as inferred classNames. */
+        if (options.inferred) {
+            /* If there exists assessableTestClasses extend the inferredClasses with these tests */
+            Set<String> inferredTestClasses = new LinkedHashSet<>();
+            if (options.assessableTestClasses != null) {
+                inferredTestClasses.addAll(options.assessableTestClasses);
+            }
             try {
                 for (String fileName : tests.getFileNames(".java")){
                     inferredTestClasses.add(fileName.replace(".java", "").replace("/", "."));
                 }
             } catch (NullPointerException e) {
                 error.write("❌ Failed to find test directory - Ensure your submission structure is correct.\n");
+            } finally {
+                allCompiles = !inferredTestClasses.isEmpty();
+                options.setAssessableTestClasses(new ArrayList<>(inferredTestClasses));
             }
-            options.setAssessableTestClasses(inferredTestClasses);
         }
 
         for (String className : options.assessableTestClasses) {
