@@ -205,7 +205,10 @@ public class Functionality {
         /* Summarise tests using the solution. */
         for (String className : tests.getClasses("")) {
             List<Data> results = JUnitRunner.runTests(className, classPath);
-            testSummaries.put(className, new SolutionSummary(results.size(), (Double) results.getLast().get("classWeighting")));
+            if (!results.isEmpty()) {
+                // Only summarise if there are tests in file, else skip.
+                testSummaries.put(className, new SolutionSummary(results.size(), (Double) results.getLast().get("classWeighting")));
+            }
         }
     }
 
@@ -252,6 +255,10 @@ public class Functionality {
         Map<String, TestClassInfo> testInfo = new HashMap<>();
         for (String className : tests.getClasses("")) {
             List<Data> results = JUnitRunner.runTests(className, classPath);
+            // There are no tests in file - skip over it.
+            if (results.isEmpty()) {
+                continue;
+            }
             /* Sort alphabetically by test class then test name */
             results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
             int classPassing = 0;
