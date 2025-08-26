@@ -25,6 +25,7 @@ public class JUnitRunner {
     }
 
     private static JUnitListener run(String className, String classPath) {
+        System.out.println("Testing " + className);
         JUnitListener listener = new JUnitListener();
         JUnitCore runner = new JUnitCore();
         runner.addListener(listener);

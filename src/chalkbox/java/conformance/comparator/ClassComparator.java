@@ -38,6 +38,7 @@ public class ClassComparator extends CodeComparator<Class> {
             flags.add(constructorFlag);
         } catch (NoClassDefFoundError ncd) {
             flags.add(new Flag("Failed to load fields: " + ncd.getMessage(), true));
+            ncd.printStackTrace();
         }
 
         Flag shouldBeInterface = new Flag("Expected class to be an interface");

@@ -59,6 +59,11 @@ public class Conformance {
         private String expectedStructure;
 
         /**
+         * Paths to ignore when checking file structure.
+         */
+        private String[] ignoreExtraFilesPaths = new String[]{};
+
+        /**
          * Number of marks allocated to the conformance check.
          *
          * Used when calculating the "score" for the conformance test result.
@@ -135,6 +140,14 @@ public class Conformance {
             this.classPath = classPath;
         }
 
+        public String[] getIgnoreExtraFilesPaths() {
+            return this.ignoreExtraFilesPaths;
+        }
+
+        public void setIgnoreExtraFilesPaths(String[] ignore) {
+            this.ignoreExtraFilesPaths = ignore;
+        }
+
         public int getWeighting() {
             return weighting;
         }
@@ -168,6 +181,8 @@ public class Conformance {
      */
     private List<String> expectedFiles;
 
+    private Set<String> filesToIgnore;
+
     /**
      * Sets up the conformance checker ready to check a submission.
      *
@@ -180,6 +195,8 @@ public class Conformance {
 
         /* Load a list of all files expected to be found in a submission */
         this.expectedFiles = FileLoader.loadFiles(options.expectedStructure);
+
+        this.filesToIgnore = new HashSet<>(List.of(options.ignoreExtraFilesPaths));
 
         /* Compile and store the Java classes from the expected structure */
         loadExpected();
@@ -247,13 +264,13 @@ public class Conformance {
         tests.add(result);
 
         for (String expected : expectedFiles) {
-            if (!actual.contains(expected)) {
+            if (!actual.contains(expected) && !filesToIgnore.contains(expected)) {
                 missing.add(expected);
             }
         }
 
         for (String path : actual) {
-            if (!expectedFiles.contains(path)) {
+            if (!expectedFiles.contains(path) && !filesToIgnore.contains(path)) {
                 extra.add(path);
             }
         }
@@ -320,6 +337,12 @@ public class Conformance {
             result.set("name", "Conformance: " + className);
             result.set("output", "");
             tests.add(result);
+
+            // TODO: VERY TEMP
+            if (className.contains("PlayerManager") || className.contains("BeanWorld")) {
+                result.set("output", "Conformance temporarily not checked due to bug (course staff are working to fix this).");
+                continue;
+            }
 
             Class expectedClass = expectedClasses.get(className);
             Class actualClass = submissionMap.get(className);

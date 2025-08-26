@@ -411,8 +411,10 @@ public class JUnit {
                 }
                 output.add(compileOutput.toString());
             } catch (FileNotFoundException | NullPointerException e) {
+                e.printStackTrace();
                 error.write("❌ JUnit test file `" + fileName + "` not found.\n");
             } catch (IOException e) {
+                e.printStackTrace();
                 error.write("IO Compile Error - Please contact course staff\n");
             }
             if (!success) {
