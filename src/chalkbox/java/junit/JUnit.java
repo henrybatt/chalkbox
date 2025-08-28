@@ -296,8 +296,7 @@ public class JUnit {
             compileSolution(solutionBundle, solutionName, solutionOut, writer);
 
             /* Add an entry for this solution to the class path mapping */
-            classPaths.put(solutionName, options.classPath
-                    + System.getProperty("path.separator") + solutionOut);
+            classPaths.put(solutionName, solutionOut + System.getProperty("path.separator") + options.classPath);
         }
     }
 

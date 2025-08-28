@@ -254,6 +254,9 @@ public class Functionality {
         JSONArray functionalityResults = new JSONArray();
         Map<String, TestClassInfo> testInfo = new HashMap<>();
         for (String className : tests.getClasses("")) {
+            if (!className.endsWith("Test")) {
+                continue;
+            }
             List<Data> results = JUnitRunner.runTests(className, classPath);
             // There are no tests in file - skip over it.
             if (results.isEmpty()) {
