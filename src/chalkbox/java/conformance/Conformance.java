@@ -181,7 +181,7 @@ public class Conformance {
      */
     private List<String> expectedFiles;
 
-    private Set<String> filesToIgnore;
+    private IgnorePaths filesToIgnore;
 
     /**
      * Sets up the conformance checker ready to check a submission.
@@ -196,7 +196,7 @@ public class Conformance {
         /* Load a list of all files expected to be found in a submission */
         this.expectedFiles = FileLoader.loadFiles(options.expectedStructure);
 
-        this.filesToIgnore = new HashSet<>(List.of(options.ignoreExtraFilesPaths));
+        this.filesToIgnore = IgnorePaths.ofStrings(options.ignoreExtraFilesPaths);
 
         /* Compile and store the Java classes from the expected structure */
         loadExpected();
@@ -264,13 +264,13 @@ public class Conformance {
         tests.add(result);
 
         for (String expected : expectedFiles) {
-            if (!actual.contains(expected) && !filesToIgnore.contains(expected)) {
+            if (!actual.contains(expected)) {
                 missing.add(expected);
             }
         }
 
         for (String path : actual) {
-            if (!expectedFiles.contains(path) && !filesToIgnore.contains(path)) {
+            if (!expectedFiles.contains(path) && !filesToIgnore.doIgnore(path)) {
                 extra.add(path);
             }
         }
@@ -290,7 +290,7 @@ public class Conformance {
         if (extra.isEmpty()) {
             result.set("output", result.get("output") + "✅ No extra files\n");
         } else {
-            result.set("output", result.get("output") + "❌ Extra files\n\n");
+            result.set("output", result.get("output") + "⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n\n");
             result.set("output", result.get("output") + String.join("\n", extra) + "\n\n");
         }
 
