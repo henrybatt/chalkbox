@@ -1,4 +1,4 @@
-package chalkbox.stages.checkstyle;
+package chalkbox.stages.codestyle;
 
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
@@ -112,6 +112,7 @@ public class CodeStyle implements Stage {
         var formattedOutput = Arrays.stream(checkstyleOutput.split("\n"))
                 .filter(n -> !n.contains("Starting audit") && !n.contains("Audit done"))
                 .map(n -> n.replace("[WARN] ", "❌ "))
+                .map(n -> n.replace(submission.getBasePath(), ""))
                 .collect(Collectors.joining("\n"));
 
         result.appendComment(String.format("""

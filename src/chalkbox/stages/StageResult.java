@@ -4,7 +4,7 @@ public class StageResult implements Result {
 
     private int maxScore;
     private int score;
-    private String comments;
+    private String comments = "";
 
     @Override
     public String getName() {

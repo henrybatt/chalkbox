@@ -1,6 +1,6 @@
 package chalkbox.config;
 
-import chalkbox.stages.checkstyle.CodeStyle;
+import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.compilation.Compilation;
 import de.bsommerfeld.jshepherd.annotation.Comment;
 import de.bsommerfeld.jshepherd.annotation.Key;

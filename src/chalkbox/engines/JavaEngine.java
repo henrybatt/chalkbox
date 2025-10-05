@@ -1,7 +1,6 @@
 package chalkbox.engines;
 
 import chalkbox.api.collections.Collection;
-import chalkbox.stages.compilation.JavaCompilationOld;
 import chalkbox.stages.conformance.Conformance;
 import chalkbox.stages.junit.JUnit;
 import chalkbox.stages.functionality.Functionality;
@@ -70,8 +69,6 @@ public class JavaEngine extends Engine implements Configuration {
         /* Convert list of dependencies to a single classpath string */
         String classPath = dependenciesToClasspath(this.dependencies);
 
-        JavaCompilationOld compilation = new JavaCompilationOld(classPath);
-        submission = compilation.compile(submission);
 
         if (this.conformance != null && this.conformance.isEnabled()) {
             this.conformance.setCorrectSolution(correctSolution);
