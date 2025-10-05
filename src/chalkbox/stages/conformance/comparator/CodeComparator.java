@@ -1,7 +1,7 @@
-package chalkbox.java.conformance.comparator;
+package chalkbox.stages.conformance.comparator;
 
-import chalkbox.java.conformance.comparator.flags.Flag;
-import chalkbox.java.conformance.comparator.flags.SingularFlag;
+import chalkbox.stages.conformance.comparator.flags.Flag;
+import chalkbox.stages.conformance.comparator.flags.SingularFlag;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;

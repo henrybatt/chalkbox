@@ -1,4 +1,4 @@
-package chalkbox.java.conformance;
+package chalkbox.stages.conformance;
 
 import java.util.*;
 

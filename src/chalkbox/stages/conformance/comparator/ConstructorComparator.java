@@ -1,6 +1,6 @@
-package chalkbox.java.conformance.comparator;
+package chalkbox.stages.conformance.comparator;
 
-import chalkbox.java.conformance.comparator.flags.ListFlag;
+import chalkbox.stages.conformance.comparator.flags.ListFlag;
 
 import java.lang.reflect.Constructor;
 

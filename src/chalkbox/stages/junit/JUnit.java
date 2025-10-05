@@ -1,4 +1,4 @@
-package chalkbox.java.junit;
+package chalkbox.stages.junit;
 
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
@@ -20,11 +20,9 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 /**
  * Assesses submitted JUnit tests by running them against faulty

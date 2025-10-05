@@ -1,0 +1,13 @@
+# Chalkbox Config
+
+# Enable debug logging
+debug-mode: false
+
+codestyle:
+  # How much out of 100 is the codestyle worth
+  weighting: 15
+  # How much out of the weighting to reduce per infraction
+  penaltyPerInfraction: 0.5
+  # Which files to exclude from the checkstyle
+  excluded:
+    - ./test/resources/csse2002/submission/src/tms/display/

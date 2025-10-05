@@ -1,4 +1,4 @@
-package chalkbox.java.compilation;
+package chalkbox.stages.compilation;
 
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
@@ -43,7 +43,7 @@ import java.io.StringWriter;
  * <code>extra_data.compilation.compiles</code> set to false and
  * <code>extra_data.compilation.output</code> set to "Empty submission".
  */
-public class JavaCompilation {
+public class JavaCompilationOld {
 
     /** Message shown in output when submission compiles */
     private static final String FAILURE_MSG = "❌ Submission did not compile.";
@@ -59,7 +59,7 @@ public class JavaCompilation {
      * @param classPath class path to use when compiling submission
      * @throws IOException if loading the expected class files fails
      */
-    public JavaCompilation(String classPath) {
+    public JavaCompilationOld(String classPath) {
         this.classPath = classPath;
     }
 

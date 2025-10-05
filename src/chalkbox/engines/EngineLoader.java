@@ -48,10 +48,10 @@ public class EngineLoader {
          * We have to read the config file again, this time using the
          * constructor of the engine class.
          */
-        Representer representer = new Representer();
-        representer.getPropertyUtils().setSkipMissingProperties(true);
-        Yaml yaml = new Yaml(new Constructor(engineClass), representer);
-        documents = readConfig(configPath, yaml);
+//        Representer representer = new Representer();
+//        representer.getPropertyUtils().setSkipMissingProperties(true);
+//        Yaml yaml = new Yaml(new Constructor(engineClass), representer);
+//        documents = readConfig(configPath, yaml);
 
         Engine engine = (Engine) documents.get(1);
         engine.validateConfig();

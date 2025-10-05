@@ -1,4 +1,4 @@
-package chalkbox.java.functionality;
+package chalkbox.stages.functionality;
 
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
@@ -7,8 +7,8 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Configuration;
-import chalkbox.java.compilation.JavaCompilation;
-import chalkbox.java.conformance.SourceLoader;
+import chalkbox.stages.compilation.JavaCompilationOld;
+import chalkbox.stages.conformance.SourceLoader;
 import com.github.therapi.runtimejavadoc.ClassJavadoc;
 import com.github.therapi.runtimejavadoc.MethodJavadoc;
 import org.json.simple.JSONArray;
@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * Process to execute JUnit tests on each submission.
  *
- * Requires {@link JavaCompilation} process to be executed first.
+ * Requires {@link JavaCompilationOld} process to be executed first.
  * Checks if "extra_data.compilation.compiles" is true.
  */
 public class Functionality {

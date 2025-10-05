@@ -1,4 +1,4 @@
-package chalkbox.java.conformance.comparator.flags;
+package chalkbox.stages.conformance.comparator.flags;
 
 import java.util.ArrayList;
 import java.util.Collections;

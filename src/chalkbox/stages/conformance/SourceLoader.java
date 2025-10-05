@@ -1,4 +1,4 @@
-package chalkbox.java.conformance;
+package chalkbox.stages.conformance;
 
 import com.github.therapi.runtimejavadoc.ClassJavadoc;
 import com.github.therapi.runtimejavadoc.internal.JsonJavadocReader;

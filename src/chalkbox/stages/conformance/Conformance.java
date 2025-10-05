@@ -1,4 +1,4 @@
-package chalkbox.java.conformance;
+package chalkbox.stages.conformance;
 
 import chalkbox.api.collections.Bundle;
 import chalkbox.api.collections.Collection;
@@ -7,8 +7,8 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.files.FileLoader;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Configuration;
-import chalkbox.java.conformance.comparator.ClassComparator;
-import chalkbox.java.conformance.comparator.CodeComparator;
+import chalkbox.stages.conformance.comparator.ClassComparator;
+import chalkbox.stages.conformance.comparator.CodeComparator;
 import org.json.simple.JSONArray;
 
 import java.io.File;

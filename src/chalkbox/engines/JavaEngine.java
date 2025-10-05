@@ -1,11 +1,10 @@
 package chalkbox.engines;
 
 import chalkbox.api.collections.Collection;
-import chalkbox.java.checkstyle.Checkstyle;
-import chalkbox.java.compilation.JavaCompilation;
-import chalkbox.java.conformance.Conformance;
-import chalkbox.java.junit.JUnit;
-import chalkbox.java.functionality.Functionality;
+import chalkbox.stages.compilation.JavaCompilationOld;
+import chalkbox.stages.conformance.Conformance;
+import chalkbox.stages.junit.JUnit;
+import chalkbox.stages.functionality.Functionality;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +41,6 @@ public class JavaEngine extends Engine implements Configuration {
     private Conformance.ConformanceOptions conformance;
     private Functionality.FunctionalityOptions functionality;
     private JUnit.JUnitOptions junit;
-    private Checkstyle.CheckstyleOptions checkstyle;
 
     @Override
     public void validateConfig() throws ConfigFormatException {
@@ -61,10 +59,6 @@ public class JavaEngine extends Engine implements Configuration {
         if (this.junit != null) {
             this.junit.validateConfig();
         }
-
-        if (this.checkstyle != null) {
-            this.checkstyle.validateConfig();
-        }
     }
 
     @Override
@@ -76,7 +70,7 @@ public class JavaEngine extends Engine implements Configuration {
         /* Convert list of dependencies to a single classpath string */
         String classPath = dependenciesToClasspath(this.dependencies);
 
-        JavaCompilation compilation = new JavaCompilation(classPath);
+        JavaCompilationOld compilation = new JavaCompilationOld(classPath);
         submission = compilation.compile(submission);
 
         if (this.conformance != null && this.conformance.isEnabled()) {
@@ -89,11 +83,6 @@ public class JavaEngine extends Engine implements Configuration {
                 e.printStackTrace();
                 return;
             }
-        }
-
-        if (this.checkstyle != null && this.checkstyle.isEnabled()) {
-            Checkstyle checkstyle = new Checkstyle(this.checkstyle);
-            submission = checkstyle.run(submission);
         }
 
         if (this.functionality != null && this.functionality.isEnabled()) {
@@ -169,14 +158,6 @@ public class JavaEngine extends Engine implements Configuration {
 
     public void setJunit(JUnit.JUnitOptions junit) {
         this.junit = junit;
-    }
-
-    public Checkstyle.CheckstyleOptions getCheckstyle() {
-        return this.checkstyle;
-    }
-
-    public void setCheckstyle(Checkstyle.CheckstyleOptions checkstyle) {
-        this.checkstyle = checkstyle;
     }
 
     //</editor-fold>

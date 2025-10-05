@@ -1,4 +1,4 @@
-package chalkbox.java.conformance.comparator.flags;
+package chalkbox.stages.conformance.comparator.flags;
 
 public class SingularFlag<T> extends Flag {
     private T expected;

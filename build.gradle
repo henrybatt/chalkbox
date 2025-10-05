@@ -20,6 +20,9 @@ sourceSets {
         java {
             srcDir 'src'
         }
+        resources {
+            srcDirs "src/resources"
+        }
     }
 
     test {
@@ -53,6 +56,8 @@ dependencies {
     implementation 'com.google.dagger:dagger:2.57.2'
     implementation 'com.github.bsommerfeld.jshepherd:core:3.3.2'
     implementation 'com.github.bsommerfeld.jshepherd:yaml:3.3.2'
+    implementation 'com.google.flogger:flogger:0.9'
+    implementation 'com.google.flogger:flogger-system-backend:0.9'
 
     // Annotations
     annotationProcessor 'com.google.dagger:dagger-compiler:2.57.2'
