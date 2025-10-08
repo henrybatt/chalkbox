@@ -7,8 +7,10 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.api.files.FileLoader;
 import chalkbox.engines.ConfigFormatException;
 import chalkbox.engines.Configuration;
+import chalkbox.stages.StageResult;
 import chalkbox.stages.conformance.comparator.ClassComparator;
 import chalkbox.stages.conformance.comparator.CodeComparator;
+import chalkbox.submission.Submission;
 import org.json.simple.JSONArray;
 
 import java.io.File;
@@ -28,210 +30,21 @@ import java.util.*;
  */
 public class Conformance {
 
-    public static class ConformanceOptions implements Configuration {
+    private List<String> filesToIgnore;
 
-        /**
-         * Whether or not to run this stage
-         */
-        private boolean enabled = false;
-
-        /**
-         * Path of the correct solution to the assignment.
-         *
-         * Will be compiled into class files which are checked member-for-member
-         * against classes in the the provided submission.
-         */
-        private String correctSolution;
-
-        /**
-         * Class path to use when compiling the sample solution.
-         *
-         * Any dependencies should be added here, e.g. JUnit.
-         */
-        private String classPath;
-
-        /**
-         * Path of the directory to compare against the provided submission.
-         *
-         * Extra and missing files will be flagged based on whether they appear
-         * in this directory.
-         */
-        private String expectedStructure;
-
-        /**
-         * Paths to ignore when checking file structure.
-         */
-        private String[] ignoreExtraFilesPaths = new String[]{};
-
-        /**
-         * Number of marks allocated to the conformance check.
-         *
-         * Used when calculating the "score" for the conformance test result.
-         */
-        private int weighting;
-
-        /**
-         * Number of marks to subtract for each instance of non-conformance.
-         *
-         * Defaults to 1 mark per instance.
-         */
-        private double violationPenalty = 1;
-
-        /**
-         * Checks this configuration and throws an exception if it is invalid.
-         *
-         * @throws ConfigFormatException if the configuration is invalid
-         */
-        @Override
-        public void validateConfig() throws ConfigFormatException {
-            if (!enabled) {
-                return;
-            }
-
-            /*
-             * Do not need classPath or correctSolution immediately - these are
-             * set later.
-             */
-
-            /* Must have expected structure */
-            if (expectedStructure == null || expectedStructure.isEmpty()) {
-                throw new ConfigFormatException(
-                        "Missing expectedStructure in conformance stage");
-            }
-
-            /* Must have a weighting between 0 and 100 */
-            if (weighting < 0 || weighting > 100) {
-                throw new ConfigFormatException(
-                        "Conformance weighting must be between 0 and 100");
-            }
-        }
-
-        //<editor-fold desc="JavaBeans getters/setters">
-
-        public String getExpectedStructure() {
-            return expectedStructure;
-        }
-
-        public void setExpectedStructure(String expectedStructure) {
-            this.expectedStructure = expectedStructure;
-        }
-
-        public double getViolationPenalty() {
-            return violationPenalty;
-        }
-
-        public void setViolationPenalty(double violationPenalty) {
-            this.violationPenalty = violationPenalty;
-        }
-
-        public String getCorrectSolution() {
-            return correctSolution;
-        }
-
-        public void setCorrectSolution(String correctSolution) {
-            this.correctSolution = correctSolution;
-        }
-
-        public String getClassPath() {
-            return classPath;
-        }
-
-        public void setClassPath(String classPath) {
-            this.classPath = classPath;
-        }
-
-        public String[] getIgnoreExtraFilesPaths() {
-            return this.ignoreExtraFilesPaths;
-        }
-
-        public void setIgnoreExtraFilesPaths(String[] ignore) {
-            this.ignoreExtraFilesPaths = ignore;
-        }
-
-        public int getWeighting() {
-            return weighting;
-        }
-
-        public void setWeighting(int weighting) {
-            this.weighting = weighting;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-        //</editor-fold>
-    }
-
-    /**
-     * Configuration options.
-     */
-    private ConformanceOptions options;
-
-    /**
-     * Mapping of class names to loaded classes for the expected structure.
-     */
-    private Map<String, Class> expectedClasses;
-
-    /**
-     * List of all files present in the expected structure.
-     */
-    private List<String> expectedFiles;
-
-    private IgnorePaths filesToIgnore;
+    private String classPath;
 
     /**
      * Sets up the conformance checker ready to check a submission.
-     *
-     * @param options configuration options to use when checking conformance
-     * @throws IOException if loading the expected class files fails
      */
-    public Conformance(ConformanceOptions options) throws IOException {
-        /* Set the provided options */
-        this.options = options;
-
-        /* Load a list of all files expected to be found in a submission */
-        this.expectedFiles = FileLoader.loadFiles(options.expectedStructure);
-
-        this.filesToIgnore = IgnorePaths.ofStrings(options.ignoreExtraFilesPaths);
-
-        /* Compile and store the Java classes from the expected structure */
-        loadExpected();
+    public Conformance(String classPath, List<String> ignoreMatches) throws IOException {
+        this.filesToIgnore = ignoreMatches;
+        this.classPath = classPath;
     }
 
-    /**
-     * Loads the expected class files into the conformance checker
-     */
-    private void loadExpected() throws IOException {
-        Bundle expected = new Bundle(new File(options.expectedStructure + "/src"));
-        StringWriter output = new StringWriter();
-
-        /* Load output directories for the solution and the tests */
-        Bundle out;
-        try {
-            out = new Bundle();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        /* Compile the sample solution */
-        Compiler.compile(Compiler.getSourceFiles(expected), options.classPath,
-                out.getUnmaskedPath(), output);
-
-        SourceLoader expectedLoader = loaderWithDeps(out.getUnmaskedPath());
-        try {
-            expectedClasses = expectedLoader.getClassMap();
-        } catch (ClassNotFoundException cnf) {
-            throw new RuntimeException("Failed to load expected class");
-        }
-    }
 
     private SourceLoader loaderWithDeps(String directory) throws IOException {
-        URL[] urls = Arrays.stream(options.classPath.split(":"))
+        URL[] urls = Arrays.stream(classPath.split(":"))
                 .map(e -> {
                     try {
                         return new URL("file://" + e);
@@ -251,26 +64,24 @@ public class Conformance {
      * @throws IOException if the submission's compiled source files cannot be
      * found
      */
-    public Collection run(Collection submission) throws IOException {
-        List<String> missing = new ArrayList<>();
-        List<String> extra = new ArrayList<>();
-        List<String> actual = FileLoader.loadFiles(submission.getSource().getUnmaskedPath());
+    public StageResult run(Submission submission, Solution solution) throws IOException {
+        var missing = new ArrayList<String>();
+        var extra = new ArrayList<String>();
+        // todo(mh): apple the exceptions to this via wildcard globbing.
+        var actual = FileLoader.loadFiles(submission.getSrcFolder());
+        // todo(mh): apply the exceptions to this via wildcard globbing.
+        var expectedFiles = FileLoader.loadFiles(solution.getSrcFolder());
 
-        Data data = submission.getResults();
-        JSONArray tests = (JSONArray) data.get("tests");
-        Data result = new Data(); // test result representing conformance check
-        result.set("name", "Conformance: File Structure");
-        result.set("output", "");
-        tests.add(result);
+        var result = new StageResult();
 
-        for (String expected : expectedFiles) {
+        for (var expected : expectedFiles) {
             if (!actual.contains(expected)) {
                 missing.add(expected);
             }
         }
 
         for (String path : actual) {
-            if (!expectedFiles.contains(path) && !filesToIgnore.doIgnore(path)) {
+            if (!expectedFiles.contains(path)) {
                 extra.add(path);
             }
         }
@@ -280,50 +91,34 @@ public class Conformance {
         Collections.sort(extra);
 
         if (missing.isEmpty()) {
-            result.set("output", result.get("output") + "✅ No missing files\n");
-            result.set("status", "passed");
+            result.appendComment("✅ No missing files");
         } else {
-            result.set("output", result.get("output") + "❌ Missing files \n\n");
-            result.set("output", result.get("output") + String.join("\n", missing) + "\n\n");
+            result.appendComment("❌ Missing files\n");
+            result.appendComment(String.join("\n", missing));
         }
 
         if (extra.isEmpty()) {
-            result.set("output", result.get("output") + "✅ No extra files\n");
+            result.appendComment("✅ No extra files");
         } else {
-            result.set("output", result.get("output") + "⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n\n");
-            result.set("output", result.get("output") + String.join("\n", extra) + "\n\n");
+            result.appendComment("⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n\n");
+            result.appendComment( String.join("\n", extra) + "\n\n");
         }
 
-        if (missing.isEmpty() && extra.isEmpty()) {
-            result.set("status", "passed");
-        } else {
-            result.set("status", "failed");
+        // todo(mh): Calculate grade, might need to add a pass/fail flag
+
+        if (!submission.compiles()) {
+            result.appendComment("❌ Submission did not compile, cannot check for conformance");
+            return result;
         }
 
-        // Only check classes for conformance if the submission compiles
-        if (!data.is("extra_data.compilation.compiles")) {
-            result = new Data();
-            result.set("name", "Conformance");
-            result.set("output", "❌ Submission did not compile, cannot check for conformance");
-            tests.add(result);
-            return submission;
-        }
-
-//        result.set("output", result.get("output") + "-------- Class conformance --------\n\n");
-
-
-        SourceLoader submissionLoader = loaderWithDeps(submission.getWorking()
-                .getUnmaskedPath("bin"));
+        var submissionLoader = loaderWithDeps(submission.getBuildPath());
         Map<String, Class> submissionMap;
         try {
             submissionMap = submissionLoader.getClassMap();
         } catch (ClassNotFoundException|NoClassDefFoundError cnf) {
-            result = new Data();
             result.set("name", "Conformance");
             result.set("output", "❌ Unable to find a class in submission");
-            tests.add(result);
-            cnf.printStackTrace();
-            return submission;
+            return result;
         }
 
         int totalDifferences = 0;

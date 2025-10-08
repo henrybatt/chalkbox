@@ -2,6 +2,7 @@ package chalkbox.config;
 
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.compilation.Compilation;
+import chalkbox.stages.conformance.Conformance;
 import de.bsommerfeld.jshepherd.annotation.Comment;
 import de.bsommerfeld.jshepherd.annotation.Key;
 import de.bsommerfeld.jshepherd.annotation.PostInject;
@@ -39,5 +40,9 @@ public class Config extends ConfigurablePojo<Config> {
 
     public Compilation toCompilation() {
         return new Compilation("");
+    }
+
+    public Conformance toConformance() {
+        return new Conformance("");
     }
 }
