@@ -2,10 +2,12 @@ package chalkbox.stages.codestyle;
 
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.source.Solution;
+import chalkbox.stages.Result;
 import chalkbox.stages.Stage;
 import chalkbox.stages.StageResult;
 import chalkbox.stages.StageException;
-import chalkbox.submission.Submission;
+import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
 import org.apache.logging.log4j.util.Strings;
 
@@ -122,6 +124,16 @@ public class CodeStyle implements Stage {
                 %s
                 """, violations, formattedOutput));
         return result;
+    }
+
+    @Override
+    public Result run(Submission submission, Solution solution) throws StageException {
+        return null;
+    }
+
+    @Override
+    public Result run(Submission submission, List<Solution> solutions) throws StageException {
+        return null;
     }
 
     /**

@@ -4,7 +4,7 @@ import chalkbox.api.common.java.Compiler;
 import chalkbox.stages.Result;
 import chalkbox.stages.StageException;
 import chalkbox.stages.StageResult;
-import chalkbox.submission.Submission;
+import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
 
 import javax.tools.JavaFileObject;
@@ -78,10 +78,10 @@ public class Compilation {
      * @param submission submission containing files to compile
      * @return submission, with compiled code in a "bin/" directory
      */
-    public Result run(Submission submission) throws IOException {
+    public Result run(Submission submission) throws StageException, IOException {
         var result = new StageResult();
 
-        var build = new File(submission.getBuildPath());
+        var build = new File(submission.getSrcBuildPath());
 
         // Check if the folder exists
         if (!build.exists()) {
@@ -98,10 +98,10 @@ public class Compilation {
             throw new StageException("Couldn't load source files");
         }
 
-        StringWriter output = new StringWriter();
-        String classPath = submission.getSrcFolder() + File.pathSeparator + this.classPath;
+        var output = new StringWriter();
+        var classPath = submission.getSrcFolder() + File.pathSeparator + this.classPath;
 
-        boolean success = Compiler.compile(sourceFiles, classPath, build.getAbsolutePath(), output);
+        var success = Compiler.compile(sourceFiles, classPath, build.getAbsolutePath(), output);
         if (!success) {
             submission.setCanCompile(false);
             result.appendComment(FAILURE_MSG);

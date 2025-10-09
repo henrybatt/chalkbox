@@ -5,8 +5,6 @@ import chalkbox.api.collections.Collection;
 import chalkbox.api.collections.Data;
 import chalkbox.api.common.java.Compiler;
 import chalkbox.api.common.java.JUnitRunner;
-import chalkbox.engines.ConfigFormatException;
-import chalkbox.engines.Configuration;
 import chalkbox.stages.conformance.SourceLoader;
 import com.github.therapi.runtimejavadoc.ClassJavadoc;
 import com.github.therapi.runtimejavadoc.MethodJavadoc;

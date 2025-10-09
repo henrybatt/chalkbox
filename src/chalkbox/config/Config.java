@@ -8,6 +8,7 @@ import de.bsommerfeld.jshepherd.annotation.Key;
 import de.bsommerfeld.jshepherd.annotation.PostInject;
 import de.bsommerfeld.jshepherd.core.ConfigurablePojo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,12 @@ public class Config extends ConfigurablePojo<Config> {
     @Key("codestyle.excluded")
     public List<String> codestyleExcluded = new ArrayList<>();
 
+    @Key("compilation.classPath")
+    public List<String> compilationClassPath = new ArrayList<>();
+
+    @Key("conformance.path")
+    public String conformancePath;
+
     public Config() {
     }
 
@@ -42,7 +49,7 @@ public class Config extends ConfigurablePojo<Config> {
         return new Compilation("");
     }
 
-    public Conformance toConformance() {
-        return new Conformance("");
+    public Conformance toConformance() throws IOException {
+        return new Conformance(new ArrayList<>());
     }
 }

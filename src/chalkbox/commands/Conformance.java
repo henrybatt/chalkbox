@@ -1,8 +1,9 @@
 package chalkbox.commands;
 
 import chalkbox.config.Config;
+import chalkbox.source.Solution;
 import chalkbox.stages.StageException;
-import chalkbox.submission.Submission;
+import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
 import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
 import picocli.CommandLine.Command;
@@ -24,20 +25,33 @@ public class Conformance implements Runnable {
         Path configFile = Paths.get(shared.configFile);
         var config = ConfigurationLoader.load(configFile, Config::new);
 
-        var submission = new Submission(shared.submissionPath);
-
-        // always need to compile first
-        var compileStage = config.toCompilation();
+        var solution = new Solution("/home/millie/Documents/projects/chalkbox/test/resources/csse2002/solutions/correct", "");
         try {
-            compileStage.run(submission);
+            var compiled = solution.compile();
+            if (!compiled) {
+                logger.atSevere().log("Could not compile the solution");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        var stage = config.toConformance();
+        chalkbox.stages.conformance.Conformance stage = null;
         try {
-            var result = stage.run(submission);
-            logger.atInfo().log("CodeStyle Run %s", result.getComment());
+            stage = config.toConformance();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        var submission = new Submission(shared.submissionPath, "");
+        try {
+            submission.compile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            var result = stage.run(submission, solution);
+            logger.atInfo().log("Conformance Run %s", result.getComment());
         } catch (StageException e) {
             logger.atSevere().log(e.toString());
             System.exit(0);

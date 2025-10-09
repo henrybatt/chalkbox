@@ -1,7 +1,7 @@
 # Chalkbox Config
 
 # Enable debug logging
-debug-mode: false
+debug-mode: true
 
 codestyle:
   # How much out of 100 is the codestyle worth
@@ -11,3 +11,7 @@ codestyle:
   # Which files to exclude from the checkstyle
   excluded:
     - ./test/resources/csse2002/submission/src/tms/display/
+
+conformance:
+  # Path to the conformance structure
+  path: ./test/resources/csse2002/solutions/correct/
