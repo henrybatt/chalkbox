@@ -9,7 +9,6 @@ import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -25,30 +24,11 @@ public class Conformance implements Runnable {
         Path configFile = Paths.get(shared.configFile);
         var config = ConfigurationLoader.load(configFile, Config::new);
 
+        //todo(mh): Config this
         var solution = new Solution("/home/millie/Documents/projects/chalkbox/test/resources/csse2002/solutions/correct", "");
-        try {
-            var compiled = solution.compile();
-            if (!compiled) {
-                logger.atSevere().log("Could not compile the solution");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        chalkbox.stages.conformance.Conformance stage = null;
-        try {
-            stage = config.toConformance();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
         var submission = new Submission(shared.submissionPath, "");
-        try {
-            submission.compile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
+        var stage = config.toConformance();
         try {
             var result = stage.run(submission, solution);
             logger.atInfo().log("Conformance Run %s", result.getComment());

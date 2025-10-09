@@ -1,7 +1,6 @@
 package chalkbox.config;
 
 import chalkbox.stages.codestyle.CodeStyle;
-import chalkbox.stages.compilation.Compilation;
 import chalkbox.stages.conformance.Conformance;
 import de.bsommerfeld.jshepherd.annotation.Comment;
 import de.bsommerfeld.jshepherd.annotation.Key;
@@ -45,11 +44,7 @@ public class Config extends ConfigurablePojo<Config> {
         return new CodeStyle(this.codestyleWeighting, this.codestylePenaltyPerInfraction, this.codestyleExcluded);
     }
 
-    public Compilation toCompilation() {
-        return new Compilation("");
-    }
-
-    public Conformance toConformance() throws IOException {
+    public Conformance toConformance() {
         return new Conformance(new ArrayList<>());
     }
 }

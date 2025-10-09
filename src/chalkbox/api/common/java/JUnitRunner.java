@@ -1,6 +1,5 @@
 package chalkbox.api.common.java;
 
-import chalkbox.api.collections.Data;
 import org.junit.runner.JUnitCore;
 
 import java.io.File;
@@ -14,15 +13,15 @@ import java.util.List;
  */
 public class JUnitRunner {
 
-    // Runs all tests in the given class and returns a single output object
-    public static Data runTestsCombined(String className, String classPath) {
-        return run(className, classPath).getResultsForClass();
-    }
-
-    // Runs all tests in the given class and returns an output object for each @Test
-    public static List<Data> runTests(String className, String classPath) {
-        return run(className, classPath).getIndividualResults();
-    }
+//    // Runs all tests in the given class and returns a single output object
+//    public static Data runTestsCombined(String className, String classPath) {
+//        return run(className, classPath).getResultsForClass();
+//    }
+//
+//    // Runs all tests in the given class and returns an output object for each @Test
+//    public static List<Data> runTests(String className, String classPath) {
+//        return run(className, classPath).getIndividualResults();
+//    }
 
     private static JUnitListener run(String className, String classPath) {
         System.out.println("Testing " + className);

@@ -2,6 +2,7 @@ package chalkbox.stages.codestyle;
 
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
+import chalkbox.source.CompilationResult;
 import chalkbox.source.Solution;
 import chalkbox.stages.Result;
 import chalkbox.stages.Stage;
@@ -49,12 +50,17 @@ public class CodeStyle implements Stage {
 
     public StageResult run(Submission submission) throws StageException {
         var result = new StageResult();
-
         result.setMaxScore(weighting);
 
-        if (!submission.compiles()) {
-            result.setScore(0);
+        try {
+            var compilation = submission.compileSrc();
+            if (!compilation.success()) {
+                result.appendComment("Unable to compile: " + compilation.output());
+                return result;
+            }
+        } catch (IOException e) {
             result.appendComment("Submission did not compile, not checking automated style");
+            result.appendComment(e.toString());
             return result;
         }
 

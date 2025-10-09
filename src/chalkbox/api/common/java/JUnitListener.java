@@ -1,6 +1,5 @@
 package chalkbox.api.common.java;
 
-import chalkbox.api.collections.Data;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -121,31 +120,31 @@ public class JUnitListener extends RunListener {
         this.numFailed++;
     }
 
-    public Data getResultsForClass() {
-        Data data = new Data();
-        data.set("extra_data.passes", this.results.size() - this.numFailed);
-        data.set("extra_data.fails", this.numFailed);
-        data.set("extra_data.total", this.results.size());
-        data.set("output", this.output.toString());
-        return data;
-    }
-
-    public List<Data> getIndividualResults() {
-        List<Data> results = new ArrayList<>();
-
-        for (TestResult result : this.results) {
-            Data data = new Data();
-            data.set("extra_data.passes", result.passed ? 1 : 0);
-            data.set("extra_data.fails", result.passed ? 0 : 1);
-            data.set("extra_data.total", 1);
-            data.set("output", result.output);
-            data.set("output_format", "md");
-            data.set("name", result.testName);
-            data.set("weighting", result.weighting);
-            data.set("classWeighting", result.classWeighting);
-            data.set("visibility", result.visible ? "visible" : "after_published");
-            results.add(data);
-        }
-        return results;
-    }
+//    public Data getResultsForClass() {
+//        Data data = new Data();
+//        data.set("extra_data.passes", this.results.size() - this.numFailed);
+//        data.set("extra_data.fails", this.numFailed);
+//        data.set("extra_data.total", this.results.size());
+//        data.set("output", this.output.toString());
+//        return data;
+//    }
+//
+//    public List<Data> getIndividualResults() {
+//        List<Data> results = new ArrayList<>();
+//
+//        for (TestResult result : this.results) {
+//            Data data = new Data();
+//            data.set("extra_data.passes", result.passed ? 1 : 0);
+//            data.set("extra_data.fails", result.passed ? 0 : 1);
+//            data.set("extra_data.total", 1);
+//            data.set("output", result.output);
+//            data.set("output_format", "md");
+//            data.set("name", result.testName);
+//            data.set("weighting", result.weighting);
+//            data.set("classWeighting", result.classWeighting);
+//            data.set("visibility", result.visible ? "visible" : "after_published");
+//            results.add(data);
+//        }
+//        return results;
+//    }
 }

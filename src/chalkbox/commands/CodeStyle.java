@@ -1,6 +1,7 @@
 package chalkbox.commands;
 
 import chalkbox.config.Config;
+import chalkbox.source.CompilationResult;
 import chalkbox.stages.StageException;
 import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
@@ -26,14 +27,6 @@ public class CodeStyle implements Runnable {
         var config = ConfigurationLoader.load(configFile, Config::new);
 
         var submission = new Submission(shared.submissionPath, "");
-
-        // always need to compile first
-        var compileStage = config.toCompilation();
-        try {
-            compileStage.run(submission);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
         var stage = config.toCodestyle();
         //todo(mh): Add handling here for overriding checkstyle config

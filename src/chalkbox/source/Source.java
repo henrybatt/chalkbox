@@ -23,10 +23,10 @@ public abstract class Source {
 
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
     private final String basePath;
-    private boolean canCompile = false;
-    private boolean hasCompiled = false;
     private String classPath;
     private String name;
+    private CompilationResult srcCompilation;
+    private CompilationResult testCompilation;
 
     public Source(String name, String root, String classPath) {
         this.name = name;
@@ -35,19 +35,30 @@ public abstract class Source {
         this.classPath = classPath;
     }
 
-    public void setCanCompile(boolean canCompile) {
-        this.canCompile = canCompile;
+    public String getClassPath() {
+        return this.classPath;
     }
 
-    public boolean compiles() {
-        if (!hasCompiled) {
-            throw new SourceNotCompiled("A compilation for this source has not been attempted.");
+    public CompilationResult compileSrc() throws IOException {
+        if (srcCompilation != null) {
+            return srcCompilation;
         }
-        return canCompile;
+        return compile(getSrcBuildPath(), getSrcJavaFiles(), "");
     }
 
-    public boolean compile() throws IOException {
-        var build = new File(getSrcBuildPath());
+    public CompilationResult compileTest() throws IOException {
+        if (testCompilation != null) {
+            return testCompilation;
+        }
+        return compile(getTestBuildPath(), getTestJavaFiles(), getSrcBuildPath());
+    }
+
+    private CompilationResult compile(String destination, List<FileSourceFile> sourceFiles, String additionalClasspath) throws IOException {
+        if (sourceFiles == null) {
+            throw new StageException("Couldn't load source files");
+        }
+
+        var build = new File(destination);
 
         // Check if the folder exists
         if (!build.exists()) {
@@ -59,38 +70,43 @@ public abstract class Source {
             }
         }
 
-        Iterable<? extends JavaFileObject> sourceFiles = getSrcJavaFiles();
-        if (sourceFiles == null) {
-            throw new StageException("Couldn't load source files");
+        var classPath = this.classPath;
+        if (!additionalClasspath.isEmpty()) {
+            classPath += File.pathSeparator + additionalClasspath;
         }
 
-        StringWriter output = new StringWriter();
-        String classPath = getSrcFolder() + File.pathSeparator + this.classPath;
+        var output = new StringWriter();
+        var success = Compiler.compile(sourceFiles, classPath, build.getAbsolutePath(), output);
 
-        var compiled = Compiler.compile(sourceFiles, classPath, build.getAbsolutePath(), output);
-        this.markCompiled(compiled);
-        return compiled;
-    }
-
-    private void markCompiled(boolean compiled) {
-        this.canCompile = compiled;
-        this.hasCompiled = compiled;
+        return new CompilationResult(success, output.toString());
     }
 
     public String getBasePath() {
-        return this.basePath;
+        return basePath;
     }
 
     public String getSrcBuildPath() {
-        return this.basePath + "/build/classes/";
+        return basePath + "/build/classes/";
     }
 
     public String getSrcFolder() {
-        return this.basePath + "/src";
+        return basePath + "/src";
+    }
+
+    public String getTestBuildPath() {
+        return basePath + "/build/test/";
+    }
+
+    public String getTestFolder() {
+        return basePath + "/test";
     }
 
     public List<FileSourceFile> getSrcJavaFiles() throws IOException {
         return getFilesWithExtension(getSrcFolder(), ".java");
+    }
+
+    public List<FileSourceFile> getTestJavaFiles() throws IOException {
+        return getFilesWithExtension(getTestFolder(), ".java");
     }
 
     private List<FileSourceFile> getFilesWithExtension(String root, String extension) throws IOException {
@@ -122,6 +138,4 @@ public abstract class Source {
         var loader = new URLClassLoader(urls);
         return new SourceLoader(directory, loader);
     }
-
-
 }

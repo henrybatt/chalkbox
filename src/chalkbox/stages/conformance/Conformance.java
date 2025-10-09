@@ -10,6 +10,7 @@ import chalkbox.stages.conformance.comparator.ClassComparator;
 import chalkbox.stages.conformance.comparator.CodeComparator;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
+import com.google.common.flogger.FluentLogger;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -27,13 +28,12 @@ import java.util.*;
  */
 public class Conformance implements Stage {
     private List<String> ignoreWildcards;
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     /**
      * Sets up the conformance checker ready to check a submission.
-     *
-     * @throws IOException if loading the expected class files fails
      */
-    public Conformance(List<String> ignoreWildcards) throws IOException {
+    public Conformance(List<String> ignoreWildcards){
         this.ignoreWildcards = ignoreWildcards;
     }
 
@@ -57,6 +57,28 @@ public class Conformance implements Stage {
         var result = new StageResult();
         var missing = new ArrayList<String>();
         var extra = new ArrayList<String>();
+
+        try {
+            var compilation = submission.compileSrc();
+            if (!compilation.success()) {
+                result.appendComment("Unable to compile: " + compilation.output());
+                return result;
+            }
+        } catch (IOException e) {
+            result.appendComment("Submission did not compile, not checking automated style");
+            result.appendComment(e.toString());
+            return result;
+        }
+
+        try {
+            var compilation = solution.compileSrc();
+            if (!compilation.success()) {
+                logger.atSevere().log(compilation.output());
+                throw new StageException("Unable to compile solution");
+            }
+        } catch (IOException e) {
+            throw new StageException(e.toString());
+        }
 
         var actual = removeMatchingFiles(FileLoader.loadFiles(submission.getSrcFolder()), ignoreWildcards);
         var expectedFiles = removeMatchingFiles(FileLoader.loadFiles(solution.getSrcFolder()), ignoreWildcards);
@@ -94,10 +116,10 @@ public class Conformance implements Stage {
             result.appendComment(String.join("\n", extra) + "\n\n");
         }
 
-        if (!submission.compiles()) {
-            result.appendComment("❌ Submission did not compile, cannot check for conformance");
-            return result;
-        }
+//        if (!submission.compiles()) {
+//            result.appendComment("❌ Submission did not compile, cannot check for conformance");
+//            return result;
+//        }
 
         Map<String, Class> submissionClasses;
         try {
