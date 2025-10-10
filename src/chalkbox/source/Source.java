@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,8 +106,73 @@ public abstract class Source {
         return getFilesWithExtension(getSrcFolder(), ".java");
     }
 
+    public List<String> getSrcClasses() throws IOException {
+        return getClasses(getSrcFolder());
+    }
+
     public List<FileSourceFile> getTestJavaFiles() throws IOException {
         return getFilesWithExtension(getTestFolder(), ".java");
+    }
+
+    public List<String> getTestClasses() throws IOException {
+        return getClasses(getTestFolder());
+    }
+
+    private List<String> getClasses(String root) throws IOException {
+        var start = Paths.get(root);
+
+        try (Stream<Path> stream = Files.walk(start)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".java"))
+                    .map(path -> getClassName(start.relativize(path).toString()))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Get the class name of a file path.
+     *
+     * <p>Removes the java extension and replaces paths with dots.
+     *
+     * <p>If it's within src/ or test/ those folders are removed.
+     *
+     * <p>Examples:
+     * <pre>
+     * src/package1/ClassOne.java -&gt; package1.ClassOne
+     * package1/ClassOne.java -&gt; package1.ClassOne
+     * test/package1/ClassOne.java -&gt; package1.ClassOne
+     * src/package1/package2/ClassOne.java -&gt; package1.package2.ClassOne
+     * src/ClassOne.java -&gt; ClassOne
+     * </pre>
+     * @param filePath File path of the class
+     * @return The name of the class
+     */
+    public static String getClassName(String filePath) {
+        if (filePath.startsWith("/src/")) {
+            filePath = filePath.replace("/src/", "");
+        }
+        if (filePath.startsWith("/test/")) {
+            filePath = filePath.replace("/test/", "");
+        }
+        return filePath.replace(".java", "").replace("/", ".")
+                .replace(File.separator, ".");
+    }
+
+    /**
+     * Get the path of a class from it's class name.
+     *
+     * <p>Examples:
+     * <pre>
+     * package1.ClassOne -&gt; package1/ClassOne.java
+     * ClassOne -&gt; ClassOne.java
+     * </pre>
+     *
+     * @param className Name of the class
+     * @return File path for a class
+     */
+    public static String getPathName(String className) {
+        return className.replace(".", File.separator) + ".java";
     }
 
     private List<FileSourceFile> getFilesWithExtension(String root, String extension) throws IOException {

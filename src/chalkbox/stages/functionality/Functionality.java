@@ -1,25 +1,34 @@
 package chalkbox.stages.functionality;
 
+import chalkbox.api.common.java.JUnitIndividualResult;
+import chalkbox.api.common.java.JUnitRunner;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
-import chalkbox.stages.Result;
-import chalkbox.stages.Stage;
-import chalkbox.stages.StageException;
+import chalkbox.stages.*;
+import chalkbox.stages.conformance.SourceLoader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 public class Functionality implements Stage {
 
+    public final static String name = "Functionality";
+
+    private final int maxScore;
+
+    public Functionality(int maxScore) {
+        this.maxScore = maxScore;
+    }
+
     @Override
-    public Result run(Submission submission) throws StageException {
+    public StageResult run(Submission submission) throws StageException {
         // Not implemented
         return null;
     }
 
     @Override
-    public Result run(Submission submission, List<Solution> solutions) throws StageException {
+    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
         // Not implemented
         return null;
     }
@@ -39,7 +48,7 @@ public class Functionality implements Stage {
      * methods in all test classes.
      */
     @Override
-    public Result run(Submission submission, Solution solution) throws StageException {
+    public StageResult run(Submission submission, Solution solution) throws StageException {
         // Compile the solution, tests and the submission
         try {
             var compilation = solution.compileSrc();
@@ -58,117 +67,123 @@ public class Functionality implements Stage {
             throw new RuntimeException(e);
         }
 
-        // Path contains dependencies and the compile submission
-        var classPath = solution.getClassPath() + File.pathSeparator + submission.getSrcBuildPath();
+        List<String> tests = null;
+        try {
+            tests = solution.getTestClasses();
+        } catch (IOException e) {
+            throw new StageException(e.toString());
+        }
 
-        return null;
+        // Run tests against the solution
+        var classPath = solution.getClassPath() +
+                File.pathSeparator + solution.getSrcBuildPath() +
+                File.pathSeparator + solution.getTestBuildPath();
+        var baselineResults = this.runTests(tests, classPath);
+
+        // Path contains dependencies and the compile submission
+        classPath = solution.getClassPath() +
+                File.pathSeparator + submission.getSrcBuildPath() +
+                File.pathSeparator + solution.getTestBuildPath();
+        var submissionResults = this.runTests(tests, classPath);
+
+        var totalNumTests = 0;
+
+        var innerResults = new ArrayList<Result>();
+        var classResults = new ArrayList<ClassResult>();
+        for (String className : tests) {
+
+            int classPassing = 0;
+
+            // Use test summaries to collect information even if test fails to compile
+            var classTests = baselineResults.get(className).size();
+            var classWeighting = baselineResults.get(className).getFirst().classWeight();
+
+//            List<Data> testCases = new ArrayList<>();
+
+            for (JUnitIndividualResult unit : submissionResults.get(className)) {
+                var isPassing = unit.passes() == 1;
+                var unitResult = new Result(unit.name())
+                        .setVisibility(unit.visibility())
+                        .setStatus(isPassing ? Status.PASSED : Status.FAILED);
+
+                unitResult.appendOutput(isPassing ? "✅ Test scenario passes\n" : "❌ Test scenario fails\n");
+                // Get Test class JavaDoc
+                try {
+                    var testDescription = new StringBuilder();
+                    var javaDoc = new SourceLoader(solution.getTestBuildPath()).getTestJavadoc(className);
+                    for (var method : javaDoc.getMethods()) {
+                        if (method.getName().equals(unit.name().split("\\.")[1])) {
+                            testDescription.append(method.getComment()).append("\n");
+                        }
+                    }
+                    if (!testDescription.toString().isEmpty()) {
+                        unitResult.appendOutput("### Scenario\n");
+                        unitResult.appendOutput(testDescription.toString());
+                    }
+                } catch (IOException ignored) {
+                    // Do Nothing
+                }
+                if (!isPassing) {
+                    unitResult.appendOutput("### Details\n");
+                    unitResult.appendOutput(unit.output());
+                }
+
+                var testMultiplier = (Integer) unit.weight();
+                // e.g. a test worth 5 "units" will increase the total number of tests by 5
+                totalNumTests += testMultiplier;
+                innerResults.add(unitResult);
+                classPassing += unit.passes() == 1 ? 1 : 0;
+            }
+            classResults.add(new ClassResult(className, classTests, classPassing, classWeighting, submissionResults.get(className).size()));
+        }
+
+        if (totalNumTests == 0) {
+            // todo(mh): Do something better here
+            return null;
+        }
+
+        double total = 0;
+        double possible = 0;
+        StringBuilder table = new StringBuilder("| TestClass | Weighting | Passing Tests | Total |");
+        table.append("\n| ----------- | ----------- | ----------- | ----------- |\n");
+        for (var classResult : classResults) {
+            // Skip classes that have no tests.
+            if (classResult.count() <= 0) {
+                continue;
+            }
+            double score = (classResult.passing() / (float) classResult.count()) * classResult.weight();
+            total += score;
+            possible += classResult.weight();
+            table.append("| ").append(classResult.name()).append(" | ").append(classResult.weight()).append(" | ").append(classResult.passing()).append("/").append(classResult.count()).append(" | ").append(String.format("%.3f", score)).append("|\n");
+        }
+        double scaled = Math.ceil((total / possible) * maxScore);
+
+        var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        var overview = new Result(name);
+        overview.setScore(scaled)
+                .setMaxScore(maxScore)
+                .appendOutput(table + equation)
+                .setOutputFormat("md")
+                .setVisibility(Visibility.AFTER_PUBLISH);
+
+        return new StageResult(overview, innerResults);
+    }
+
+    private Map<String, List<JUnitIndividualResult>> runTests(List<String> tests, String classPath) {
+        var collection = new HashMap<String, List<JUnitIndividualResult>>();
+        for (String className : tests) {
+            // Ignore any that dont end in TEST
+            if (!className.endsWith("Test")) {
+                continue;
+            }
+
+            var results = JUnitRunner.runTests(className, classPath);
+            if (results.isEmpty()) {
+                continue;
+            }
+            results.sort(Comparator.comparing(JUnitIndividualResult::name));
+            collection.put(className, results);
+        }
+        return collection;
     }
 }
-
-//        /* Summarise tests using the solution. */
-//        for (String className : tests.getClasses("")) {
-//            List<Data> results = JUnitRunner.runTests(className, classPath);
-//            if (!results.isEmpty()) {
-//                // Only summarise if there are tests in file, else skip.
-//                testSummaries.put(className, new SolutionSummary(results.size(), (Double) results.getLast().get("classWeighting")));
-//            }
-//        }
-//    }
-//        Map<String, TestClassInfo> testInfo = new HashMap<>();
-//        for (String className : tests.getClasses("")) {
-//            if (!className.endsWith("Test")) {
-//                continue;
-//            }
-//            List<Data> results = JUnitRunner.runTests(className, classPath);
-//            // There are no tests in file - skip over it.
-//            if (results.isEmpty()) {
-//                continue;
-//            }
-//            /* Sort alphabetically by test class then test name */
-//            results.sort(Comparator.comparing(o -> ((String) o.get("name"))));
-//            int classPassing = 0;
-//            /* Use test summaries to collect information even if test fails to compile. */
-//            int classTests = testSummaries.get(className).totalTests;
-//            double classWeighting = testSummaries.get(className).classWeight;
-//            List<Data> testCases = new ArrayList<>();
-//
-//            for (Data result : results) {
-//                boolean isPassing = (Integer) result.get("extra_data.passes") == 1;
-//                // Get Test class JavaDoc
-//                try {
-//                    String testDescription = "";
-//                    ClassJavadoc javaDoc = new SourceLoader(testCompiledOutputDirectory).getTestJavadoc(className);
-//                    for (MethodJavadoc method : javaDoc.getMethods()) {
-//                        if (method.getName().equals(result.get("name").toString().split("\\.")[1])) {
-//                            testDescription += "" + method.getComment() + "\n";
-//                        }
-//                    }
-//                    if (!isPassing && !testDescription.equals("")) {
-//                        result.set("output", "❌ Test scenario fails\n### Scenario\n" + testDescription + "### Details\n" + result.get("output"));
-//                    }
-//                } catch (IOException ignored) {
-//                    // Do Nothing
-//                }
-//
-//                int testMultiplier = (Integer) result.get("weighting");
-//                /* e.g. a test worth 5 "units" will increase the total number of tests by 5 */
-//                totalNumTests += testMultiplier;
-//                functionalityResults.add(result);
-//                classPassing += (Integer) result.get("extra_data.passes") == 1 ? 1 : 0;
-//                testCases.add(result);
-//            }
-//            testInfo.put(className, new TestClassInfo(className, classTests, classPassing, classWeighting, testCases));
-//        }
-//        if (totalNumTests == 0) {
-//            return submission;
-//        }
-//
-//        /* Mark awarded for passing a single test method (un-scaled by test multipliers) */
-//        final double individualTestWeighting = 1d / totalNumTests * options.weighting;
-//        int passingTests = 0;
-//
-//        for (Object o : functionalityResults) {
-//            Data functionalityResult = (Data) o;
-//            boolean didPass = (Integer) functionalityResult.get("extra_data.passes") == 1;
-//            int testMultiplier = (Integer) functionalityResult.get("weighting");
-//            functionalityResult.set("status", didPass ? "passed" : "failed");
-//            passingTests += didPass ? 1 : 0;
-////            functionalityResult.set("max_score", individualTestWeighting * testMultiplier);
-//            testResults.add(functionalityResult);
-//        }
-//
-//        String results = "| TestClass | Weighting | Passing Tests | Total |";
-//        results += "\n| ----------- | ----------- | ----------- | ----------- |\n";
-//        double total = 0;
-//        double possible = 0;
-//
-//        for (TestClassInfo info : testInfo.values()) {
-//            // Skip classes that have no tests.
-//            if (info.totalTests <= 0) {
-//                continue;
-//            }
-//            double score = (info.passingTests / (float) info.totalTests) * info.weight;
-//            total += score;
-//            possible += info.weight;
-//            results += "| " + info.className + " | " + info.weight + " | " + info.passingTests + "/" + info.totalTests + " | " + score + "|\n";
-//        }
-//        double scaled = Math.ceil((total / possible) * options.weighting);
-//
-//        results += "\n$$\n\\dfrac{" + total + "}{" + possible + "} \\times " + options.weighting + " = " + scaled + "\n$$";
-//
-//        Data data = new Data();
-//        data.set("name", "Functionality Tests");
-//        data.set("score", scaled);
-//        data.set("max_score", options.weighting);
-//        data.set("output", results);
-//        data.set("output_format", "md");
-////        data.set("output", "You passed " + passingTests + " out of " + options.overrideTotalTests + " tests");
-////        for (TestClassInfo info : testInfo.values()) {
-////            data.set("output", data.get("output") + "\n" + info.toString());
-////        }
-//        data.set("visibility", "after_published");
-//        testResults.add(0, data);
-//
-//        return submission;
-//    }
-//}

@@ -7,16 +7,13 @@ import chalkbox.stages.Stage;
 import chalkbox.stages.StageException;
 import chalkbox.stages.StageResult;
 import chalkbox.stages.conformance.comparator.ClassComparator;
-import chalkbox.stages.conformance.comparator.CodeComparator;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.util.*;
 
 /**
@@ -27,7 +24,9 @@ import java.util.*;
  * submission that differ to those in the correct solution.
  */
 public class Conformance implements Stage {
-    private List<String> ignoreWildcards;
+    private static final String name = "Conformance";
+
+    private final List<String> ignoreWildcards;
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     /**
@@ -38,12 +37,12 @@ public class Conformance implements Stage {
     }
 
     @Override
-    public Result run(Submission submission) throws StageException {
+    public StageResult run(Submission submission) throws StageException {
         return null;
     }
 
     @Override
-    public Result run(Submission submission, List<Solution> solutions) throws StageException {
+    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
         return null;
     }
 
@@ -53,21 +52,22 @@ public class Conformance implements Stage {
      * @param submission submission to check for conformance
      * @return given submission with extra test result for conformance results
      */
-    public Result run(Submission submission, Solution solution) throws StageException {
-        var result = new StageResult();
+    public StageResult run(Submission submission, Solution solution) throws StageException {
+        var result = new Result(name);
         var missing = new ArrayList<String>();
         var extra = new ArrayList<String>();
 
         try {
             var compilation = submission.compileSrc();
             if (!compilation.success()) {
-                result.appendComment("Unable to compile: " + compilation.output());
-                return result;
+                result.appendOutput("Submission did not compile, not checking automated style");
+                result.appendOutput(compilation.output());
+                return StageResult.fromOverview(result);
             }
         } catch (IOException e) {
-            result.appendComment("Submission did not compile, not checking automated style");
-            result.appendComment(e.toString());
-            return result;
+            result.appendOutput("Submission did not compile, not checking automated style");
+            result.appendOutput(e.toString());
+            return StageResult.fromOverview(result);
         }
 
         try {
@@ -100,33 +100,28 @@ public class Conformance implements Stage {
         Collections.sort(extra);
 
         if (missing.isEmpty()) {
-            result.appendComment("✅ No missing files");
+            result.appendOutput("✅ No missing files");
         } else {
-            result.appendComment("❌ Missing files");
+            result.appendOutput("❌ Missing files");
             for (var missingFile : missing) {
-                result.appendComment(missingFile);
+                result.appendOutput(missingFile);
             }
 
         }
 
         if (extra.isEmpty()) {
-            result.appendComment("✅ No extra files");
+            result.appendOutput("✅ No extra files");
         } else {
-            result.appendComment("⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n");
-            result.appendComment(String.join("\n", extra) + "\n\n");
+            result.appendOutput("⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n");
+            result.appendOutput(String.join("\n", extra) + "\n\n");
         }
-
-//        if (!submission.compiles()) {
-//            result.appendComment("❌ Submission did not compile, cannot check for conformance");
-//            return result;
-//        }
 
         Map<String, Class> submissionClasses;
         try {
             submissionClasses = getSourceClasses(submission);
         } catch (IOException | ClassNotFoundException e) {
-            result.appendComment("❌ Unable to find a class in submission");
-            return result;
+            result.appendOutput("❌ Unable to find a class in submission");
+            return StageResult.fromOverview(result);
         }
 
         Map<String, Class> expectedClasses = null;
@@ -148,7 +143,7 @@ public class Conformance implements Stage {
             var actualClass = submissionClasses.get(className);
 
             if (expectedClass == null || actualClass == null) {
-                result.appendComment("❌ `" + className + "` was not found (unable to load class)\n");
+                result.appendOutput("❌ `" + className + "` was not found (unable to load class)\n");
                 totalDifferences += 1; // 1-difference penalty for class not found
                 continue;
             }
@@ -156,17 +151,17 @@ public class Conformance implements Stage {
             var comparator = new ClassComparator(expectedClass, actualClass);
             if (comparator.hasDifference()) {
                 // Class does not conform
-                result.appendComment("❌ `" + className + "` does not conform:\n\n```text\n" + comparator + "```");
+                result.appendOutput("❌ `" + className + "` does not conform:\n\n```text\n" + comparator + "```");
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
-                result.appendComment("✅ `" + className + "` conforms.\n");
+                result.appendOutput("✅ `" + className + "` conforms.\n");
             }
         }
 
         // todo(mh): calc score
 
-        return result;
+        return StageResult.fromOverview(result);
     }
 
     private Map<String, Class> getSourceClasses(Source source) throws IOException, ClassNotFoundException {

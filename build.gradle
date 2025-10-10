@@ -63,7 +63,7 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.57.2'
 
     // Tests (Included in build so Junit will be in the UberJar)
-    implementation group: 'junit', name: 'junit', version: '4.13.1'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 
 application {

@@ -1,7 +1,6 @@
 package chalkbox.commands;
 
 import chalkbox.config.Config;
-import chalkbox.source.CompilationResult;
 import chalkbox.stages.StageException;
 import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
@@ -9,7 +8,6 @@ import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +30,7 @@ public class CodeStyle implements Runnable {
         //todo(mh): Add handling here for overriding checkstyle config
         try {
             var result = stage.run(submission);
-            logger.atInfo().log("CodeStyle Run %s", result.getComment());
+            logger.atInfo().log("CodeStyle Run %s", result.overview().getOutput());
         } catch (StageException e) {
             logger.atSevere().log(e.toString());
             System.exit(0);

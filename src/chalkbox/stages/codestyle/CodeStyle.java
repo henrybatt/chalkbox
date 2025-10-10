@@ -2,13 +2,12 @@ package chalkbox.stages.codestyle;
 
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
-import chalkbox.source.CompilationResult;
 import chalkbox.source.Solution;
 import chalkbox.stages.Result;
 import chalkbox.stages.Stage;
-import chalkbox.stages.StageResult;
 import chalkbox.stages.StageException;
 import chalkbox.source.Submission;
+import chalkbox.stages.StageResult;
 import com.google.common.flogger.FluentLogger;
 import org.apache.logging.log4j.util.Strings;
 
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class CodeStyle implements Stage {
 
+    private static final String name = "Code Style";
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     private int weighting = 0;
@@ -49,19 +49,19 @@ public class CodeStyle implements Stage {
     }
 
     public StageResult run(Submission submission) throws StageException {
-        var result = new StageResult();
+        var result = new Result(name).setOutputFormat("md");
         result.setMaxScore(weighting);
 
         try {
             var compilation = submission.compileSrc();
             if (!compilation.success()) {
-                result.appendComment("Unable to compile: " + compilation.output());
-                return result;
+                result.appendOutput("Unable to compile: " + compilation.output());
+                return StageResult.fromOverview(result);
             }
         } catch (IOException e) {
-            result.appendComment("Submission did not compile, not checking automated style");
-            result.appendComment(e.toString());
-            return result;
+            result.appendOutput("Submission did not compile, not checking automated style");
+            result.appendOutput(e.toString());
+            return StageResult.fromOverview(result);
         }
 
         String checkstyleJar = null;
@@ -100,15 +100,15 @@ public class CodeStyle implements Stage {
 
         var checkstyleOutput = process.getOutput();
         if (!checkstyleOutput.contains("Audit done.")) {
-            result.appendComment("""
+            result.appendOutput("""
                     ❌ Checkstyle did not exit successfully. \
                     This can indicate a syntax error or missing files.\
                     
                     ### Details
                     
                     """);
-            result.appendComment(checkstyleOutput);
-            return result;
+            result.appendOutput(checkstyleOutput);
+            return StageResult.fromOverview(result);
         }
 
         // count violations based on lines in output
@@ -123,22 +123,22 @@ public class CodeStyle implements Stage {
                 .map(n -> n.replace(submission.getBasePath(), ""))
                 .collect(Collectors.joining("\n"));
 
-        result.appendComment(String.format("""
+        result.appendOutput(String.format("""
                 A total of %d style violations.
                 
                 =============
                 %s
                 """, violations, formattedOutput));
-        return result;
+        return StageResult.fromOverview(result);
     }
 
     @Override
-    public Result run(Submission submission, Solution solution) throws StageException {
+    public StageResult run(Submission submission, Solution solution) throws StageException {
         return null;
     }
 
     @Override
-    public Result run(Submission submission, List<Solution> solutions) throws StageException {
+    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
         return null;
     }
 

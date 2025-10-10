@@ -31,7 +31,7 @@ public class Conformance implements Runnable {
         var stage = config.toConformance();
         try {
             var result = stage.run(submission, solution);
-            logger.atInfo().log("Conformance Run %s", result.getComment());
+            logger.atInfo().log("Conformance Run %s", result.overview().getOutput());
         } catch (StageException e) {
             logger.atSevere().log(e.toString());
             System.exit(0);

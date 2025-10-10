@@ -1,5 +1,6 @@
 package chalkbox.config;
 
+import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
 import de.bsommerfeld.jshepherd.annotation.Comment;
@@ -46,5 +47,9 @@ public class Config extends ConfigurablePojo<Config> {
 
     public Conformance toConformance() {
         return new Conformance(new ArrayList<>());
+    }
+
+    public Functionality toFunctionality() {
+        return new Functionality(38);
     }
 }

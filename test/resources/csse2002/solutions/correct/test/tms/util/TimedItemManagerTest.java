@@ -17,6 +17,11 @@ public class TimedItemManagerTest {
         }
     }
 
+    /**
+     * One Second Test
+     *
+     * Example Description
+     */
     @Test(timeout = 100000 + 4) // 4x weighting
     public void oneSecondTest() {
         TimedItemManager.getTimedItemManager().oneSecond();
