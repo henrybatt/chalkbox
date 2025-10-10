@@ -3,6 +3,7 @@ package chalkbox.config;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
+import chalkbox.stages.mutation.Mutation;
 import de.bsommerfeld.jshepherd.annotation.Comment;
 import de.bsommerfeld.jshepherd.annotation.Key;
 import de.bsommerfeld.jshepherd.annotation.PostInject;
@@ -51,5 +52,9 @@ public class Config extends ConfigurablePojo<Config> {
 
     public Functionality toFunctionality() {
         return new Functionality(38);
+    }
+
+    public Mutation toMutation() {
+        return new Mutation(38);
     }
 }

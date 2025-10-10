@@ -58,6 +58,9 @@ dependencies {
     implementation 'com.github.bsommerfeld.jshepherd:yaml:3.3.2'
     implementation 'com.google.flogger:flogger:0.9'
     implementation 'com.google.flogger:flogger-system-backend:0.9'
+    implementation 'org.pitest:pitest:1.20.6'
+    implementation 'org.pitest:pitest-entry:1.20.6'
+    implementation 'org.pitest:pitest-html-report:1.20.6'
 
     // Annotations
     annotationProcessor 'com.google.dagger:dagger-compiler:2.57.2'
