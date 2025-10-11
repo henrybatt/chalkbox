@@ -1,5 +1,14 @@
 package chalkbox.stages;
 
+import com.google.gson.annotations.SerializedName;
+
 public enum Visibility {
-    HIDDEN, AFTER_DUE_DATE, AFTER_PUBLISH, VISIBLE
+    @SerializedName("hidden")
+    HIDDEN,
+    @SerializedName("after_due_date")
+    AFTER_DUE_DATE,
+    @SerializedName("after_publish")
+    AFTER_PUBLISH,
+    @SerializedName("visible")
+    VISIBLE
 }

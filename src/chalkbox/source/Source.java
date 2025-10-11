@@ -30,11 +30,13 @@ public abstract class Source {
     private CompilationResult srcCompilation;
     private CompilationResult testCompilation;
 
-    public Source(String name, String root, String classPath) {
+    public Source(String name, String root, List<String> classPath) {
         this.name = name;
         var path = Paths.get(root);
         this.basePath = path.toAbsolutePath().toString();
-        this.classPath = classPath;
+        if (classPath != null) {
+            this.classPath = String.join(":", classPath);
+        }
     }
 
     public String getClassPath() {

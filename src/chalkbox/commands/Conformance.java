@@ -1,11 +1,12 @@
 package chalkbox.commands;
 
 import chalkbox.config.Config;
+import chalkbox.config.ConfigException;
 import chalkbox.source.Solution;
 import chalkbox.stages.StageException;
 import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
-import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
+import org.github.gestalt.config.exceptions.GestaltException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
@@ -22,12 +23,10 @@ public class Conformance implements Runnable {
     @Override
     public void run() {
         Path configFile = Paths.get(shared.configFile);
-        var config = ConfigurationLoader.load(configFile, Config::new);
+        var config = new Config(configFile);
 
-        //todo(mh): Config this
-        var solution = new Solution("./test/resources/csse2002/solutions/correct", "");
-        var submission = new Submission(shared.submissionPath, "");
-
+        var solution = config.toSolution();
+        var submission = config.toSubmission();
         var stage = config.toConformance();
         try {
             var result = stage.run(submission, solution);

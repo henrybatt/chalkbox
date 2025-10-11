@@ -20,7 +20,7 @@ public class Result {
         this.nameFormat = nameFormat;
         this.status = Status.FAILED;
         this.output = "";
-        this.outputFormat = "HTML";
+        this.outputFormat = "md";
         this.visibility = Visibility.VISIBLE;
     }
 

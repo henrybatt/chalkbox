@@ -1,10 +1,10 @@
 package chalkbox.stages;
 
-public enum Status {
-    PASSED, FAILED;
+import com.google.gson.annotations.SerializedName;
 
-    @Override
-    public String toString() {
-        return super.toString().toLowerCase();
-    }
+public enum Status {
+    @SerializedName("passed")
+    PASSED,
+    @SerializedName("failed")
+    FAILED;
 }

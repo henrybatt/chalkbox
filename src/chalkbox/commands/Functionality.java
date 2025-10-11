@@ -5,7 +5,7 @@ import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.StageException;
 import com.google.common.flogger.FluentLogger;
-import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
+import org.github.gestalt.config.exceptions.GestaltException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
@@ -22,13 +22,10 @@ public class Functionality implements Runnable {
     @Override
     public void run() {
         Path configFile = Paths.get(shared.configFile);
-        var config = ConfigurationLoader.load(configFile, Config::new);
+        var config = new Config(configFile);
 
-        //todo(mh): Config this
-        var solution = new Solution("./test/resources/csse2002/solutions/correct",
-                "./test/resources/csse2002/lib/junit-4.12.jar");
-        var submission = new Submission(shared.submissionPath, "./test/resources/csse2002/lib/junit-4.12.jar");
-
+        var solution = config.toSolution();
+        var submission = config.toSubmission();
         var stage = config.toFunctionality();
         try {
             var result = stage.run(submission, solution);

@@ -22,7 +22,7 @@ public class Ai implements Stage {
         var result = new Result("Info")
                         .setStatus(Status.PASSED)
                         .setVisibility(Visibility.VISIBLE)
-                        .setOutputFormat("HTML");
+                        .setOutputFormat("html");
 
         var declaration = submission.getAiDeclaration();
         if (declaration.isEmpty()) {

@@ -30,9 +30,9 @@ public class Mutation implements Stage {
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
     public final static String name = "Mutation";
 
-    private final int maxScore;
+    private final double maxScore;
 
-    public Mutation(int maxScore) {
+    public Mutation(double maxScore) {
         this.maxScore = maxScore;
     }
 
@@ -117,7 +117,6 @@ public class Mutation implements Stage {
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
         data.setOutputEncoding(StandardCharsets.UTF_8);
         data.setInputEncoding(StandardCharsets.UTF_8);
-        data.setVerbosity(Verbosity.VERBOSE);
 
         MutationListener listener = new MutationListener();
         PluginServices plugins = injectListener(listener);

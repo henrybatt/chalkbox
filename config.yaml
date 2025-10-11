@@ -1,17 +1,42 @@
-# Chalkbox Config
-
 # Enable debug logging
-debug-mode: true
+debug: true
+
+# name for the output
+name: CSSE2002 - Assignment 2
+
+submission:
+  path: test/resources/csse2002/submission/
+  # Extra items for the classpath
+  classPath:
+    - test/resources/csse2002/lib/junit-4.12.jar
+
+solution:
+  path: test/resources/csse2002/solutions/correct/
+  # Extra items for the classpath
+  classPath:
+    - test/resources/csse2002/lib/junit-4.12.jar
+
+output:
+  results/results.json
 
 codestyle:
   # How much out of 100 is the codestyle worth
-  weighting: 15
+  weighting: 10
   # How much out of the weighting to reduce per infraction
-  penaltyPerInfraction: 0.5
+  penalty: 1
   # Which files to exclude from the checkstyle
   excluded:
-    - ./test/resources/csse2002/submission/src/tms/display/
+    - ./src/tms/display/*
 
 conformance:
-  # Path to the conformance structure
-  path: ./test/resources/csse2002/solutions/correct/
+  # Path globs to be ignored
+  ignored:
+    - ./src/*
+
+functionality:
+  # How much out of 100 is the functionality worth
+  weighting: 65
+
+mutation:
+  # How much out of 100 is the mutation worth
+  weighting: 25

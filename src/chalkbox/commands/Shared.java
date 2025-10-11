@@ -9,6 +9,6 @@ public class Shared {
     @CommandLine.Option(names = "--verbose", description = "Enable verbose output.")
     public boolean verbose;
 
-    @CommandLine.Parameters(description = "File path to the submission root folder (should contain the src and test folders)")
-    public String submissionPath;
+    @CommandLine.Option(names= "--output", description = "Output file to write to")
+    public String outputFile;
 }

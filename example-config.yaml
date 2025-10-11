@@ -1,0 +1,52 @@
+# Enable debug logging
+debug: true
+
+# name for the output
+name: CSSE2002 - Assignment 2
+
+submission:
+  path: /autograder/submission/
+  # Extra items for the classpath, if they are relative then they will be relative to the submission path
+  classPath:
+    - lib/checkstyle-10.14.1-all.jar
+    - lib/hamcrest-core-1.3.jar
+    - lib/junit-4.13.jar
+    - lib/processing.jar
+    - lib/engine.jar
+    - lib/provided.jar
+
+solution:
+  path: solutions/correct/
+  # Extra items for the classpath, if they are relative then they will be relative to the solution path
+  classPath:
+    - lib/checkstyle-10.14.1-all.jar
+    - lib/hamcrest-core-1.3.jar
+    - lib/junit-4.13.jar
+    - lib/processing.jar
+    - lib/engine.jar
+    - lib/provided.jar
+
+output:
+  /autograder/results/results.json
+
+codestyle:
+  # How much out of 100 is the codestyle worth
+  weighting: 10
+  # How much out of the weighting to reduce per infraction
+  penalty: 1
+  # Which files to exclude from the checkstyle
+  excluded:
+    - ./src/tms/display/
+
+conformance:
+  # Path globs to be ignored
+  ignored:
+    - ./src/*
+
+functionality:
+  # How much out of 100 is the functionality worth
+  weighting: 65
+
+mutation:
+  # How much out of 100 is the mutation worth
+  weighting: 25

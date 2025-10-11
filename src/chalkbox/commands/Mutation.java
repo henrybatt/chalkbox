@@ -5,7 +5,6 @@ import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.StageException;
 import com.google.common.flogger.FluentLogger;
-import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
@@ -22,11 +21,9 @@ public class Mutation implements Runnable {
     @Override
     public void run() {
         Path configFile = Paths.get(shared.configFile);
-        var config = ConfigurationLoader.load(configFile, Config::new);
+        var config = new Config(configFile);
 
-        //todo(mh): Config this
-        var submission = new Submission(shared.submissionPath, "./test/resources/csse2002/lib/junit-4.12.jar");
-
+        var submission = config.toSubmission();
         var stage = config.toMutation();
         try {
             var result = stage.run(submission);

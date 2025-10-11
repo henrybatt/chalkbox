@@ -1,49 +1,53 @@
 package chalkbox.config;
 
+import chalkbox.source.Solution;
+import chalkbox.source.Submission;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
 import chalkbox.stages.mutation.Mutation;
-import de.bsommerfeld.jshepherd.annotation.Comment;
-import de.bsommerfeld.jshepherd.annotation.Key;
-import de.bsommerfeld.jshepherd.annotation.PostInject;
-import de.bsommerfeld.jshepherd.core.ConfigurablePojo;
+import org.github.gestalt.config.Gestalt;
+import org.github.gestalt.config.builder.GestaltBuilder;
+import org.github.gestalt.config.exceptions.GestaltException;
+import org.github.gestalt.config.reflect.TypeCapture;
+import org.github.gestalt.config.source.EnvironmentConfigSourceBuilder;
+import org.github.gestalt.config.source.FileConfigSourceBuilder;
 
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-@Comment("My Application Configuration")
-public class Config extends ConfigurablePojo<Config> {
+public class Config {
 
-    @Key("debug-mode")
-    @Comment("Enable debug logging")
-    public boolean debugMode = false;
+    private Gestalt gestalt;
 
-    @Key("codestyle.weighting")
-    public int codestyleWeighting;
+    public Config(Path path) throws ConfigException {
+        GestaltBuilder builder = new GestaltBuilder();
+        try {
+            this.gestalt = builder
+                    .addSource(FileConfigSourceBuilder.builder().setPath(path).build())
+                    .build();
+        } catch (GestaltException e) {
+            throw new ConfigException("unable to setup discovery for configuration: " + e);
+        }
 
-    @Key("codestyle.penaltyPerInfraction")
-    public float codestylePenaltyPerInfraction;
-
-    @Key("codestyle.excluded")
-    public List<String> codestyleExcluded = new ArrayList<>();
-
-    @Key("compilation.classPath")
-    public List<String> compilationClassPath = new ArrayList<>();
-
-    @Key("conformance.path")
-    public String conformancePath;
-
-    public Config() {
+        try {
+            gestalt.loadConfigs();
+        } catch (GestaltException e) {
+            throw new ConfigException("unable to load config: " + e);
+        }
     }
 
-    @PostInject
-    private void validateConfigValues() {
-    }
-
-    public CodeStyle toCodestyle() {
-        return new CodeStyle(this.codestyleWeighting, this.codestylePenaltyPerInfraction, this.codestyleExcluded);
+    public CodeStyle toCodestyle() throws ConfigException {
+        try {
+            return new CodeStyle(
+                    gestalt.getConfig("codestyle.weighting", Double.class),
+                    gestalt.getConfig("codestyle.penalty", Float.class),
+                    gestalt.getConfig("codestyle.excluded", new TypeCapture<List<String>>() {})
+            );
+        } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
     }
 
     public Conformance toConformance() {
@@ -54,7 +58,33 @@ public class Config extends ConfigurablePojo<Config> {
         return new Functionality(38);
     }
 
-    public Mutation toMutation() {
-        return new Mutation(38);
+    public Mutation toMutation() throws ConfigException {
+        try {
+            return new Mutation(gestalt.getConfig("mutation.weighting", Double.class));
+        } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
+    }
+
+    public Submission toSubmission() throws ConfigException {
+        try {
+            return new Submission(
+                    gestalt.getConfig("submission.path", String.class),
+                    gestalt.getConfig("submission.classPath", new TypeCapture<List<String>>() {})
+            );
+        } catch (GestaltException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Solution toSolution() throws ConfigException {
+        try {
+            return new Solution(
+                    gestalt.getConfig("submission.path", String.class),
+                    gestalt.getConfig("submission.classPath", new TypeCapture<List<String>>() {})
+            );
+        } catch (GestaltException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

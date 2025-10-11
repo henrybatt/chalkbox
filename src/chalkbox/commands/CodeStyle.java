@@ -4,7 +4,7 @@ import chalkbox.config.Config;
 import chalkbox.stages.StageException;
 import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
-import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
+import org.github.gestalt.config.exceptions.GestaltException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
@@ -22,10 +22,9 @@ public class CodeStyle implements Runnable {
     @Override
     public void run() {
         Path configFile = Paths.get(shared.configFile);
-        var config = ConfigurationLoader.load(configFile, Config::new);
+        Config config = new Config(configFile);
 
-        var submission = new Submission(shared.submissionPath, "");
-
+        var submission = config.toSubmission();
         var stage = config.toCodestyle();
         //todo(mh): Add handling here for overriding checkstyle config
         try {

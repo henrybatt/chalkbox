@@ -25,7 +25,7 @@ public class CodeStyle implements Stage {
     private static final String name = "Code Style";
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-    private int weighting = 0;
+    private double weighting = 0;
     private float penaltyPerInfraction = 0;
     private final List<String> excludedFiles;
     private String customCheckstyleConfig = "";
@@ -33,7 +33,7 @@ public class CodeStyle implements Stage {
     /**
      * Sets up the Checkstyle stage ready to process a submission.
      */
-    public CodeStyle(int weighting, float penaltyPerInfraction, List<String> excludedFiles) {
+    public CodeStyle(double weighting, float penaltyPerInfraction, List<String> excludedFiles) {
         this.weighting = weighting;
         this.penaltyPerInfraction = penaltyPerInfraction;
         this.excludedFiles = excludedFiles;

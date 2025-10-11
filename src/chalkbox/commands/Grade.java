@@ -3,18 +3,19 @@ package chalkbox.commands;
 import chalkbox.config.Config;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
-import chalkbox.stages.Result;
-import chalkbox.stages.Stage;
-import chalkbox.stages.StageException;
-import chalkbox.stages.StageResult;
+import chalkbox.stages.*;
 import chalkbox.stages.ai.Ai;
 import chalkbox.stages.header.Header;
 import com.google.common.flogger.FluentLogger;
-import de.bsommerfeld.jshepherd.core.ConfigurationLoader;
+import com.google.gson.GsonBuilder;
+import org.github.gestalt.config.exceptions.GestaltException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -23,22 +24,21 @@ import java.nio.file.Paths;
 public class Grade implements Runnable {
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-    @CommandLine.Option(names = { "--stages" }, required = true, description = "Comma seperated stages to run")
+    @CommandLine.Option(names = { "--stages" }, required = true, description = "Comma separated stages to run")
     public String stages;
 
     @Mixin Shared shared = new Shared();
 
     @Override
     public void run() {
+        var gradescope = new GradescopeResult();
         Path configFile = Paths.get(shared.configFile);
-        var config = ConfigurationLoader.load(configFile, Config::new);
+        var config = new Config(configFile);
 
         logger.atInfo().log("Running the following stages: " + String.join(" ,", stages));
 
-        //todo(mh): Config this
-        var solution = new Solution("./test/resources/csse2002/solutions/correct",
-                "./test/resources/csse2002/lib/junit-4.12.jar");
-        var submission = new Submission(shared.submissionPath, "./test/resources/csse2002/lib/junit-4.12.jar");
+        var solution = config.toSolution();
+        var submission = config.toSubmission();
 
         // for each stage in the config
         var stages = this.stages.split(",");
@@ -62,7 +62,17 @@ public class Grade implements Runnable {
             if (result == null) {
                 continue;
             }
-            logger.atInfo().log(result.overview().getOutput());
+            gradescope.add(result);
+            var gson = new GsonBuilder().setPrettyPrinting().create();
+
+            try {
+                var writer = new BufferedWriter(new FileWriter(shared.outputFile));
+                writer.write(gson.toJson(gradescope));
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
