@@ -25,7 +25,7 @@ public class Mutation implements Runnable {
         var config = ConfigurationLoader.load(configFile, Config::new);
 
         //todo(mh): Config this
-        var submission = new Submission(shared.submissionPath, "/home/millie/Documents/projects/chalkbox/test/resources/csse2002/lib/junit-4.12.jar");
+        var submission = new Submission(shared.submissionPath, "./test/resources/csse2002/lib/junit-4.12.jar");
 
         var stage = config.toMutation();
         try {

@@ -7,12 +7,19 @@ import chalkbox.source.Submission;
 import chalkbox.stages.*;
 
 import com.google.common.flogger.FluentLogger;
+import org.pitest.mutationtest.ClassMutationResults;
+import org.pitest.mutationtest.MutationResultInterceptor;
+import org.pitest.mutationtest.MutationResultListenerFactory;
 import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
+import org.pitest.mutationtest.config.Services;
+import org.pitest.mutationtest.config.ServicesFromClassLoader;
 import org.pitest.mutationtest.tooling.EntryPoint;
 import org.pitest.mutationtest.tooling.MutationCoverage;
 import org.pitest.testapi.TestGroupConfig;
 import org.pitest.util.Glob;
+import org.pitest.util.IsolationUtils;
+import org.pitest.util.ServiceLoader;
 import org.pitest.util.Verbosity;
 
 import java.io.File;
@@ -106,17 +113,19 @@ public class Mutation implements Stage {
         data.setMutators(Collections.singletonList("DEFAULTS"));
 
         data.setGroupConfig(new TestGroupConfig());
-        data.addOutputFormats(Collections.singletonList("HTML"));
+        //data.addOutputFormats(Collections.singletonList("HTML"));
+        data.addOutputFormats(Collections.singletonList("Chalkbox"));
         data.setOutputEncoding(StandardCharsets.UTF_8);
         data.setInputEncoding(StandardCharsets.UTF_8);
         data.setVerbosity(Verbosity.VERBOSE);
 
-        PluginServices plugins = PluginServices.makeForContextLoader();
+        MutationListener listener = new MutationListener();
+        PluginServices plugins = injectListener(listener);
+        //PluginServices plugins = PluginServices.makeForContextLoader();
         var result = e.execute(null, data, plugins, new HashMap<>());
 
 
         var stats = result.getStatistics().get();
-
 
         var overview = new Result(name);
 //        overview.setScore(scaled)
@@ -125,7 +134,25 @@ public class Mutation implements Stage {
 //                .setOutputFormat("md")
 //                .setVisibility(Visibility.AFTER_PUBLISH);
 
-        return StageResult.fromOverview(overview);
+        return new StageResult(overview, listener.getResults());
+    }
+
+    private PluginServices injectListener(MutationListener listener) {
+        Services fallback = new ServicesFromClassLoader(IsolationUtils.getContextClassLoader());
+        Services serviceLoader = new Services() {
+            @Override
+            @SuppressWarnings("unchecked") // hopefully valid
+            public <S> Collection<S> load(Class<S> ifc) {
+                // intercept lookup and include custom listener
+                if (ifc.isAssignableFrom(MutationResultListenerFactory.class)) {
+                    return List.of((S) listener);
+                }
+                // fallback to default
+                return fallback.load(ifc);
+            }
+        };
+
+        return new PluginServices(serviceLoader);
     }
 
     @Override

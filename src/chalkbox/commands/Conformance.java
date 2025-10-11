@@ -25,7 +25,7 @@ public class Conformance implements Runnable {
         var config = ConfigurationLoader.load(configFile, Config::new);
 
         //todo(mh): Config this
-        var solution = new Solution("/home/millie/Documents/projects/chalkbox/test/resources/csse2002/solutions/correct", "");
+        var solution = new Solution("./test/resources/csse2002/solutions/correct", "");
         var submission = new Submission(shared.submissionPath, "");
 
         var stage = config.toConformance();

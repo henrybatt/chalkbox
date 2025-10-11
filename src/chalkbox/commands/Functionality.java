@@ -25,8 +25,9 @@ public class Functionality implements Runnable {
         var config = ConfigurationLoader.load(configFile, Config::new);
 
         //todo(mh): Config this
-        var solution = new Solution("/home/millie/Documents/projects/chalkbox/test/resources/csse2002/solutions/correct", "/home/millie/Documents/projects/chalkbox/test/resources/csse2002/lib/junit-4.12.jar");
-        var submission = new Submission(shared.submissionPath, "");
+        var solution = new Solution("./test/resources/csse2002/solutions/correct",
+                "./test/resources/csse2002/lib/junit-4.12.jar");
+        var submission = new Submission(shared.submissionPath, "./test/resources/csse2002/lib/junit-4.12.jar");
 
         var stage = config.toFunctionality();
         try {
