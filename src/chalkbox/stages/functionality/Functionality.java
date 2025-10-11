@@ -22,6 +22,16 @@ public class Functionality implements Stage {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.SUBMISSION_AND_SOLUTION;
+    }
+
+    @Override
     public StageResult run(Submission submission) throws StageException {
         // Not implemented
         return null;
@@ -87,18 +97,14 @@ public class Functionality implements Stage {
         var submissionResults = this.runTests(tests, classPath);
 
         var totalNumTests = 0;
-
         var innerResults = new ArrayList<Result>();
         var classResults = new ArrayList<ClassResult>();
         for (String className : tests) {
-
             int classPassing = 0;
 
             // Use test summaries to collect information even if test fails to compile
             var classTests = baselineResults.get(className).size();
             var classWeighting = baselineResults.get(className).getFirst().classWeight();
-
-//            List<Data> testCases = new ArrayList<>();
 
             for (JUnitIndividualResult unit : submissionResults.get(className)) {
                 var isPassing = unit.passes() == 1;
@@ -107,22 +113,14 @@ public class Functionality implements Stage {
                         .setStatus(isPassing ? Status.PASSED : Status.FAILED);
 
                 unitResult.appendOutput(isPassing ? "✅ Test scenario passes\n" : "❌ Test scenario fails\n");
+
                 // Get Test class JavaDoc
-                try {
-                    var testDescription = new StringBuilder();
-                    var javaDoc = new SourceLoader(solution.getTestBuildPath()).getTestJavadoc(className);
-                    for (var method : javaDoc.getMethods()) {
-                        if (method.getName().equals(unit.name().split("\\.")[1])) {
-                            testDescription.append(method.getComment()).append("\n");
-                        }
-                    }
-                    if (!testDescription.toString().isEmpty()) {
-                        unitResult.appendOutput("### Scenario\n");
-                        unitResult.appendOutput(testDescription.toString());
-                    }
-                } catch (IOException ignored) {
-                    // Do Nothing
+                var testDescription = getTestJavaDoc(solution.getTestBuildPath(), className, unit.name());
+                if (!testDescription.isEmpty()) {
+                    unitResult.appendOutput("### Scenario\n");
+                    unitResult.appendOutput(testDescription);
                 }
+
                 if (!isPassing) {
                     unitResult.appendOutput("### Details\n");
                     unitResult.appendOutput(unit.output());
@@ -144,17 +142,20 @@ public class Functionality implements Stage {
 
         double total = 0;
         double possible = 0;
-        StringBuilder table = new StringBuilder("| TestClass | Weighting | Passing Tests | Total |");
+        var table = new StringBuilder("| TestClass | Weighting | Passing Tests | Total |");
         table.append("\n| ----------- | ----------- | ----------- | ----------- |\n");
         for (var classResult : classResults) {
-            // Skip classes that have no tests.
             if (classResult.count() <= 0) {
                 continue;
             }
             double score = (classResult.passing() / (float) classResult.count()) * classResult.weight();
+            table.append("| ").append(classResult.name())
+                    .append(" | ").append(classResult.weight())
+                    .append(" | ").append(classResult.passing()).append("/").append(classResult.count())
+                    .append(" | ").append(String.format("%.3f", score))
+                    .append("|\n");
             total += score;
             possible += classResult.weight();
-            table.append("| ").append(classResult.name()).append(" | ").append(classResult.weight()).append(" | ").append(classResult.passing()).append("/").append(classResult.count()).append(" | ").append(String.format("%.3f", score)).append("|\n");
         }
         double scaled = Math.ceil((total / possible) * maxScore);
 
@@ -185,5 +186,21 @@ public class Functionality implements Stage {
             collection.put(className, results);
         }
         return collection;
+    }
+
+    private String getTestJavaDoc(String folder, String className, String methodName) {
+        try {
+            var testDescription = new StringBuilder();
+            var javaDoc = new SourceLoader(folder).getTestJavadoc(className);
+            for (var method : javaDoc.getMethods()) {
+                if (method.getName().equals(methodName.split("\\.")[1])) {
+                    testDescription.append(method.getComment()).append("\n");
+                }
+            }
+            return testDescription.toString();
+        } catch (IOException ignored) {
+            // Do Nothing
+        }
+        return "";
     }
 }

@@ -1,6 +1,5 @@
 package chalkbox.stages.mutation;
 
-import chalkbox.source.Submission;
 import chalkbox.stages.Result;
 import chalkbox.stages.Status;
 import org.pitest.mutationtest.*;
@@ -21,15 +20,16 @@ public class MutationListener implements MutationResultListenerFactory {
     public MutationResultListener getListener(Properties props, ListenerArguments args) {
         return new MutationResultListener() {
             @Override
-            public void runStart() {
+            public void runStart() {}
 
-            }
+            @Override
+            public void runEnd() {}
 
             @Override
             public void handleMutationResult(ClassMutationResults results) {
-                Result testResult = new Result("Mutation: " + results.getMutatedClass().asJavaName());
+                var testResult = new Result("Mutation: " + results.getMutatedClass().asJavaName());
 
-                for (MutationResult mutation : results.getMutations()) {
+                for (var mutation : results.getMutations()) {
                     String headline = "Mutated line " + mutation.getDetails().getLineNumber() + " in " + mutation.getDetails().getFilename();
                     String howChange = "Mutation: `" + mutation.getDetails().getDescription() + "`";
                     String result;
@@ -56,11 +56,6 @@ public class MutationListener implements MutationResultListenerFactory {
                 }
 
                 mutationResults.add(testResult);
-            }
-
-            @Override
-            public void runEnd() {
-
             }
         };
     }

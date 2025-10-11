@@ -6,6 +6,10 @@ import chalkbox.source.Submission;
 import java.util.List;
 
 public interface Stage {
+    String getName();
+
+    Type getType();
+
     StageResult run(Submission submission) throws StageException;
 
     StageResult run(Submission submission, Solution solution) throws StageException;

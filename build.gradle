@@ -48,11 +48,8 @@ dependencies {
     implementation 'com.github.therapi:therapi-runtime-javadoc:0.15.0'
     implementation 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0'
     implementation 'info.picocli:picocli:4.7.7'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.12'
     implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'com.google.guava:guava:33.5.0-jre'
-    implementation 'org.apache.logging.log4j:log4j-api:2.13.1'
-    implementation 'org.apache.logging.log4j:log4j-core:2.13.1'
     implementation 'com.google.dagger:dagger:2.57.2'
     implementation 'com.github.bsommerfeld.jshepherd:core:3.3.2'
     implementation 'com.github.bsommerfeld.jshepherd:yaml:3.3.2'
@@ -60,7 +57,6 @@ dependencies {
     implementation 'com.google.flogger:flogger-system-backend:0.9'
     implementation 'org.pitest:pitest:1.20.6'
     implementation 'org.pitest:pitest-entry:1.20.6'
-    implementation 'org.pitest:pitest-html-report:1.20.6'
 
     // Annotations
     annotationProcessor 'com.google.dagger:dagger-compiler:2.57.2'

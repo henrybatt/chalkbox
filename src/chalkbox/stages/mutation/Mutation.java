@@ -7,19 +7,15 @@ import chalkbox.source.Submission;
 import chalkbox.stages.*;
 
 import com.google.common.flogger.FluentLogger;
-import org.pitest.mutationtest.ClassMutationResults;
-import org.pitest.mutationtest.MutationResultInterceptor;
 import org.pitest.mutationtest.MutationResultListenerFactory;
 import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
 import org.pitest.mutationtest.config.Services;
 import org.pitest.mutationtest.config.ServicesFromClassLoader;
 import org.pitest.mutationtest.tooling.EntryPoint;
-import org.pitest.mutationtest.tooling.MutationCoverage;
 import org.pitest.testapi.TestGroupConfig;
 import org.pitest.util.Glob;
 import org.pitest.util.IsolationUtils;
-import org.pitest.util.ServiceLoader;
 import org.pitest.util.Verbosity;
 
 import java.io.File;
@@ -38,6 +34,16 @@ public class Mutation implements Stage {
 
     public Mutation(int maxScore) {
         this.maxScore = maxScore;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.SUBMISSION_ONLY;
     }
 
     @Override
@@ -62,12 +68,6 @@ public class Mutation implements Stage {
         } catch (IOException e) {
             throw new StageException(e.toString());
         }
-
-//        // Run tests against the solution
-//        var classPath = solution.getClassPath() +
-//                File.pathSeparator + solution.getSrcBuildPath() +
-//                File.pathSeparator + solution.getTestBuildPath();
-//        var baselineResults = this.runTests(tests, classPath);
 
         // Path contains dependencies and the compile submission
         var classPath = submission.getClassPath() +

@@ -3,13 +3,9 @@ package chalkbox.stages.codestyle;
 import chalkbox.api.common.Execution;
 import chalkbox.api.common.ProcessExecution;
 import chalkbox.source.Solution;
-import chalkbox.stages.Result;
-import chalkbox.stages.Stage;
-import chalkbox.stages.StageException;
+import chalkbox.stages.*;
 import chalkbox.source.Submission;
-import chalkbox.stages.StageResult;
 import com.google.common.flogger.FluentLogger;
-import org.apache.logging.log4j.util.Strings;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,6 +37,16 @@ public class CodeStyle implements Stage {
         this.weighting = weighting;
         this.penaltyPerInfraction = penaltyPerInfraction;
         this.excludedFiles = excludedFiles;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.SUBMISSION_ONLY;
     }
 
     public CodeStyle overrideCheckstyleConfig(String filePath) {
@@ -82,7 +88,7 @@ public class CodeStyle implements Stage {
         processArgs.add(customCheckstyleConfig.isEmpty() ? checkstyleConfig : customCheckstyleConfig);
         processArgs.addAll(generateExcludedArgs(excludedFiles));
         processArgs.add(submission.getSrcFolder());
-        logger.atInfo().log("Running CheckStyle %s", Strings.join(processArgs, ' '));
+        logger.atInfo().log("Running CheckStyle %s", String.join(" ", processArgs));
 
         // todo(mh): Change this to # * timeunit.Seconds or likewise
         ProcessExecution process = null;

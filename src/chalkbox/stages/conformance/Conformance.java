@@ -2,10 +2,7 @@ package chalkbox.stages.conformance;
 
 import chalkbox.api.files.FileLoader;
 import chalkbox.source.Source;
-import chalkbox.stages.Result;
-import chalkbox.stages.Stage;
-import chalkbox.stages.StageException;
-import chalkbox.stages.StageResult;
+import chalkbox.stages.*;
 import chalkbox.stages.conformance.comparator.ClassComparator;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
@@ -34,6 +31,16 @@ public class Conformance implements Stage {
      */
     public Conformance(List<String> ignoreWildcards){
         this.ignoreWildcards = ignoreWildcards;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.SUBMISSION_AND_SOLUTION;
     }
 
     @Override
