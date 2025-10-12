@@ -77,10 +77,10 @@ public class Mutation implements Stage {
         }
 
         // Path contains dependencies and the compile submission
-        var classPath = submission.getClassPath() +
-                File.pathSeparator + submission.getSrcBuildPath() +
-                File.pathSeparator + submission.getTestBuildPath();
-        var submissionResults = this.runTests(tests, classPath); //todo(mh): fail here if they dont pass their own tests?
+        //var classPath = submission.getClassPath() +
+        //        File.pathSeparator + submission.getSrcBuildPath() +
+        //        File.pathSeparator + submission.getTestBuildPath();
+        //var submissionResults = this.runTests(tests, classPath); //todo(mh): fail here if they dont pass their own tests?
 
 
         var e = new EntryPoint();
@@ -90,10 +90,12 @@ public class Mutation implements Stage {
 
         // Set the tests to run against the mutations
         var packages = new ArrayList<Predicate<String>>();
-        for (var test : testTargets) {
-            packages.add(new Glob(test));
-        }
-        for (var test : tests) {
+        // TODO(bw): this is any match deal so we need to be a bit smarter about ignore vs include
+        // TODO(bw): for this assignment we only want to ignore and implicitly include all
+        //for (var test : testTargets) {
+        //    packages.add(new Glob(test));
+        //}
+        for (var test : ignoreTests) {
             packages.add((path) -> !new Glob(test).matches(path));
         }
         data.setTargetTests(packages);
