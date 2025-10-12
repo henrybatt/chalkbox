@@ -76,7 +76,7 @@ public class CodeStyle implements Stage {
         processArgs.add(jar);
         processArgs.add("-c");
         processArgs.add(config);
-        processArgs.addAll(generateExcludedArgs(excludedFiles));
+        processArgs.addAll(generateExcludedArgs(excludedFiles, submission.getSrcFolder()));
         processArgs.add(submission.getSrcFolder());
         logger.atInfo().log("Running CheckStyle %s", String.join(" ", processArgs));
 
@@ -145,11 +145,11 @@ public class CodeStyle implements Stage {
      * @param excluded list of excluded paths
      * @return list of command line arguments specifying excluded paths
      */
-    private List<String> generateExcludedArgs(List<String> excluded) {
+    private List<String> generateExcludedArgs(List<String> excluded, String srcFolder) {
         List<String> args = new ArrayList<>();
         for (String s : excluded) {
             args.add("-e");
-            args.add(s);
+            args.add(srcFolder + "/" + s);
         }
         return args;
     }

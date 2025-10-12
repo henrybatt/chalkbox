@@ -27,7 +27,19 @@ public class MutationListener implements MutationResultListenerFactory {
 
             @Override
             public void handleMutationResult(ClassMutationResults results) {
-                var testResult = new Result("Mutation: " + results.getMutatedClass().asJavaName());
+                String className = results.getMutatedClass().asJavaName();
+                var testResult = new Result("Mutation: " + className);
+                boolean allPassed = true;
+
+                if (className.contains("$") && !results.getMutations().isEmpty()) {
+                    String filename = results.getMutations().iterator().next().getDetails().getFilename();
+                    String innerName = className.split("\\$")[1];
+                    if (innerName.matches("\\d+")) {
+                        testResult.appendOutput("Note: This is an anonymous class defined within " + filename + "\n\n");
+                    } else {
+                        testResult.appendOutput("Note: This is the " + innerName + " class defined within " + filename + "\n\n");
+                    }
+                }
 
                 for (var mutation : results.getMutations()) {
                     String headline = "Mutated line " + mutation.getDetails().getLineNumber() + " in " + mutation.getDetails().getFilename();
@@ -52,9 +64,12 @@ public class MutationListener implements MutationResultListenerFactory {
                     }
 
                     testResult.appendOutput(String.join(System.lineSeparator(), headline, howChange, result) + System.lineSeparator() + System.lineSeparator());
-                    testResult.setStatus(passes ? Status.PASSED : Status.FAILED);
+                    if (!passes) {
+                        allPassed = false;
+                    }
                 }
 
+                testResult.setStatus(allPassed ? Status.PASSED : Status.FAILED);
                 mutationResults.add(testResult);
             }
         };
