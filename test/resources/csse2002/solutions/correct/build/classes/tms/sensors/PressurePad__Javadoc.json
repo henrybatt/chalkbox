@@ -1,1 +1,0 @@
-{"doc":" A type of sensor that measures the number of vehicles waiting at a fixed\n point on the route.\n @ass1\n","fields":[],"enumConstants":[],"methods":[{"name":"countTraffic","paramTypes":[],"doc":" Returns the number of vehicles currently waiting on the pressure pad.\n\n @return the current traffic count reported by the pressure pad\n @ass1\n"}],"constructors":[]}

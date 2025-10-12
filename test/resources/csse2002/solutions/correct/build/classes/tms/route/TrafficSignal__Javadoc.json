@@ -1,1 +1,0 @@
-{"doc":" Enum to represent the possible traffic light signals.\n <p>\n <b>WARNING:</b> You do <b>not</b> need to implement the {@code values()} or\n {@code valueOf(String)} methods as part of the assignment. These methods are\n automatically generated, however they still appear in the Javadoc.\n @ass1\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

@@ -42,4 +42,6 @@ docs/venv
 !test/resources/csse2002/lib/junit-4.12.jar
 
 test/resources/*/submission/build/
+test/resources/2025S2A1/
 
+result/
