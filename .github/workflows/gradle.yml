@@ -17,7 +17,7 @@ jobs:
       with:
         distribution: 'graalvm'
         java-version: '21'
-    - name: Run Gradle Test
-      uses: eskatos/gradle-command-action@v1
-      with:
-        arguments: test --stacktrace --debug
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
+    - name: Run Gradle test
+      run: ./gradlew test
