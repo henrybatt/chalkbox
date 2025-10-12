@@ -54,6 +54,7 @@ public class Grade implements Runnable {
                     case SUBMISSION_AND_SOLUTION -> result = stage.run(submission, solution);
                 }
             } catch (StageException e) {
+                logger.atSevere().withCause(e).log("Unable to run stage " + stage.getName());
                 result = StageResult.fromOverview(new Result(stage.getName()));
             }
 

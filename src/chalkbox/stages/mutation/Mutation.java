@@ -12,6 +12,7 @@ import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
 import org.pitest.mutationtest.config.Services;
 import org.pitest.mutationtest.config.ServicesFromClassLoader;
+import org.pitest.mutationtest.tooling.AnalysisResult;
 import org.pitest.mutationtest.tooling.EntryPoint;
 import org.pitest.testapi.TestGroupConfig;
 import org.pitest.util.Glob;
@@ -133,7 +134,16 @@ public class Mutation implements Stage {
         MutationListener listener = new MutationListener();
         PluginServices plugins = injectListener(listener);
         //PluginServices plugins = PluginServices.makeForContextLoader();
-        var result = e.execute(null, data, plugins, new HashMap<>());
+        AnalysisResult result;
+        try {
+            result = e.execute(null, data, plugins, new HashMap<>());
+        } catch (Exception err) {
+            return failWithMessage(err.getMessage());
+        }
+        if (result.getError().isPresent()) {
+            return failWithMessage(result.getError().get().toString());
+        }
+        logger.atInfo().log(result.toString());
 
 
         var stats = result.getStatistics().get();
@@ -146,6 +156,21 @@ public class Mutation implements Stage {
 //                .setVisibility(Visibility.AFTER_PUBLISH);
 
         return new StageResult(overview, listener.getResults());
+    }
+
+    private StageResult failWithMessage(String cause) {
+        String message;
+        if (cause.contains("Mutation testing requires a green")) {
+            message = "Unable to run mutation tests while your unit tests do not pass on your solution. ";
+            message += "Your JUnit tests must pass when run against your submission.";
+        } else {
+            message = "Unable to execute mutation tests: " + cause;
+        }
+        return StageResult.fromOverview(
+                new Result(name)
+                        .setStatus(Status.FAILED)
+                        .setOutputFormat(message)
+        );
     }
 
     private PluginServices injectListener(MutationListener listener) {
