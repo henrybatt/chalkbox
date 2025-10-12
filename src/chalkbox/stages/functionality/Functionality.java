@@ -17,10 +17,12 @@ public class Functionality implements Stage {
 
     private final double maxScore;
     private final boolean showPassing;
+    private final boolean allVisible;
 
-    public Functionality(double maxScore, boolean showPassing) {
+    public Functionality(double maxScore, boolean showPassing, boolean allVisible) {
         this.maxScore = maxScore;
         this.showPassing = showPassing;
+        this.allVisible = allVisible;
     }
 
     @Override
@@ -114,8 +116,9 @@ public class Functionality implements Stage {
 
             for (JUnitIndividualResult unit : submissionResults.get(className)) {
                 var isPassing = unit.passes() == 1;
+                var visibility = allVisible ? Visibility.VISIBLE : unit.visibility();
                 var unitResult = new Result("Functionality: " + unit.name())
-                        .setVisibility(unit.visibility())
+                        .setVisibility(visibility)
                         .setStatus(isPassing ? Status.PASSED : Status.FAILED);
 
                 if (!isPassing || showPassing) {

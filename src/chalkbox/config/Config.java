@@ -58,7 +58,8 @@ public class Config {
         try {
             return new Functionality(
                     gestalt.getConfig("functionality.weighting", Double.class),
-                    gestalt.getConfig("functionality.showPassing", true, Boolean.class)
+                    gestalt.getConfig("functionality.showPassing", true, Boolean.class),
+                    gestalt.getConfig("functionality.allVisible", false, Boolean.class)
             );
         } catch (GestaltException e) {
             throw new ConfigException(e.toString());
