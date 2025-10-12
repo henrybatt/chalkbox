@@ -176,7 +176,7 @@ public class Functionality implements Stage {
                 .setMaxScore(maxScore)
                 .appendOutput(table + equation)
                 .setOutputFormat("md")
-                .setVisibility(Visibility.AFTER_PUBLISH);
+                .setVisibility(Visibility.AFTER_PUBLISHED);
 
         return new StageResult(overview, innerResults);
     }

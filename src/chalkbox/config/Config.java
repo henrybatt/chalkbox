@@ -41,6 +41,8 @@ public class Config {
     public CodeStyle toCodestyle() throws ConfigException {
         try {
             return new CodeStyle(
+                    gestalt.getConfig("codestyle.jar", String.class),
+                    gestalt.getConfig("codestyle.config", String.class),
                     gestalt.getConfig("codestyle.weighting", Double.class),
                     gestalt.getConfig("codestyle.penalty", Float.class),
                     gestalt.getConfig("codestyle.excluded", new TypeCapture<List<String>>() {})

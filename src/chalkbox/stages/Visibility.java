@@ -8,7 +8,7 @@ public enum Visibility {
     @SerializedName("after_due_date")
     AFTER_DUE_DATE,
     @SerializedName("after_published")
-    AFTER_PUBLISH,
+    AFTER_PUBLISHED,
     @SerializedName("visible")
     VISIBLE
 }

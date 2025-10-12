@@ -8,11 +8,8 @@ import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -25,15 +22,18 @@ public class CodeStyle implements Stage {
     private static final String name = "Code Style";
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
+    private String jar;
+    private String config;
     private double weighting = 0;
     private float penaltyPerInfraction = 0;
     private final List<String> excludedFiles;
-    private String customCheckstyleConfig = "";
 
     /**
      * Sets up the Checkstyle stage ready to process a submission.
      */
-    public CodeStyle(double weighting, float penaltyPerInfraction, List<String> excludedFiles) {
+    public CodeStyle(String jar, String config, double weighting, float penaltyPerInfraction, List<String> excludedFiles) {
+        this.jar = jar;
+        this.config = config;
         this.weighting = weighting;
         this.penaltyPerInfraction = penaltyPerInfraction;
         this.excludedFiles = excludedFiles;
@@ -47,11 +47,6 @@ public class CodeStyle implements Stage {
     @Override
     public Type getType() {
         return Type.SUBMISSION_ONLY;
-    }
-
-    public CodeStyle overrideCheckstyleConfig(String filePath) {
-        this.customCheckstyleConfig = filePath;
-        return this;
     }
 
     public StageResult run(Submission submission) throws StageException {
@@ -69,23 +64,18 @@ public class CodeStyle implements Stage {
             result.appendOutput(e.toString());
             return StageResult.fromOverview(result);
         }
+        logger.atInfo().log("Filepath for the checkstyle tool: %s with config %s", jar, config);
 
-        String checkstyleJar = null;
-        String checkstyleConfig = null;
-        try {
-            checkstyleJar = getJarFilePathFromResource("checkstyle.jar");
-            checkstyleConfig = getJarFilePathFromResource("checkstyle.xml");
-        } catch (Exception e) {
-            throw new StageException(e.toString());
-        }
-        logger.atInfo().log("Filepath for the checkstyle tool: %s with config %s", checkstyleJar, checkstyleConfig);
+        var path = Paths.get(config);
+        var configPath = path.toAbsolutePath().getParent().toString();
 
         List<String> processArgs = new ArrayList<>();
         processArgs.add("java");
+        processArgs.add(String.format("-Dcheckstyle.config.path=%s", configPath));
         processArgs.add("-jar");
-        processArgs.add(checkstyleJar);
+        processArgs.add(jar);
         processArgs.add("-c");
-        processArgs.add(customCheckstyleConfig.isEmpty() ? checkstyleConfig : customCheckstyleConfig);
+        processArgs.add(config);
         processArgs.addAll(generateExcludedArgs(excludedFiles));
         processArgs.add(submission.getSrcFolder());
         logger.atInfo().log("Running CheckStyle %s", String.join(" ", processArgs));
@@ -162,31 +152,5 @@ public class CodeStyle implements Stage {
             args.add(s);
         }
         return args;
-    }
-
-    private static String getJarFilePathFromResource(String resourcePath) throws URISyntaxException {
-        URL resourceUrl = CodeStyle.class.getClassLoader().getResource(resourcePath);
-        if (resourceUrl == null) {
-            return "Resource not found: " + resourcePath;
-        }
-
-        String urlString = resourceUrl.toString();
-        if (urlString.startsWith("file:")) {
-            return new java.io.File(resourceUrl.toURI()).getAbsolutePath();
-        }
-
-        if (urlString.startsWith("jar:file:")) {
-            // The format is "jar:file:/FULL/PATH/TO/jarName.jar!/PATH/TO/RESOURCE"
-            int bangIndex = urlString.indexOf('!');
-            if (bangIndex != -1) {
-                String jarPathWithPrefix = urlString.substring("jar:".length(), bangIndex);
-                String decodedJarPath = URLDecoder.decode(jarPathWithPrefix, StandardCharsets.UTF_8);
-
-                URI uri = new URI(decodedJarPath);
-                return uri.getPath();
-            }
-        }
-
-        throw new StageException("Unable to find resources: " + resourcePath);
     }
 }

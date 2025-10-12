@@ -142,7 +142,7 @@ public class JUnitListener extends RunListener {
                     result.testName,
                     result.weighting,
                     result.classWeighting,
-                    result.visible ? Visibility.VISIBLE : Visibility.AFTER_PUBLISH
+                    result.visible ? Visibility.VISIBLE : Visibility.AFTER_PUBLISHED
             );
             results.add(data);
         }

@@ -16,7 +16,7 @@ public class GradescopeResult {
     private String testOutputFormat;
     @SerializedName("test_name_format")
     private String testNameFormat;
-    private Visibility visibility = Visibility.AFTER_PUBLISH;
+    private Visibility visibility = Visibility.AFTER_PUBLISHED;
     @SerializedName("stdout_visibility")
     private Visibility stdoutVisibility = Visibility.HIDDEN;
     private List<Result> tests = new ArrayList<>();
