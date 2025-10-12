@@ -1,14 +1,10 @@
-name: Gradle Build
+name: Build
 
 on: [push, pull_request]
 
 jobs:
-  test:
-    name: Test
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  build:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v5
