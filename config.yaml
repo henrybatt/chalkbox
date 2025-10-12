@@ -37,3 +37,8 @@ functionality:
 mutation:
   # How much out of 100 is the mutation worth
   weighting: 25
+  mutationTargets:
+    - tms.*
+  testTargets:
+    - '*'
+  ignoreTests: []

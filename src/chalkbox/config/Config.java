@@ -34,7 +34,7 @@ public class Config {
         try {
             gestalt.loadConfigs();
         } catch (GestaltException e) {
-            throw new ConfigException("unable to load config: " + e);
+            throw new ConfigException("unable to load config: " + e, e);
         }
     }
 
@@ -60,7 +60,12 @@ public class Config {
 
     public Mutation toMutation() throws ConfigException {
         try {
-            return new Mutation(gestalt.getConfig("mutation.weighting", Double.class));
+            return new Mutation(
+                    gestalt.getConfig("mutation.weighting", Double.class),
+                    gestalt.getConfig("mutation.mutationTargets", new TypeCapture<List<String>>() {}),
+                    gestalt.getConfig("mutation.testTargets", new TypeCapture<List<String>>() {}),
+                    gestalt.getConfig("mutation.ignoreTests", new TypeCapture<List<String>>() {})
+            );
         } catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }

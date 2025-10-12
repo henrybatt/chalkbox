@@ -31,9 +31,15 @@ public class Mutation implements Stage {
     public final static String name = "Mutation";
 
     private final double maxScore;
+    private final List<String> mutationTargets;
+    private final List<String> testTargets;
+    private final List<String> ignoreTests;
 
-    public Mutation(double maxScore) {
+    public Mutation(double maxScore, List<String> mutationTargets, List<String> testTargets, List<String> ignoreTests) {
         this.maxScore = maxScore;
+        this.mutationTargets = mutationTargets;
+        this.testTargets = testTargets;
+        this.ignoreTests = ignoreTests;
     }
 
     @Override
@@ -79,11 +85,16 @@ public class Mutation implements Stage {
         var e = new EntryPoint();
         ReportOptions data = new ReportOptions();
         // Set the classes to mutate
-        data.setTargetClasses(Collections.singletonList("builder.entities.*"));
+        data.setTargetClasses(mutationTargets);
 
         // Set the tests to run against the mutations
         var packages = new ArrayList<Predicate<String>>();
-        packages.add(new Glob("*"));
+        for (var test : testTargets) {
+            packages.add(new Glob(test));
+        }
+        for (var test : tests) {
+            packages.add((path) -> !new Glob(test).matches(path));
+        }
         data.setTargetTests(packages);
 
         // Set classpath elements (compiled code, test code, dependencies)
@@ -117,7 +128,7 @@ public class Mutation implements Stage {
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
         data.setOutputEncoding(StandardCharsets.UTF_8);
         data.setInputEncoding(StandardCharsets.UTF_8);
-        data.setVerbosity(Verbosity.VERBOSE);
+        data.setVerbosity(Verbosity.QUIET);
 
         MutationListener listener = new MutationListener();
         PluginServices plugins = injectListener(listener);
