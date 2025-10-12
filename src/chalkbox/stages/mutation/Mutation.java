@@ -77,13 +77,22 @@ public class Mutation implements Stage {
         }
 
         // Path contains dependencies and the compile submission
-        //var classPath = submission.getClassPath() +
-        //        File.pathSeparator + submission.getSrcBuildPath() +
-        //        File.pathSeparator + submission.getTestBuildPath();
-        //var submissionResults = this.runTests(tests, classPath); //todo(mh): fail here if they dont pass their own tests?
+        var classPath = submission.getClassPath() +
+                File.pathSeparator + submission.getSrcBuildPath() +
+                File.pathSeparator + submission.getTestBuildPath();
+        List<String> failingTests = this.runTests(tests, classPath);
+        if (!failingTests.isEmpty()) {
+            var overview = new Result(name)
+                    .appendOutput("Some of your JUnit tests failed when run against your solution therefore mutation testing was not executed.\n")
+                    .appendOutput("## Details:\n\n")
+                    .setStatus(Status.PASSED);
+            for (String fail : failingTests) {
+                overview.appendOutput(fail);
+            }
+            return StageResult.fromOverview(overview);
+        }
 
 
-        var e = new EntryPoint();
         ReportOptions data = new ReportOptions();
         // Set the classes to mutate
         data.setTargetClasses(mutationTargets);
@@ -106,7 +115,7 @@ public class Mutation implements Stage {
         path.add(submission.getClassPath()); //todo(mh): do we need to split by ":", replace with just libs needed
         path.add(submission.getSrcBuildPath());
         path.add(submission.getTestBuildPath());
-        String classpath = System.getProperty("java.class.path");
+        String classpath = System.getProperty("java.class.path") + File.pathSeparator + classPath;
         System.out.println("Full Classpath: " + classpath);
 
         // Split the classpath into individual entries
@@ -127,7 +136,6 @@ public class Mutation implements Stage {
         data.setMutators(Collections.singletonList("DEFAULTS"));
 
         data.setGroupConfig(new TestGroupConfig());
-        //data.addOutputFormats(Collections.singletonList("HTML"));
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
         data.setOutputEncoding(StandardCharsets.UTF_8);
         data.setInputEncoding(StandardCharsets.UTF_8);
@@ -135,9 +143,9 @@ public class Mutation implements Stage {
 
         MutationListener listener = new MutationListener();
         PluginServices plugins = injectListener(listener);
-        //PluginServices plugins = PluginServices.makeForContextLoader();
         AnalysisResult result;
         try {
+            var e = new EntryPoint();
             result = e.execute(null, data, plugins, new HashMap<>());
         } catch (Exception err) {
             return failWithMessage(err.getMessage());
@@ -145,17 +153,10 @@ public class Mutation implements Stage {
         if (result.getError().isPresent()) {
             return failWithMessage(result.getError().get().toString());
         }
-        logger.atInfo().log(result.toString());
 
-
-        var stats = result.getStatistics().get();
-
-        var overview = new Result(name);
-//        overview.setScore(scaled)
-//                .setMaxScore(maxScore)
-//                .appendOutput(table + equation)
-//                .setOutputFormat("md")
-//                .setVisibility(Visibility.AFTER_PUBLISH);
+        var overview = new Result(name)
+                .appendOutput("Below are mutations (changes) that have been made to your submission and whether or not your unit tests successfully identified the change.")
+                .setStatus(Status.PASSED);
 
         return new StageResult(overview, listener.getResults());
     }
@@ -199,31 +200,17 @@ public class Mutation implements Stage {
         return null;
     }
 
-    /**
-     * Run the tests on a submission.
-     * <p>
-     * If there were issues compiling the sample solution or the tests, or
-     * the submission did not compile successfully, no action is taken.
-     * <p>
-     * Uses a JUnit listener to observe the passed/failed tests for each test
-     * class. One Gradescope test is created for each JUnit test method, with
-     * a mark of zero if the test failed, or a mark of
-     * <code>stageWeighting / numTests</code> if the test passed, where
-     * <code>stageWeighting</code> is the number of marks allocated to this
-     * stage, and <code>numTests</code> is the total number of JUnit test
-     * methods in all test classes.
-     */
     @Override
     public StageResult run(Submission submission, Solution solution) throws StageException {
         // Not implemented
         return null;
     }
 
-    private Map<String, List<JUnitIndividualResult>> runTests(List<String> tests, String classPath) {
-        var collection = new HashMap<String, List<JUnitIndividualResult>>();
+    private List<String> runTests(List<String> tests, String classPath) {
+        var failures = new ArrayList<String>();
         for (String className : tests) {
             // Ignore any that dont end in TEST
-            if (!className.endsWith("Test")) {
+            if (className.contains("scenario")) {
                 continue;
             }
 
@@ -231,9 +218,13 @@ public class Mutation implements Stage {
             if (results.isEmpty()) {
                 continue;
             }
-            results.sort(Comparator.comparing(JUnitIndividualResult::name));
-            collection.put(className, results);
+            for (var result : results) {
+                if (result.fails() > 0) {
+                    failures.add("JUnit test: `" + result.name() + "` fails. Output:\n");
+                    failures.add("```" + result.output() + "```\n\n");
+                }
+            }
         }
-        return collection;
+        return failures;
     }
 }
