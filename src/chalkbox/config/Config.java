@@ -80,8 +80,8 @@ public class Config {
     public Solution toSolution() throws ConfigException {
         try {
             return new Solution(
-                    gestalt.getConfig("submission.path", String.class),
-                    gestalt.getConfig("submission.classPath", new TypeCapture<List<String>>() {})
+                    gestalt.getConfig("solution.path", String.class),
+                    gestalt.getConfig("solution.classPath", new TypeCapture<List<String>>() {})
             );
         } catch (GestaltException e) {
             throw new RuntimeException(e);

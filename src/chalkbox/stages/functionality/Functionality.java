@@ -100,6 +100,10 @@ public class Functionality implements Stage {
         var innerResults = new ArrayList<Result>();
         var classResults = new ArrayList<ClassResult>();
         for (String className : tests) {
+            if (!className.endsWith("Test")) {
+                continue;
+            }
+
             int classPassing = 0;
 
             // Use test summaries to collect information even if test fails to compile
@@ -108,7 +112,7 @@ public class Functionality implements Stage {
 
             for (JUnitIndividualResult unit : submissionResults.get(className)) {
                 var isPassing = unit.passes() == 1;
-                var unitResult = new Result(unit.name())
+                var unitResult = new Result("Functionality: " + unit.name())
                         .setVisibility(unit.visibility())
                         .setStatus(isPassing ? Status.PASSED : Status.FAILED);
 

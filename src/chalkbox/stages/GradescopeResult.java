@@ -1,16 +1,23 @@
 package chalkbox.stages;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class GradescopeResult {
     private double score;
+    @SerializedName("execution_time")
     private double executionTime;
     private String output;
+    @SerializedName("output_format")
     private String outputFormat;
+    @SerializedName("test_output_format")
     private String testOutputFormat;
+    @SerializedName("test_name_format")
     private String testNameFormat;
     private Visibility visibility = Visibility.AFTER_PUBLISH;
+    @SerializedName("stdout_visibility")
     private Visibility stdoutVisibility = Visibility.HIDDEN;
     private List<Result> tests = new ArrayList<>();
 
@@ -99,7 +106,9 @@ public class GradescopeResult {
             return;
         }
         this.tests.add(overview);
-        this.score += overview.getScore();
+        if (overview.getScore() != null) {
+            this.score += overview.getScore();
+        }
 
         if (result.results() == null) {
             return;

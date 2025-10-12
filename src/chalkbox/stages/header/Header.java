@@ -23,7 +23,7 @@ public class Header implements Stage {
         return StageResult.fromOverview(new Result("Info")
                 .setStatus(Status.PASSED)
                 .setVisibility(Visibility.VISIBLE)
-                .setOutputFormat("HTML")
+                .setOutputFormat("html")
         );
     }
 

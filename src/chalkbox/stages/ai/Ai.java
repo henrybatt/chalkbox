@@ -19,7 +19,7 @@ public class Ai implements Stage {
 
     @Override
     public StageResult run(Submission submission) throws StageException {
-        var result = new Result("Info")
+        var result = new Result(getName())
                         .setStatus(Status.PASSED)
                         .setVisibility(Visibility.VISIBLE)
                         .setOutputFormat("html");

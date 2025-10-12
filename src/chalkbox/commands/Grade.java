@@ -48,6 +48,8 @@ public class Grade implements Runnable {
                 logger.atWarning().log("Unable to find stage for " + name);
                 continue;
             }
+            logger.atInfo().log(stage.getName());
+
             StageResult result = null;
             try {
                 switch (stage.getType()) {
@@ -58,21 +60,20 @@ public class Grade implements Runnable {
                 result = StageResult.fromOverview(new Result(stage.getName()));
             }
 
-            logger.atInfo().log(stage.getName());
             if (result == null) {
                 continue;
             }
             gradescope.add(result);
-            var gson = new GsonBuilder().setPrettyPrinting().create();
+        }
+        var gson = new GsonBuilder().setPrettyPrinting().create();
 
-            try {
-                var writer = new BufferedWriter(new FileWriter(shared.outputFile));
-                writer.write(gson.toJson(gradescope));
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            var writer = new BufferedWriter(new FileWriter(shared.outputFile));
+            writer.write(gson.toJson(gradescope));
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

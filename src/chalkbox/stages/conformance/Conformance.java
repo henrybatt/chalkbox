@@ -107,9 +107,9 @@ public class Conformance implements Stage {
         Collections.sort(extra);
 
         if (missing.isEmpty()) {
-            result.appendOutput("✅ No missing files");
+            result.appendOutput("✅ No missing files\n");
         } else {
-            result.appendOutput("❌ Missing files");
+            result.appendOutput("❌ Missing files\n");
             for (var missingFile : missing) {
                 result.appendOutput(missingFile);
             }
@@ -117,10 +117,17 @@ public class Conformance implements Stage {
         }
 
         if (extra.isEmpty()) {
-            result.appendOutput("✅ No extra files");
+            result.appendOutput("✅ No extra files\n");
         } else {
             result.appendOutput("⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n");
             result.appendOutput(String.join("\n", extra) + "\n\n");
+        }
+
+        Map<String, Class> expectedClasses = null;
+        try {
+            expectedClasses = getSourceClasses(solution);
+        } catch (IOException | ClassNotFoundException e) {
+            throw new StageException("Unable to load solution: " + e);
         }
 
         Map<String, Class> submissionClasses;
@@ -131,20 +138,12 @@ public class Conformance implements Stage {
             return StageResult.fromOverview(result);
         }
 
-        Map<String, Class> expectedClasses = null;
-        try {
-            expectedClasses = getSourceClasses(solution);
-        } catch (IOException | ClassNotFoundException e) {
-            throw new StageException("Unable to load solution: " + e);
-        }
-
-
         int totalDifferences = 0;
         for (String className : expectedClasses.keySet()) {
             // Skip anon generated classes
-            if (className.contains("$")) {
-                continue;
-            }
+//            if (className.contains("$")) {
+//                continue;
+//            }
 
             var expectedClass = expectedClasses.get(className);
             var actualClass = submissionClasses.get(className);
@@ -158,7 +157,7 @@ public class Conformance implements Stage {
             var comparator = new ClassComparator(expectedClass, actualClass);
             if (comparator.hasDifference()) {
                 // Class does not conform
-                result.appendOutput("❌ `" + className + "` does not conform:\n\n```text\n" + comparator + "```");
+                result.appendOutput("❌ `" + className + "` does not conform:\n\n```text\n" + comparator + "```\n");
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
@@ -178,15 +177,17 @@ public class Conformance implements Stage {
 
     private List<String> removeMatchingFiles(List<String> files, List<String> globs) {
         var fs = FileSystems.getDefault();
-        var filtered = new ArrayList<String>();
+        var filtered = new ArrayList<String>(files);
+        var toBeRemoved = new ArrayList<String>();
         for (var glob : globs) {
             var matcher = fs.getPathMatcher(glob);
             for (var file : files) {
                 if (!matcher.matches(Path.of(file))) {
-                    filtered.add(file);
+                    toBeRemoved.add(file);
                 }
             }
         }
+        filtered.removeAll(toBeRemoved);
         return filtered;
     }
 }

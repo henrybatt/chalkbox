@@ -41,7 +41,6 @@ codestyle:
 conformance:
   # Path globs to be ignored
   ignored:
-    - ./src/*
 
 functionality:
   # How much out of 100 is the functionality worth

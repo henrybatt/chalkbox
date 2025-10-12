@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +26,7 @@ public abstract class Source {
 
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
     private final String basePath;
-    private String classPath;
+    private String classPath = "";
     private String name;
     private CompilationResult srcCompilation;
     private CompilationResult testCompilation;
@@ -35,7 +36,12 @@ public abstract class Source {
         var path = Paths.get(root);
         this.basePath = path.toAbsolutePath().toString();
         if (classPath != null) {
-            this.classPath = String.join(":", classPath);
+            for (var item : classPath) {
+                if (!this.classPath.isEmpty()) {
+                    this.classPath += ":";
+                }
+                this.classPath += Paths.get(item).toAbsolutePath();
+            }
         }
     }
 

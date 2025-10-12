@@ -79,7 +79,7 @@ public class Mutation implements Stage {
         var e = new EntryPoint();
         ReportOptions data = new ReportOptions();
         // Set the classes to mutate
-        data.setTargetClasses(Collections.singletonList("tms.sensors.DemoPressurePad"));
+        data.setTargetClasses(Collections.singletonList("builder.entities.*"));
 
         // Set the tests to run against the mutations
         var packages = new ArrayList<Predicate<String>>();
@@ -117,6 +117,7 @@ public class Mutation implements Stage {
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
         data.setOutputEncoding(StandardCharsets.UTF_8);
         data.setInputEncoding(StandardCharsets.UTF_8);
+        data.setVerbosity(Verbosity.VERBOSE);
 
         MutationListener listener = new MutationListener();
         PluginServices plugins = injectListener(listener);
