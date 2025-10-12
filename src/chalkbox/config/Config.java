@@ -54,8 +54,14 @@ public class Config {
         return new Conformance(new ArrayList<>());
     }
 
-    public Functionality toFunctionality() {
-        return new Functionality(38);
+    public Functionality toFunctionality() throws ConfigException {
+        try {
+            return new Functionality(
+                    gestalt.getConfig("functionality.weighting", Double.class)
+            );
+        } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
     }
 
     public Mutation toMutation() throws ConfigException {

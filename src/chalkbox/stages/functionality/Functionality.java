@@ -15,9 +15,9 @@ public class Functionality implements Stage {
 
     public final static String name = "Functionality";
 
-    private final int maxScore;
+    private final double maxScore;
 
-    public Functionality(int maxScore) {
+    public Functionality(double maxScore) {
         this.maxScore = maxScore;
     }
 
