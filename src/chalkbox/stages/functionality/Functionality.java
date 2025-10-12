@@ -16,9 +16,11 @@ public class Functionality implements Stage {
     public final static String name = "Functionality";
 
     private final double maxScore;
+    private final boolean showPassing;
 
-    public Functionality(double maxScore) {
+    public Functionality(double maxScore, boolean showPassing) {
         this.maxScore = maxScore;
+        this.showPassing = showPassing;
     }
 
     @Override
@@ -116,18 +118,20 @@ public class Functionality implements Stage {
                         .setVisibility(unit.visibility())
                         .setStatus(isPassing ? Status.PASSED : Status.FAILED);
 
-                unitResult.appendOutput(isPassing ? "✅ Test scenario passes\n" : "❌ Test scenario fails\n");
+                if (!isPassing || showPassing) {
+                    unitResult.appendOutput(isPassing ? "✅ Test scenario passes\n" : "❌ Test scenario fails\n");
 
-                // Get Test class JavaDoc
-                var testDescription = getTestJavaDoc(solution.getTestBuildPath(), className, unit.name());
-                if (!testDescription.isEmpty()) {
-                    unitResult.appendOutput("### Scenario\n");
-                    unitResult.appendOutput(testDescription);
-                }
+                    // Get Test class JavaDoc
+                    var testDescription = getTestJavaDoc(solution.getTestBuildPath(), className, unit.name());
+                    if (!testDescription.isEmpty()) {
+                        unitResult.appendOutput("### Scenario\n");
+                        unitResult.appendOutput(testDescription);
+                    }
 
-                if (!isPassing) {
-                    unitResult.appendOutput("### Details\n");
-                    unitResult.appendOutput(unit.output());
+                    if (!isPassing) {
+                        unitResult.appendOutput("### Details\n");
+                        unitResult.appendOutput(unit.output());
+                    }
                 }
 
                 var testMultiplier = (Integer) unit.weight();
