@@ -1,14 +1,11 @@
 package chalkbox.commands;
 
 import chalkbox.config.Config;
-import chalkbox.source.Solution;
-import chalkbox.source.Submission;
 import chalkbox.stages.*;
-import chalkbox.stages.ai.Ai;
+import chalkbox.stages.ai.AI;
 import chalkbox.stages.header.Header;
 import com.google.common.flogger.FluentLogger;
 import com.google.gson.GsonBuilder;
-import org.github.gestalt.config.exceptions.GestaltException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -80,7 +77,7 @@ public class Grade implements Runnable {
     private Stage getStage(String name, Config config) {
         return switch (name) {
             case "header" -> new Header();
-            case "ai" -> new Ai();
+            case "ai" -> new AI();
             case "codestyle" -> config.toCodestyle();
             case "conformance" -> config.toConformance();
             case "functionality" -> config.toFunctionality();

@@ -6,10 +6,10 @@ import chalkbox.stages.*;
 
 import java.util.List;
 
-public class Ai implements Stage {
+public class AI implements Stage {
     @Override
     public String getName() {
-        return "Ai Declaration";
+        return "AI Declaration";
     }
 
     @Override
@@ -26,20 +26,19 @@ public class Ai implements Stage {
 
         var declaration = submission.getAiDeclaration();
         if (declaration.isEmpty()) {
-            result.appendOutput("<p>You have not declared if you have or have not used Ai</p>");
+            result.appendOutput("<p>Your AI declaration is missing or empty. You <strong>must</strong> declare your AI usage.</p>");
             result.setStatus(Status.FAILED);
+            result.setScore(-200);
         } else {
-            if (declaration.contains("No generative AI tools were utilised")) {
-                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> You have declared that you did not use Ai in your submission</p>\n");
+            if (declaration.contains("No generative AI tools were")) {
+                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> " +
+                        "Your AI declaration indicates that no generative AI tools were used." +
+                        "Ensure that this declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>\n");
             } else {
-                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> You have declared that you <b>did<b> use Ai in your submission</p>\n");
+                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> " +
+                        "You have declared that you have used generative AI tools." +
+                        "Ensure that your declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>\n");
             }
-            result.appendOutput(String.format("""
-                        <h2>Ai Declaration</h2>
-                        <code>
-                        %s
-                        </code>
-                        """, declaration));
         }
 
         return StageResult.fromOverview(result);
