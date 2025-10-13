@@ -12,6 +12,7 @@ import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
 import org.pitest.mutationtest.config.Services;
 import org.pitest.mutationtest.config.ServicesFromClassLoader;
+import org.pitest.mutationtest.engine.gregor.config.MutatorGroup;
 import org.pitest.mutationtest.tooling.AnalysisResult;
 import org.pitest.mutationtest.tooling.EntryPoint;
 import org.pitest.testapi.TestGroupConfig;
@@ -93,7 +94,7 @@ public class Mutation implements Stage {
         }
 
 
-        ReportOptions data = new ReportOptions();
+        ReportOptions data = new ReportIgnoringTests();
         // Set the classes to mutate
         data.setTargetClasses(mutationTargets);
 
@@ -126,14 +127,15 @@ public class Mutation implements Stage {
         // Set source directories for report generation
         var sourceList = new ArrayList<Path>();
         sourceList.add(Path.of(submission.getSrcFolder()));
-        sourceList.add(Path.of(submission.getTestFolder()));
+        //sourceList.add(Path.of(submission.getTestFolder()));
         data.setSourceDirs(sourceList);
 
         // Set output directory
         data.setReportDir("target/custom-pit-report");
 
         // Set mutators, threads, etc. (optional, defaults are often fine)
-        data.setMutators(Collections.singletonList("DEFAULTS"));
+        //data.setMutators(Collections.singletonList("DEFAULTS"));
+        data.setMutators(List.of("INVERT_NEGS", "MATH", "VOID_METHOD_CALLS", "REMOVE_CONDITIONALS", "INCREMENTS", "RETURNS"));
 
         data.setGroupConfig(new TestGroupConfig());
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
@@ -142,7 +144,9 @@ public class Mutation implements Stage {
         data.setVerbosity(Verbosity.QUIET);
 
         MutationListener listener = new MutationListener();
-        PluginServices plugins = injectListener(listener);
+        Map<Class<?>, Object> services = new HashMap<>();
+        services.put(MutationResultListenerFactory.class, listener);
+        PluginServices plugins = injectServices(services);
         AnalysisResult result;
         try {
             var e = new EntryPoint();
@@ -176,15 +180,17 @@ public class Mutation implements Stage {
         );
     }
 
-    private PluginServices injectListener(MutationListener listener) {
+    private PluginServices injectServices(Map<Class<?>, Object> services) {
         Services fallback = new ServicesFromClassLoader(IsolationUtils.getContextClassLoader());
         Services serviceLoader = new Services() {
             @Override
             @SuppressWarnings("unchecked") // hopefully valid
             public <S> Collection<S> load(Class<S> ifc) {
                 // intercept lookup and include custom listener
-                if (ifc.isAssignableFrom(MutationResultListenerFactory.class)) {
-                    return List.of((S) listener);
+                for (Map.Entry<Class<?>, Object> entry : services.entrySet()) {
+                    if (ifc.isAssignableFrom(entry.getKey())) {
+                        return List.of((S) entry.getValue());
+                    }
                 }
                 // fallback to default
                 return fallback.load(ifc);
