@@ -106,9 +106,7 @@ public class GradescopeResult {
             return;
         }
         this.tests.add(overview);
-        if (overview.getScore() != null) {
-            this.score += overview.getScore();
-        }
+        this.score += overview.getScore();
 
         if (result.results() == null) {
             return;

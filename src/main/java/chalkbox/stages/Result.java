@@ -9,9 +9,9 @@ public class Result {
     private final String name;
     @SerializedName("name_format")
     private final String nameFormat;
-    private Double score;
+    private double score;
     @SerializedName("max_score")
-    private Double maxScore;
+    private double maxScore;
     private Status status;
     private String output;
     @SerializedName("output_format")
@@ -44,7 +44,7 @@ public class Result {
         return this;
     }
 
-    public Double getScore() {
+    public double getScore() {
         return this.score;
     }
 
@@ -53,7 +53,7 @@ public class Result {
         return this;
     }
 
-    public Double getMaxScore() {
+    public double getMaxScore() {
         return this.maxScore;
     }
 
