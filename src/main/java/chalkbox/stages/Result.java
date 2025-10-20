@@ -62,6 +62,10 @@ public class Result {
         return this;
     }
 
+    public Status getStatus() {
+        return this.status;
+    }
+
     public Result setOutputFormat(String format) {
         this.outputFormat = format;
         return this;
