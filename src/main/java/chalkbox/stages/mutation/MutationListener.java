@@ -11,9 +11,14 @@ import java.util.Properties;
 
 public class MutationListener implements MutationResultListenerFactory {
     private final List<Result> mutationResults = new ArrayList<>();
+    private final List<ClassMutationResults> classMutations = new ArrayList<>();
 
     public List<Result> getResults() {
         return mutationResults;
+    }
+
+    public List<ClassMutationResults> getMutations() {
+        return classMutations;
     }
 
     @Override
@@ -27,6 +32,7 @@ public class MutationListener implements MutationResultListenerFactory {
 
             @Override
             public void handleMutationResult(ClassMutationResults results) {
+                classMutations.add(results);
                 String className = results.getMutatedClass().asJavaName();
                 var testResult = new Result("Mutation: " + className);
                 boolean allPassed = true;

@@ -7,6 +7,8 @@ import chalkbox.source.Submission;
 import chalkbox.stages.*;
 
 import com.google.common.flogger.FluentLogger;
+import org.pitest.mutationtest.ClassMutationResults;
+import org.pitest.mutationtest.DetectionStatus;
 import org.pitest.mutationtest.MutationResultListenerFactory;
 import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
@@ -162,7 +164,31 @@ public class Mutation implements Stage {
                 .appendOutput("Below are mutations (changes) that have been made to your submission and whether or not your unit tests successfully identified the change.")
                 .setStatus(Status.PASSED);
 
-        return new StageResult(overview, listener.getResults());
+        List<Result> allResults = new ArrayList<>(List.of(buildPerformanceOverview(listener.getMutations())));
+        allResults.addAll(listener.getResults());
+        return new StageResult(overview, allResults);
+    }
+
+    private Result buildPerformanceOverview(List<ClassMutationResults> results) {
+        // A temporary overview of how many mutations were killed to give better gradescope progress insights
+        long totalCreated = 0;
+        long totalKilled = 0;
+        for (ClassMutationResults result : results) {
+            totalCreated += result.getMutations().size();
+            totalKilled += result.getMutations().stream().filter(m -> m.getStatus() == DetectionStatus.KILLED).count();
+        }
+
+        if (totalCreated == 0) {
+            return new Result("Mutation Overview").setStatus(Status.FAILED).setMaxScore(maxScore).setVisibility(Visibility.HIDDEN).appendOutput("Unable to create any mutations");
+        }
+
+        double percentKilled = (double) totalKilled / totalCreated;
+
+        return new Result("Mutation Overview")
+                .setVisibility(Visibility.HIDDEN)
+                .setScore(percentKilled * maxScore)
+                .setMaxScore(maxScore)
+                .appendOutput("Killed " + totalKilled + " mutations from the " + totalCreated + " created.");
     }
 
     private StageResult failWithMessage(String cause) {
