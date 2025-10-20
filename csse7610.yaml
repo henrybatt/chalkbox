@@ -1,0 +1,20 @@
+# Enable debug logging
+debug: true
+
+# name for the output
+name: CSSE7610 - Assignment 2
+
+submission:
+  path: test/resources/csse7610/submission/
+  # Extra items for the classpath
+  classPath:
+    - test/resources/csse2002/lib/junit-4.12.jar
+
+output:
+  results/results.json
+
+tlc:
+  jar: test/resources/csse7610/lib/tla2tools.jar
+  weighting: 20
+  config: test/resources/csse7610/MC.cfg
+  source: queue.tla

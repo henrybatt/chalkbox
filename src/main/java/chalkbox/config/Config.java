@@ -6,6 +6,7 @@ import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
 import chalkbox.stages.mutation.Mutation;
+import chalkbox.stages.tlc.TLC;
 import org.github.gestalt.config.Gestalt;
 import org.github.gestalt.config.builder.GestaltBuilder;
 import org.github.gestalt.config.exceptions.GestaltException;
@@ -77,6 +78,19 @@ public class Config {
                     gestalt.getConfig("mutation.ignoreTests", new TypeCapture<List<String>>() {})
             );
         } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
+    }
+
+    public TLC toTLC() throws ConfigException {
+        try {
+            return new TLC(
+                    gestalt.getConfig("tlc.jar", String.class),
+                    gestalt.getConfig("tlc.weighting", Double.class),
+                    gestalt.getConfig("tlc.config", String.class),
+                    gestalt.getConfig("tlc.source", String.class)
+            );
+        }  catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }
     }
