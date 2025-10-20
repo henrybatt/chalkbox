@@ -49,7 +49,6 @@ public class TLC implements Stage {
         result.setMaxScore(weighting);
 
         var codePath = Path.of(submission.getBasePath() + "/" + tlaPath);
-        System.out.println(codePath);
         if (Files.notExists(codePath)) {
             return StageResult.fromOverview(
                     result.setScore(0)
@@ -57,13 +56,15 @@ public class TLC implements Stage {
                     .appendOutput("File `" + tlaPath + "` not found in submission"));
         }
 
+        var tmpConfigPath = Path.of(submission.getBasePath() + "/" + configPath);
+
         List<String> processArgs = new ArrayList<>();
         processArgs.add("java");
         processArgs.add("-XX:+UseParallelGC");
         processArgs.add("-jar");
         processArgs.add(jar);
         processArgs.add("-config");
-        processArgs.add(Path.of(configPath).toAbsolutePath().toString());
+        processArgs.add(tmpConfigPath.toString());
         processArgs.add(codePath.toString());
         logger.atInfo().log("Running TLC %s", String.join(" ", processArgs));
 
