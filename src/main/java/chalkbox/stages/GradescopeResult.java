@@ -111,6 +111,9 @@ public class GradescopeResult {
         if (result.results() == null) {
             return;
         }
+        for (var subpart : result.results()) {
+            this.score += subpart.getScore();
+        }
         this.tests.addAll(result.results());
     }
 }
