@@ -106,13 +106,17 @@ public class GradescopeResult {
             return;
         }
         this.tests.add(overview);
-        this.score += overview.getScore();
+        if (overview.getScore() != null) {
+            this.score += overview.getScore();
+        }
 
         if (result.results() == null) {
             return;
         }
         for (var subpart : result.results()) {
-            this.score += subpart.getScore();
+            if (subpart.getScore() != null) {
+                this.score += subpart.getScore();
+            }
         }
         this.tests.addAll(result.results());
     }

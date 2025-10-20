@@ -87,8 +87,8 @@ public class Mutation implements Stage {
         if (!failingTests.isEmpty()) {
             var overview = new Result(name)
                     .appendOutput("Some of your JUnit tests failed when run against your solution therefore mutation testing was not executed.\n")
-                    .appendOutput("## Details:\n\n")
-                    .setStatus(Status.PASSED);
+                    .appendOutput("## Details\n\n")
+                    .setStatus(Status.FAILED);
             for (String fail : failingTests) {
                 overview.appendOutput(fail);
             }

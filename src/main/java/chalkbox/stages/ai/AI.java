@@ -22,6 +22,8 @@ public class AI implements Stage {
         var result = new Result(getName())
                         .setStatus(Status.PASSED)
                         .setVisibility(Visibility.VISIBLE)
+                        .setScore(0)
+                        .setMaxScore(0)
                         .setOutputFormat("html");
 
         var declaration = submission.getAiDeclaration();

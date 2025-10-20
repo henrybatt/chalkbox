@@ -112,7 +112,7 @@ public class CodeStyle implements Stage {
         var violations = Math.max(0, checkstyleOutput.split("\n").length - 2);
 
         result.setScore((int) Math.max(0, weighting - (violations * penaltyPerInfraction)));
-        if (result.getScore() == result.getMaxScore()) {
+        if (Objects.equals(result.getScore(), result.getMaxScore())) {
             result.setStatus(Status.PASSED);
         }
 
