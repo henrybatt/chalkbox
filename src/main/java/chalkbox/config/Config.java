@@ -2,6 +2,7 @@ package chalkbox.config;
 
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
+import chalkbox.stages.ai.AI;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
@@ -37,6 +38,12 @@ public class Config {
         } catch (GestaltException e) {
             throw new ConfigException("unable to load config: " + e, e);
         }
+    }
+
+    public AI toAI() throws ConfigException {
+        return new AI(
+                gestalt.getConfig("ai.path", "ai/README.txt", String.class)
+        );
     }
 
     public CodeStyle toCodestyle() throws ConfigException {

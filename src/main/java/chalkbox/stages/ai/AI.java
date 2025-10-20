@@ -7,6 +7,12 @@ import chalkbox.stages.*;
 import java.util.List;
 
 public class AI implements Stage {
+    private String path;
+
+    public AI(String path) {
+        this.path = path;
+    }
+
     @Override
     public String getName() {
         return "AI Declaration";
@@ -24,7 +30,7 @@ public class AI implements Stage {
                         .setVisibility(Visibility.VISIBLE)
                         .setOutputFormat("html");
 
-        var declaration = submission.getAiDeclaration();
+        var declaration = submission.getAiDeclaration(path);
         if (declaration.isEmpty()) {
             result.appendOutput("<p>Your AI declaration is missing or empty. You <strong>must</strong> declare your AI usage.</p>");
             result.setStatus(Status.FAILED);

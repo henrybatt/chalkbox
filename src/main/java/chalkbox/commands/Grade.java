@@ -78,7 +78,7 @@ public class Grade implements Runnable {
     private Stage getStage(String name, Config config) {
         return switch (name) {
             case "header" -> new Header();
-            case "ai" -> new AI();
+            case "ai" -> config.toAI();
             case "codestyle" -> config.toCodestyle();
             case "conformance" -> config.toConformance();
             case "functionality" -> config.toFunctionality();
