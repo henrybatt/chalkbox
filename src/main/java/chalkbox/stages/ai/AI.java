@@ -30,8 +30,8 @@ public class AI implements Stage {
             result.setStatus(Status.FAILED);
             result.setScore(-200);
         } else {
-            var expectedDeclaration = "No generative AI tools were utilized";
-            if (declaration.contains(expectedDeclaration)) {
+            var expectedDeclaration = "No generative AI tools were";
+            if (declaration.toLowerCase().contains(expectedDeclaration.toLowerCase())) {
                 result.appendOutput("""
                         <p><span style="color: blue; font-size: 20px;">🛈</span>
                         Your AI declaration indicates that no generative AI tools were used.
@@ -43,11 +43,6 @@ public class AI implements Stage {
                         We have not found the exact declaration of "%s" therefore we have assumed that you have declared that you have used generative AI tools.
                         Ensure that your declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>
                         """, expectedDeclaration));
-                result.appendOutput(String.format("""
-                        <code>
-                            %s
-                        </code>
-                        """, declaration));
             }
         }
 
