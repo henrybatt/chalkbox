@@ -52,15 +52,17 @@ public class Grade implements Runnable {
                 switch (stage.getType()) {
                     case SUBMISSION_ONLY -> result = stage.run(submission);
                     case SUBMISSION_AND_SOLUTION -> result = stage.run(submission, solution);
+                    default -> throw new StageException("Unsupported stage type.");
                 }
             } catch (StageException e) {
                 logger.atSevere().withCause(e).log("Unable to run stage " + stage.getName());
-                result = StageResult.fromOverview(new Result(stage.getName()));
+                Result details = new Result(stage.getName());
+                details.appendOutput("Unable to run " + stage.getName() + " stage while grading. The following error occurred.\n");
+                details.appendOutput("Please consult course staff if you need help interpreting this error.\n");
+                details.appendOutput(e.toString());
+                result = StageResult.fromOverview(details);
             }
 
-            if (result == null) {
-                continue;
-            }
             gradescope.add(result);
         }
         var gson = new GsonBuilder().setPrettyPrinting().create();

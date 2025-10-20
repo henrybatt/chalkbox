@@ -3,8 +3,8 @@
 ![ChalkBox Logo](https://github.com/UQTools/chalkbox/raw/master/docs/_static/images/logo/chalkbox.png)
 
 ## Overview
-ChalkBox is a tool for processing and marking programming assignment
-submissions.
+ChalkBox is a tool for processing and marking Java based programming assignment
+submissions for GradeScope.
 
 Common use cases include running automated tests and static analysis tools on
 submitted code.
@@ -18,26 +18,32 @@ submitted code.
   ChalkBox runs on a single submission, so students can receive instant feedback
   every time they submit.
 
-- **Easy to use**
-
-  Configuration for ChalkBox and its engines is specified in human-readable
-  YAML, but can be easily generated using the web-based interface of 
-  [Quickscope](https://github.com/uqtools/quickscope).
-
-- **Extensible**
-
-  A simple yet flexible Engine API allows the creation of new engines for
-  different programming languages and use cases.
-
 ## Documentation
 
 Javadoc for the source code of ChalkBox and guides for working with and
 extending ChalkBox can be found at
 [chalkbox.readthedocs.io](https://chalkbox.readthedocs.io).
 
+## Stages
+
+### Overview
+
+### Ai
+
+### Codestyle
+
+### Conformance
+
+### Functionality
+
+### Testing
+
+### Mutation
+
+
 ## Copyright
 
 ChalkBox is copyright Brae Webb, Emily Bennett, Ella de Lore, Max Miller,
-Evan Hughes and Nicholas Lambourne.
+Millie Hughes and Nicholas Lambourne.
 
 The ChalkBox logo is copyright Anna Truffet.

@@ -9,9 +9,9 @@ public class Result {
     private final String name;
     @SerializedName("name_format")
     private final String nameFormat;
-    private Double score;
+    private Double score; // important: null required
     @SerializedName("max_score")
-    private Double maxScore;
+    private Double maxScore; // important: null required
     private Status status;
     private String output;
     @SerializedName("output_format")
@@ -60,6 +60,10 @@ public class Result {
     public Result setStatus(Status status) {
         this.status = status;
         return this;
+    }
+
+    public Status getStatus() {
+        return this.status;
     }
 
     public Result setOutputFormat(String format) {

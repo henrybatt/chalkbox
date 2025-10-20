@@ -28,6 +28,8 @@ public class AI implements Stage {
         var result = new Result(getName())
                         .setStatus(Status.PASSED)
                         .setVisibility(Visibility.VISIBLE)
+                        .setScore(0)
+                        .setMaxScore(0)
                         .setOutputFormat("html");
 
         var declaration = submission.getAiDeclaration(path);
@@ -36,14 +38,19 @@ public class AI implements Stage {
             result.setStatus(Status.FAILED);
             result.setScore(-200);
         } else {
-            if (declaration.contains("No generative AI tools were")) {
-                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> " +
-                        "Your AI declaration indicates that no generative AI tools were used." +
-                        "Ensure that this declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>\n");
+            var expectedDeclaration = "No generative AI tools were";
+            if (declaration.toLowerCase().contains(expectedDeclaration.toLowerCase())) {
+                result.appendOutput("""
+                        <p><span style="color: blue; font-size: 20px;">🛈</span>
+                        Your AI declaration indicates that no generative AI tools were used.
+                        Ensure that this declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>
+                        """);
             } else {
-                result.appendOutput("<p><span style=\"color: blue; font-size: 20px;\">&#x1F6C8;</span> " +
-                        "You have declared that you have used generative AI tools." +
-                        "Ensure that your declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>\n");
+                result.appendOutput(String.format("""
+                        <p><span style="color: blue; font-size: 20px;">🛈</span>
+                        We have not found the exact declaration of "%s" therefore we have assumed that you have declared that you have used generative AI tools.
+                        Ensure that your declaration is accurate. An inaccurate declaration may constitute academic misconduct.</p>
+                        """, expectedDeclaration));
             }
         }
 
