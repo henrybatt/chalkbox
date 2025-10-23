@@ -70,7 +70,7 @@ public class TLC implements Stage {
 
         ProcessExecution process = null;
         try {
-            process = Execution.runProcess(20000,
+            process = Execution.runProcess(480000,
                     processArgs.toArray(String[]::new));
         } catch (IOException | TimeoutException e) {
             throw new RuntimeException(e);
