@@ -41,6 +41,9 @@ public class Result {
 
     public Result setScore(double score) {
         this.score = score;
+        if (maxScore != null && score == maxScore) {
+            this.status = Status.PASSED;
+        }
         return this;
     }
 
