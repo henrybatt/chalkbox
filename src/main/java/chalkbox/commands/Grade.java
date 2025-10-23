@@ -83,6 +83,7 @@ public class Grade implements Runnable {
             case "ai" -> config.toAI();
             case "codestyle" -> config.toCodestyle();
             case "conformance" -> config.toConformance();
+            case "conformance-lite" -> config.toConformanceLight();
             case "functionality" -> config.toFunctionality();
             case "mutation" -> config.toMutation();
             case "tlc" -> config.toTLC();

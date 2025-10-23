@@ -6,6 +6,7 @@ import chalkbox.stages.ai.AI;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
+import chalkbox.stages.conformance.ConformanceLite;
 import chalkbox.stages.mutation.Mutation;
 import chalkbox.stages.tlc.TLC;
 import org.github.gestalt.config.Gestalt;
@@ -62,6 +63,10 @@ public class Config {
 
     public Conformance toConformance() {
         return new Conformance(new ArrayList<>());
+    }
+
+    public ConformanceLite toConformanceLight() {
+        return new ConformanceLite(new ArrayList<>());
     }
 
     public Functionality toFunctionality() throws ConfigException {
