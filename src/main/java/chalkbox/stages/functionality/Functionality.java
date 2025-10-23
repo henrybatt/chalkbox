@@ -78,7 +78,7 @@ public class Functionality implements Stage {
                 throw new StageException("Unable to compile submission: " + compilation.output());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new StageException(e);
         }
 
         List<String> tests = null;
