@@ -172,8 +172,8 @@ public class Functionality implements Stage {
 
         var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
         var overview = new Result(name);
-        overview.setScore(scaled)
-                .setMaxScore(maxScore)
+        overview.setMaxScore(maxScore)
+                .setScore(scaled)
                 .appendOutput(table + equation)
                 .setOutputFormat("md")
                 .setVisibility(Visibility.AFTER_PUBLISHED);

@@ -25,7 +25,7 @@ import java.util.*;
 // TODO: This should really share as much of Functionality as possible
 public class BugFixes implements Stage {
 
-    public final static String name = "BugFixes";
+    public final static String name = "Bug Fixes";
 
     private final double weighting;
     private final double providedPassing;
@@ -171,15 +171,15 @@ public class BugFixes implements Stage {
             total += classResult.passing();
             possible += classResult.count();
         }
-        double scaled = Math.max(0, (total - providedPassing) / providedPassing);
+        double scaled = Math.ceil(100 * Math.max(0, (total - providedPassing) / providedFailing));
 
         String message = "When provided, " + providedPassing + " tests passed and " + providedFailing + " tests failed.\n";
         message += "Now " + total + " tests pass and " + (possible - total) + " tests fail.";
 
-        var equation = "\n$$\nresult = \\dfrac{" + total + " - " + providedPassing + "}{" + providedFailing + "} = " + scaled + "\n$$";
+        var equation = "\n$$\nresult = \\dfrac{" + total + " - " + providedPassing + "}{" + providedFailing + "} = " + scaled + "%\n$$";
         var overview = new Result(name);
-        overview.setScore(scaled * (weighting/100.0))
-                .setMaxScore(weighting)
+        overview.setMaxScore(weighting)
+                .setScore(scaled * (weighting/100))
                 .appendOutput(message + equation)
                 .setOutputFormat("md")
                 .setVisibility(Visibility.AFTER_PUBLISHED);

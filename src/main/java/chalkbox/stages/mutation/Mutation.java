@@ -14,8 +14,8 @@ import org.pitest.mutationtest.config.PluginServices;
 import org.pitest.mutationtest.config.ReportOptions;
 import org.pitest.mutationtest.config.Services;
 import org.pitest.mutationtest.config.ServicesFromClassLoader;
-import org.pitest.mutationtest.engine.gregor.config.MutatorGroup;
 import org.pitest.mutationtest.tooling.AnalysisResult;
+import org.pitest.mutationtest.tooling.CombinedStatistics;
 import org.pitest.mutationtest.tooling.EntryPoint;
 import org.pitest.testapi.TestGroupConfig;
 import org.pitest.util.Glob;
@@ -35,12 +35,14 @@ public class Mutation implements Stage {
     public final static String name = "Mutation";
 
     private final double maxScore;
+    private final double acceptableCoverage;
     private final List<String> mutationTargets;
     private final List<String> testTargets;
     private final List<String> ignoreTests;
 
-    public Mutation(double maxScore, List<String> mutationTargets, List<String> testTargets, List<String> ignoreTests) {
+    public Mutation(double maxScore, double acceptableCoverage, List<String> mutationTargets, List<String> testTargets, List<String> ignoreTests) {
         this.maxScore = maxScore;
+        this.acceptableCoverage = acceptableCoverage;
         this.mutationTargets = mutationTargets;
         this.testTargets = testTargets;
         this.ignoreTests = ignoreTests;
@@ -162,14 +164,14 @@ public class Mutation implements Stage {
 
         var overview = new Result(name)
                 .appendOutput("Below are mutations (changes) that have been made to your submission and whether or not your unit tests successfully identified the change.")
-                .setStatus(Status.PASSED);
+                .setStatus(Status.PASSED).setVisibility(Visibility.HIDDEN);
 
-        List<Result> allResults = new ArrayList<>(List.of(buildPerformanceOverview(listener.getMutations())));
+        List<Result> allResults = new ArrayList<>(List.of(buildPerformanceOverview(listener.getMutations(), result)));
         allResults.addAll(listener.getResults());
         return new StageResult(overview, allResults);
     }
 
-    private Result buildPerformanceOverview(List<ClassMutationResults> results) {
+    private Result buildPerformanceOverview(List<ClassMutationResults> results, AnalysisResult analysis) {
         // A temporary overview of how many mutations were killed to give better gradescope progress insights
         long totalCreated = 0;
         long totalKilled = 0;
@@ -179,16 +181,30 @@ public class Mutation implements Stage {
         }
 
         if (totalCreated == 0) {
-            return new Result("Mutation Overview").setStatus(Status.FAILED).setMaxScore(maxScore).setVisibility(Visibility.HIDDEN).appendOutput("Unable to create any mutations");
+            return new Result("Test Quality").setStatus(Status.FAILED).setMaxScore(maxScore).setVisibility(Visibility.HIDDEN).appendOutput("Unable to create any mutations");
         }
 
-        double percentKilled = (double) totalKilled / totalCreated;
-
-        return new Result("Mutation Overview")
-                .setVisibility(Visibility.HIDDEN)
-                .setScore(percentKilled * maxScore)
+        double percentKilled = (double) totalKilled / (totalCreated * (acceptableCoverage/100));
+        double score = Math.ceil(Math.min(maxScore, percentKilled * maxScore));
+        Result result = new Result("Test Quality")
+                .setVisibility(Visibility.AFTER_PUBLISHED)
                 .setMaxScore(maxScore)
-                .appendOutput("Killed " + totalKilled + " mutations from the " + totalCreated + " created.");
+                .setScore(score);
+
+        int linesCovered = 0;
+        int totalLines = 0;
+
+        Optional<CombinedStatistics> maybeStats = analysis.getStatistics();
+        if (maybeStats.isPresent()) {
+            CombinedStatistics stats = maybeStats.get();
+            linesCovered = stats.getCoverageSummary().getNumberOfCoveredLines();
+            totalLines = stats.getCoverageSummary().getNumberOfLines();
+        }
+
+        result.appendOutput("Unit tests covered " + linesCovered + " lines of the " + totalLines + " lines to be tested.\n\n");
+        result.appendOutput("Killed " + totalKilled + " mutations from the " + totalCreated + " created.");
+
+        return result;
     }
 
     private StageResult failWithMessage(String cause) {

@@ -102,6 +102,7 @@ public class Config {
         try {
             return new Mutation(
                     gestalt.getConfig("mutation.weighting", Double.class),
+                    gestalt.getConfig("mutation.acceptableCoverage", 100.0, Double.class),
                     gestalt.getConfig("mutation.mutationTargets", new TypeCapture<List<String>>() {}),
                     gestalt.getConfig("mutation.testTargets", new TypeCapture<List<String>>() {}),
                     gestalt.getConfig("mutation.ignoreTests", new TypeCapture<List<String>>() {})

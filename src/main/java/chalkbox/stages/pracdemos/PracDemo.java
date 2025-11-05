@@ -188,8 +188,8 @@ public class PracDemo implements Stage {
         //var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
         var equation = "\n$$sum = "+total+"$$";
         var overview = new Result(name);
-        overview.setScore(total)
-                .setMaxScore(maxScore)
+        overview.setMaxScore(maxScore)
+                .setScore(total)
                 .appendOutput(table + equation)
                 .setOutputFormat("md")
                 .setVisibility(Visibility.AFTER_PUBLISHED);
