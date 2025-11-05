@@ -3,6 +3,7 @@ package chalkbox.config;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.ai.AI;
+import chalkbox.stages.bugfixes.BugFixes;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
@@ -83,6 +84,18 @@ public class Config {
                 gestalt.getConfig("pracdemo.showPassing", true, Boolean.class),
                 gestalt.getConfig("pracdemo.allVisible", false, Boolean.class)
         );
+    }
+
+    public BugFixes toBugFixes() throws ConfigException {
+        try {
+            return new BugFixes(
+                    gestalt.getConfig("bugfixes.weighting", Double.class),
+                    gestalt.getConfig("bugfixes.providedPassing", Double.class),
+                    gestalt.getConfig("bugfixes.providedFailing", Double.class)
+            );
+        } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
     }
 
     public Mutation toMutation() throws ConfigException {
