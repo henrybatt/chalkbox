@@ -10,11 +10,19 @@ import chalkbox.stages.functionality.ClassResult;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * The practical demonstration stage differs from the Functionality stage
+ * in that test classes are read from a tasks file included in the submission
+ * as each student will have a different subset of test classes.
+ */
+// TODO: This should really share as much of Functionality as possible
 public class PracDemo implements Stage {
 
-    public final static String name = "Functionality";
+    public final static String name = "PracDemo";
 
     private final double maxScore;
     private final boolean showPassing;
@@ -104,10 +112,16 @@ public class PracDemo implements Stage {
         var totalNumTests = 0;
         var innerResults = new ArrayList<Result>();
         var classResults = new ArrayList<ClassResult>();
-        for (String className : tests) {
-            if (!className.endsWith("Test")) {
-                continue;
-            }
+
+        List<String> testNames;
+        try {
+            Path taskFile = Path.of(submission.getBasePath() + "/tasks");
+            testNames = Files.readAllLines(taskFile);
+        } catch (IOException e) {
+            throw new StageException("Unable to find tasks file");
+        }
+        for (String className : testNames) {
+            className = "demos." + className + "Test";
 
             int classPassing = 0;
 
@@ -171,9 +185,10 @@ public class PracDemo implements Stage {
         }
         double scaled = Math.ceil((total / possible) * maxScore);
 
-        var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        //var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        var equation = "\n$$sum = "+total+"$$";
         var overview = new Result(name);
-        overview.setScore(scaled)
+        overview.setScore(total)
                 .setMaxScore(maxScore)
                 .appendOutput(table + equation)
                 .setOutputFormat("md")

@@ -7,6 +7,7 @@ import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
 import chalkbox.stages.mutation.Mutation;
+import chalkbox.stages.pracdemos.PracDemo;
 import chalkbox.stages.tlc.TLC;
 import org.github.gestalt.config.Gestalt;
 import org.github.gestalt.config.builder.GestaltBuilder;
@@ -74,6 +75,14 @@ public class Config {
         } catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }
+    }
+
+    public PracDemo toPracDemo() throws ConfigException {
+        return new PracDemo(
+                gestalt.getConfig("pracdemo.weighting", 100.0, Double.class),
+                gestalt.getConfig("pracdemo.showPassing", true, Boolean.class),
+                gestalt.getConfig("pracdemo.allVisible", false, Boolean.class)
+        );
     }
 
     public Mutation toMutation() throws ConfigException {
