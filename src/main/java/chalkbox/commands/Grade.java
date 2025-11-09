@@ -2,7 +2,6 @@ package chalkbox.commands;
 
 import chalkbox.config.Config;
 import chalkbox.stages.*;
-import chalkbox.stages.ai.AI;
 import chalkbox.stages.header.Header;
 import com.google.common.flogger.FluentLogger;
 import com.google.gson.GsonBuilder;
@@ -85,6 +84,8 @@ public class Grade implements Runnable {
             case "conformance" -> config.toConformance();
             case "conformance-lite" -> config.toConformanceLight();
             case "functionality" -> config.toFunctionality();
+            case "pracdemo" -> config.toPracDemo();
+            case "bugfixes" -> config.toBugFixes();
             case "mutation" -> config.toMutation();
             case "tlc" -> config.toTLC();
             default -> null;

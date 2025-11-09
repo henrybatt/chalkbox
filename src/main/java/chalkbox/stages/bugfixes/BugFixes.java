@@ -1,4 +1,4 @@
-package chalkbox.stages.functionality;
+package chalkbox.stages.bugfixes;
 
 import chalkbox.api.common.java.JUnitIndividualResult;
 import chalkbox.api.common.java.JUnitRunner;
@@ -6,23 +6,35 @@ import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.*;
 import chalkbox.stages.conformance.SourceLoader;
+import chalkbox.stages.functionality.ClassResult;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
-public class Functionality implements Stage {
+/**
+ * Bug fixes differs from functionality in that there is a baseline
+ * number of passing tests so the formula is
+ *  M = Max(0, (P - Bp)/Bf)
+ * where Bp is the number of passing tests in the provided code,
+ * Bf is the number of failing tests in the provided code, and
+ * P is the number of tests that pass in the submission.
+ */
+// TODO: This should really share as much of Functionality as possible
+public class BugFixes implements Stage {
 
-    public final static String name = "Functionality";
+    public final static String name = "Bug Fixes";
 
-    private final double maxScore;
-    private final boolean showPassing;
-    private final boolean allVisible;
+    private final double weighting;
+    private final double providedPassing;
+    private final double providedFailing;
 
-    public Functionality(double maxScore, boolean showPassing, boolean allVisible) {
-        this.maxScore = maxScore;
-        this.showPassing = showPassing;
-        this.allVisible = allVisible;
+    public BugFixes(double weighting, double providedPassing, double providedFailing) {
+        this.weighting = weighting;
+        this.providedPassing = providedPassing;
+        this.providedFailing = providedFailing;
     }
 
     @Override
@@ -103,6 +115,7 @@ public class Functionality implements Stage {
         var totalNumTests = 0;
         var innerResults = new ArrayList<Result>();
         var classResults = new ArrayList<ClassResult>();
+
         for (String className : tests) {
             if (!className.endsWith("Test")) {
                 continue;
@@ -116,13 +129,13 @@ public class Functionality implements Stage {
 
             for (JUnitIndividualResult unit : submissionResults.get(className)) {
                 var isPassing = unit.passes() == 1;
-                var visibility = allVisible ? Visibility.VISIBLE : unit.visibility();
-                var unitResult = new Result("Functionality: " + unit.name())
+                var visibility = Visibility.VISIBLE;
+                var unitResult = new Result("Provided Tests: " + unit.name())
                         .setVisibility(visibility)
                         .setStatus(isPassing ? Status.PASSED : Status.FAILED);
 
-                if (!isPassing || showPassing) {
-                    unitResult.appendOutput(isPassing ? "✅ Test scenario passes\n" : "❌ Test scenario fails\n");
+                if (!isPassing) {
+                    unitResult.appendOutput("❌ Test scenario fails\n");
 
                     // Get Test class JavaDoc
                     var testDescription = getTestJavaDoc(solution.getTestBuildPath(), className, unit.name());
@@ -131,10 +144,8 @@ public class Functionality implements Stage {
                         unitResult.appendOutput(testDescription);
                     }
 
-                    if (!isPassing) {
-                        unitResult.appendOutput("### Details\n");
-                        unitResult.appendOutput(unit.output());
-                    }
+                    unitResult.appendOutput("### Details\n");
+                    unitResult.appendOutput(unit.output());
                 }
 
                 var testMultiplier = (Integer) unit.weight();
@@ -153,28 +164,23 @@ public class Functionality implements Stage {
 
         double total = 0;
         double possible = 0;
-        var table = new StringBuilder("| TestClass | Weighting | Passing Tests | Total |");
-        table.append("\n| ----------- | ----------- | ----------- | ----------- |\n");
         for (var classResult : classResults) {
             if (classResult.count() <= 0) {
                 continue;
             }
-            double score = (classResult.passing() / (float) classResult.count()) * classResult.weight();
-            table.append("| ").append(classResult.name())
-                    .append(" | ").append(classResult.weight())
-                    .append(" | ").append(classResult.passing()).append("/").append(classResult.count())
-                    .append(" | ").append(String.format("%.3f", score))
-                    .append("|\n");
-            total += score;
-            possible += classResult.weight();
+            total += classResult.passing();
+            possible += classResult.count();
         }
-        double scaled = Math.ceil((total / possible) * maxScore);
+        double scaled = Math.ceil(100 * Math.max(0, (total - providedPassing) / providedFailing));
 
-        var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        String message = "When provided, " + providedPassing + " tests passed and " + providedFailing + " tests failed.\n";
+        message += "Now " + total + " tests pass and " + (possible - total) + " tests fail.";
+
+        var equation = "\n$$\nresult = \\dfrac{" + total + " - " + providedPassing + "}{" + providedFailing + "} = " + scaled + "%\n$$";
         var overview = new Result(name);
-        overview.setMaxScore(maxScore)
-                .setScore(scaled)
-                .appendOutput(table + equation)
+        overview.setMaxScore(weighting)
+                .setScore(scaled * (weighting/100))
+                .appendOutput(message + equation)
                 .setOutputFormat("md")
                 .setVisibility(Visibility.AFTER_PUBLISHED);
 

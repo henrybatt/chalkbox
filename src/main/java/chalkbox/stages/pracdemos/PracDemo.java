@@ -1,4 +1,4 @@
-package chalkbox.stages.functionality;
+package chalkbox.stages.pracdemos;
 
 import chalkbox.api.common.java.JUnitIndividualResult;
 import chalkbox.api.common.java.JUnitRunner;
@@ -6,20 +6,29 @@ import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.*;
 import chalkbox.stages.conformance.SourceLoader;
+import chalkbox.stages.functionality.ClassResult;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
-public class Functionality implements Stage {
+/**
+ * The practical demonstration stage differs from the Functionality stage
+ * in that test classes are read from a tasks file included in the submission
+ * as each student will have a different subset of test classes.
+ */
+// TODO: This should really share as much of Functionality as possible
+public class PracDemo implements Stage {
 
-    public final static String name = "Functionality";
+    public final static String name = "PracDemo";
 
     private final double maxScore;
     private final boolean showPassing;
     private final boolean allVisible;
 
-    public Functionality(double maxScore, boolean showPassing, boolean allVisible) {
+    public PracDemo(double maxScore, boolean showPassing, boolean allVisible) {
         this.maxScore = maxScore;
         this.showPassing = showPassing;
         this.allVisible = allVisible;
@@ -103,10 +112,16 @@ public class Functionality implements Stage {
         var totalNumTests = 0;
         var innerResults = new ArrayList<Result>();
         var classResults = new ArrayList<ClassResult>();
-        for (String className : tests) {
-            if (!className.endsWith("Test")) {
-                continue;
-            }
+
+        List<String> testNames;
+        try {
+            Path taskFile = Path.of(submission.getBasePath() + "/tasks");
+            testNames = Files.readAllLines(taskFile);
+        } catch (IOException e) {
+            throw new StageException("Unable to find tasks file");
+        }
+        for (String className : testNames) {
+            className = "demos." + className + "Test";
 
             int classPassing = 0;
 
@@ -170,10 +185,11 @@ public class Functionality implements Stage {
         }
         double scaled = Math.ceil((total / possible) * maxScore);
 
-        var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        //var equation = "\n$$\n\\dfrac{" + String.format("%.3f", total) + "}{" + possible + "} \\times " + maxScore + " = " + scaled + "\n$$";
+        var equation = "\n$$sum = "+total+"$$";
         var overview = new Result(name);
         overview.setMaxScore(maxScore)
-                .setScore(scaled)
+                .setScore(total)
                 .appendOutput(table + equation)
                 .setOutputFormat("md")
                 .setVisibility(Visibility.AFTER_PUBLISHED);

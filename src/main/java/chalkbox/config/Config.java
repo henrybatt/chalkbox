@@ -3,11 +3,13 @@ package chalkbox.config;
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
 import chalkbox.stages.ai.AI;
+import chalkbox.stages.bugfixes.BugFixes;
 import chalkbox.stages.functionality.Functionality;
 import chalkbox.stages.codestyle.CodeStyle;
 import chalkbox.stages.conformance.Conformance;
 import chalkbox.stages.conformance.ConformanceLite;
 import chalkbox.stages.mutation.Mutation;
+import chalkbox.stages.pracdemos.PracDemo;
 import chalkbox.stages.tlc.TLC;
 import org.github.gestalt.config.Gestalt;
 import org.github.gestalt.config.builder.GestaltBuilder;
@@ -81,10 +83,31 @@ public class Config {
         }
     }
 
+    public PracDemo toPracDemo() throws ConfigException {
+        return new PracDemo(
+                gestalt.getConfig("pracdemo.weighting", 100.0, Double.class),
+                gestalt.getConfig("pracdemo.showPassing", true, Boolean.class),
+                gestalt.getConfig("pracdemo.allVisible", false, Boolean.class)
+        );
+    }
+
+    public BugFixes toBugFixes() throws ConfigException {
+        try {
+            return new BugFixes(
+                    gestalt.getConfig("bugfixes.weighting", Double.class),
+                    gestalt.getConfig("bugfixes.providedPassing", Double.class),
+                    gestalt.getConfig("bugfixes.providedFailing", Double.class)
+            );
+        } catch (GestaltException e) {
+            throw new ConfigException(e.toString());
+        }
+    }
+
     public Mutation toMutation() throws ConfigException {
         try {
             return new Mutation(
                     gestalt.getConfig("mutation.weighting", Double.class),
+                    gestalt.getConfig("mutation.acceptableCoverage", 100.0, Double.class),
                     gestalt.getConfig("mutation.mutationTargets", new TypeCapture<List<String>>() {}),
                     gestalt.getConfig("mutation.testTargets", new TypeCapture<List<String>>() {}),
                     gestalt.getConfig("mutation.ignoreTests", new TypeCapture<List<String>>() {})
