@@ -1,1 +1,0 @@
-DemoPressurePad#getCongestion has incorrect calculation (countTraffic() + 3).

@@ -1,1 +1,0 @@
-Intersection#reduceIncomingSpeedSigns does not enforce minimum speed of 50.

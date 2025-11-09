@@ -1,12 +1,11 @@
 package chalkbox.api.common.java;
 
-import org.junit.runner.JUnitCore;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import org.junit.runner.JUnitCore;
 
 /**
  * Utility class to execute a JUnit test.
@@ -14,12 +13,18 @@ import java.util.List;
 public class JUnitRunner {
 
     // Runs all tests in the given class and returns a single output object
-    public static JUnitResult runTestsCombined(String className, String classPath) {
+    public static JUnitResult runTestsCombined(
+        String className,
+        String classPath
+    ) {
         return run(className, classPath).getResultsForClass();
     }
 
     // Runs all tests in the given class and returns an output object for each @Test
-    public static List<JUnitIndividualResult> runTests(String className, String classPath) {
+    public static List<JUnitIndividualResult> runTests(
+        String className,
+        String classPath
+    ) {
         return run(className, classPath).getIndividualResults();
     }
 
@@ -30,11 +35,13 @@ public class JUnitRunner {
         runner.addListener(listener);
 
         String[] classPathEntries = classPath.split(
-                System.getProperty("path.separator"));
+            System.getProperty("path.separator")
+        );
         URL[] classPathUrls = new URL[classPathEntries.length];
         for (int i = 0; i < classPathEntries.length; ++i) {
             try {
-                classPathUrls[i] = new File(classPathEntries[i]).toURI().toURL();
+                classPathUrls[i] =
+                new File(classPathEntries[i]).toURI().toURL();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -51,5 +58,4 @@ public class JUnitRunner {
         }
         return listener;
     }
-
 }

@@ -1,6 +1,5 @@
 package chalkbox.api.files;
 
-import javax.tools.SimpleJavaFileObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -8,11 +7,13 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import javax.tools.SimpleJavaFileObject;
 
 /**
  * An abstraction of a source file
  */
 public abstract class SourceFile extends SimpleJavaFileObject {
+
     private String path;
 
     /**
@@ -39,8 +40,7 @@ public abstract class SourceFile extends SimpleJavaFileObject {
             return null; // will surely never occur
         }
 
-        byte[] hash = digest.digest(getCharContent(true)
-                .toString().getBytes());
+        byte[] hash = digest.digest(getCharContent(true).toString().getBytes());
 
         return Base64.getEncoder().encodeToString(hash);
     }
@@ -54,9 +54,7 @@ public abstract class SourceFile extends SimpleJavaFileObject {
     protected static URI buildUri(String uri) {
         try {
             uri = URLEncoder.encode(uri, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-
-        }
+        } catch (UnsupportedEncodingException e) {}
 
         return URI.create("source:///" + uri);
     }

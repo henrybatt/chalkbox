@@ -2,28 +2,40 @@ package chalkbox.commands;
 
 import chalkbox.config.Config;
 import chalkbox.stages.*;
-import chalkbox.stages.header.Header;
 import com.google.common.flogger.FluentLogger;
 import com.google.gson.GsonBuilder;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.reflections.Reflections;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 
-@Command(name = "grade",
-        description = "Runs a sequence of stages and generates a Gradescope submission result")
+@Command(
+    name = "grade",
+    description = "Runs a sequence of stages and generates a Gradescope submission result"
+)
 public class Grade implements Runnable {
+
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-    @CommandLine.Option(names = { "--stages" }, required = true, description = "Comma separated stages to run")
+    @CommandLine.Option(
+        names = { "--stages" },
+        required = true,
+        description = "Comma separated stages to run"
+    )
     public String stages;
 
-    @Mixin Shared shared = new Shared();
+    @Mixin
+    Shared shared = new Shared();
+
+    private Map<String, Class<StageProducer>> registeredClasses =
+        getRegisteredStages();
 
     @Override
     public void run() {
@@ -31,7 +43,9 @@ public class Grade implements Runnable {
         Path configFile = Paths.get(shared.configFile);
         var config = new Config(configFile);
 
-        logger.atInfo().log("Running the following stages: " + String.join(" ,", stages));
+        logger
+            .atInfo()
+            .log("Running the following stages: " + String.join(" ,", stages));
 
         var solution = config.toSolution();
         var submission = config.toSubmission();
@@ -39,10 +53,20 @@ public class Grade implements Runnable {
         // for each stage in the config
         var stages = this.stages.split(",");
         for (var name : stages) {
-            var stage = getStage(name, config);
-            if (stage == null) {
+            var registeredClass = registeredClasses.get(name.trim());
+            if (registeredClass == null) {
                 logger.atWarning().log("Unable to find stage for " + name);
                 continue;
+            }
+
+            Stage stage = null;
+            StageProducer producer = null;
+            try {
+                producer =
+                registeredClass.getDeclaredConstructor().newInstance();
+                stage = producer.build(config);
+            } catch (Exception e) {
+                throw new StageException(e);
             }
             logger.atInfo().log(stage.getName());
 
@@ -50,14 +74,42 @@ public class Grade implements Runnable {
             try {
                 switch (stage.getType()) {
                     case SUBMISSION_ONLY -> result = stage.run(submission);
-                    case SUBMISSION_AND_SOLUTION -> result = stage.run(submission, solution);
-                    default -> throw new StageException("Unsupported stage type.");
+                    case SUBMISSION_AND_SOLUTION -> result =
+                    stage.run(submission, solution);
+                    default -> throw new StageException(
+                        "Unsupported stage type."
+                    );
                 }
             } catch (StageException e) {
-                logger.atSevere().withCause(e).log("Unable to run stage " + stage.getName());
+                logger
+                    .atSevere()
+                    .withCause(e)
+                    .log("Unable to run stage " + stage.getName());
                 Result details = new Result(stage.getName());
-                details.appendOutput("Unable to run " + stage.getName() + " stage while grading. The following error occurred.\n");
-                details.appendOutput("Please consult course staff if you need help interpreting this error.\n");
+                details.appendOutput(
+                    "Unable to run " +
+                    stage.getName() +
+                    " stage while grading. The following error occurred.\n"
+                );
+                details.appendOutput(
+                    "Please consult course staff if you need help interpreting this error.\n"
+                );
+                details.appendOutput(e.toString());
+                result = StageResult.fromOverview(details);
+            } catch (Throwable e) {
+                logger
+                    .atSevere()
+                    .withCause(e)
+                    .log("Panicked while running stage" + stage.getName());
+                Result details = new Result(stage.getName());
+                details.appendOutput(
+                    "Panicked while running " +
+                    stage.getName() +
+                    " stage while grading. The following error occurred.\n"
+                );
+                details.appendOutput(
+                    "Please consult course staff if this error has occurred.\n"
+                );
                 details.appendOutput(e.toString());
                 result = StageResult.fromOverview(details);
             }
@@ -76,18 +128,30 @@ public class Grade implements Runnable {
         }
     }
 
-    private Stage getStage(String name, Config config) {
-        return switch (name) {
-            case "header" -> new Header();
-            case "ai" -> config.toAI();
-            case "codestyle" -> config.toCodestyle();
-            case "conformance" -> config.toConformance();
-            case "functionality" -> config.toFunctionality();
-            case "pracdemo" -> config.toPracDemo();
-            case "bugfixes" -> config.toBugFixes();
-            case "mutation" -> config.toMutation();
-            case "tlc" -> config.toTLC();
-            default -> null;
-        };
+    private Map<String, Class<StageProducer>> getRegisteredStages() {
+        var reflections = new Reflections("chalkbox.stages");
+        var annotatedClasses = reflections.getTypesAnnotatedWith(
+            RegisterStage.class
+        );
+
+        return annotatedClasses
+            .stream()
+            .filter(StageProducer.class::isAssignableFrom)
+            .collect(
+                Collectors.toMap(
+                    clazz -> {
+                        if (
+                            clazz
+                                .getAnnotation(RegisterStage.class)
+                                .value()
+                                .isEmpty()
+                        ) {
+                            return clazz.getSimpleName().toLowerCase();
+                        }
+                        return clazz.getAnnotation(RegisterStage.class).value();
+                    },
+                    clazz -> (Class<StageProducer>) clazz
+                )
+            );
     }
 }

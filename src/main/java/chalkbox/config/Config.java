@@ -2,37 +2,32 @@ package chalkbox.config;
 
 import chalkbox.source.Solution;
 import chalkbox.source.Submission;
-import chalkbox.stages.ai.AI;
 import chalkbox.stages.bugfixes.BugFixes;
-import chalkbox.stages.functionality.Functionality;
-import chalkbox.stages.codestyle.CodeStyle;
-import chalkbox.stages.conformance.Conformance;
-import chalkbox.stages.mutation.Mutation;
-import chalkbox.stages.pracdemos.PracDemo;
-import chalkbox.stages.tlc.TLC;
+import java.nio.file.Path;
+import java.util.List;
 import org.github.gestalt.config.Gestalt;
 import org.github.gestalt.config.builder.GestaltBuilder;
 import org.github.gestalt.config.exceptions.GestaltException;
 import org.github.gestalt.config.reflect.TypeCapture;
-import org.github.gestalt.config.source.EnvironmentConfigSourceBuilder;
 import org.github.gestalt.config.source.FileConfigSourceBuilder;
-
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Config {
 
-    private Gestalt gestalt;
+    private final Gestalt gestalt;
 
     public Config(Path path) throws ConfigException {
         GestaltBuilder builder = new GestaltBuilder();
         try {
-            this.gestalt = builder
-                    .addSource(FileConfigSourceBuilder.builder().setPath(path).build())
-                    .build();
+            this.gestalt =
+            builder
+                .addSource(
+                    FileConfigSourceBuilder.builder().setPath(path).build()
+                )
+                .build();
         } catch (GestaltException e) {
-            throw new ConfigException("unable to setup discovery for configuration: " + e);
+            throw new ConfigException(
+                "unable to setup discovery for configuration: " + e
+            );
         }
 
         try {
@@ -42,85 +37,63 @@ public class Config {
         }
     }
 
-    public AI toAI() throws ConfigException {
-        return new AI(
-                gestalt.getConfig("ai.path", "ai/README.txt", String.class)
-        );
+    /**
+     * Get a config for a path and a given class.
+     * If the config is missing or invalid it will return the default value.
+     *
+     * @param path       path to get the config for. The path is not case sensitive.
+     * @param defaultVal the default value to return if the config is invalid.
+     * @param klass      class to get the class for.
+     * @param <T>        type of class to get.
+     * @return the configuration, or the default if the configuration is not found.
+     */
+    public <T> T getConfig(String path, T defaultVal, Class<T> klass) {
+        return gestalt.getConfig(path, defaultVal, klass);
     }
 
-    public CodeStyle toCodestyle() throws ConfigException {
+    /**
+     * Get a config for a path and a given class.
+     * If the config is missing or invalid it will return the default value.
+     *
+     * @param path       path to get the config for. The path is not case sensitive.
+     * @param klass      class to get the class for.
+     * @param <T>        type of class to get.
+     * @return the configuration, or the default if the configuration is not found.
+     */
+    public <T> T getConfig(String path, Class<T> klass) throws ConfigException {
         try {
-            return new CodeStyle(
-                    gestalt.getConfig("codestyle.jar", String.class),
-                    gestalt.getConfig("codestyle.config", String.class),
-                    gestalt.getConfig("codestyle.weighting", Double.class),
-                    gestalt.getConfig("codestyle.penalty", Float.class),
-                    gestalt.getConfig("codestyle.excluded", new TypeCapture<List<String>>() {})
-            );
+            return gestalt.getConfig(path, klass);
         } catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }
     }
 
-    public Conformance toConformance() {
-        return new Conformance(new ArrayList<>());
-    }
-
-    public Functionality toFunctionality() throws ConfigException {
+    /**
+     * Get a config for a path and a given TypeCapture.
+     *
+     * @param path  path to get the config for. The path is not case sensitive.
+     * @param klass TypeCapture to get the class for.
+     * @param <T>   type of class to get.
+     * @return the configuration.
+     * @throws GestaltException any errors such as if there are no configs.
+     */
+    public <T> T getConfig(String path, TypeCapture<T> klass)
+        throws ConfigException {
         try {
-            return new Functionality(
-                    gestalt.getConfig("functionality.weighting", Double.class),
-                    gestalt.getConfig("functionality.showPassing", true, Boolean.class),
-                    gestalt.getConfig("functionality.allVisible", false, Boolean.class)
-            );
+            return gestalt.getConfig(path, klass);
         } catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }
-    }
-
-    public PracDemo toPracDemo() throws ConfigException {
-        return new PracDemo(
-                gestalt.getConfig("pracdemo.weighting", 100.0, Double.class),
-                gestalt.getConfig("pracdemo.showPassing", true, Boolean.class),
-                gestalt.getConfig("pracdemo.allVisible", false, Boolean.class)
-        );
     }
 
     public BugFixes toBugFixes() throws ConfigException {
         try {
             return new BugFixes(
-                    gestalt.getConfig("bugfixes.weighting", Double.class),
-                    gestalt.getConfig("bugfixes.providedPassing", Double.class),
-                    gestalt.getConfig("bugfixes.providedFailing", Double.class)
+                gestalt.getConfig("bugfixes.weighting", Double.class),
+                gestalt.getConfig("bugfixes.providedPassing", Double.class),
+                gestalt.getConfig("bugfixes.providedFailing", Double.class)
             );
         } catch (GestaltException e) {
-            throw new ConfigException(e.toString());
-        }
-    }
-
-    public Mutation toMutation() throws ConfigException {
-        try {
-            return new Mutation(
-                    gestalt.getConfig("mutation.weighting", Double.class),
-                    gestalt.getConfig("mutation.acceptableCoverage", 100.0, Double.class),
-                    gestalt.getConfig("mutation.mutationTargets", new TypeCapture<List<String>>() {}),
-                    gestalt.getConfig("mutation.testTargets", new TypeCapture<List<String>>() {}),
-                    gestalt.getConfig("mutation.ignoreTests", new TypeCapture<List<String>>() {})
-            );
-        } catch (GestaltException e) {
-            throw new ConfigException(e.toString());
-        }
-    }
-
-    public TLC toTLC() throws ConfigException {
-        try {
-            return new TLC(
-                    gestalt.getConfig("tlc.jar", String.class),
-                    gestalt.getConfig("tlc.weighting", Double.class),
-                    gestalt.getConfig("tlc.config", String.class),
-                    gestalt.getConfig("tlc.source", String.class)
-            );
-        }  catch (GestaltException e) {
             throw new ConfigException(e.toString());
         }
     }
@@ -128,8 +101,11 @@ public class Config {
     public Submission toSubmission() throws ConfigException {
         try {
             return new Submission(
-                    gestalt.getConfig("submission.path", String.class),
-                    gestalt.getConfig("submission.classPath", new TypeCapture<List<String>>() {})
+                gestalt.getConfig("submission.path", String.class),
+                gestalt.getConfig(
+                    "submission.classPath",
+                    new TypeCapture<List<String>>() {}
+                )
             );
         } catch (GestaltException e) {
             throw new RuntimeException(e);
@@ -139,8 +115,11 @@ public class Config {
     public Solution toSolution() throws ConfigException {
         try {
             return new Solution(
-                    gestalt.getConfig("solution.path", String.class),
-                    gestalt.getConfig("solution.classPath", new TypeCapture<List<String>>() {})
+                gestalt.getConfig("solution.path", String.class),
+                gestalt.getConfig(
+                    "solution.classPath",
+                    new TypeCapture<List<String>>() {}
+                )
             );
         } catch (GestaltException e) {
             throw new RuntimeException(e);

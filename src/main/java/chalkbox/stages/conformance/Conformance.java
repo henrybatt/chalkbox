@@ -1,17 +1,19 @@
 package chalkbox.stages.conformance;
 
 import chalkbox.api.files.FileLoader;
+import chalkbox.config.Config;
+import chalkbox.config.ConfigException;
+import chalkbox.source.Solution;
 import chalkbox.source.Source;
+import chalkbox.source.Submission;
 import chalkbox.stages.*;
 import chalkbox.stages.conformance.comparator.ClassComparator;
-import chalkbox.source.Solution;
-import chalkbox.source.Submission;
 import com.google.common.flogger.FluentLogger;
-
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
+import org.github.gestalt.config.reflect.TypeCapture;
 
 /**
  * Checks whether a submission conforms exactly to the specified public API.
@@ -20,37 +22,35 @@ import java.util.*;
  * file structure. Uses class comparators to identify methods and members in the
  * submission that differ to those in the correct solution.
  */
-public class Conformance implements Stage {
-    private static final String name = "Conformance";
+@RegisterStage
+public class Conformance
+    extends BaseStage
+    implements SubmissionAndSolutionStage, StageProducer {
 
-    private final List<String> ignoreWildcards;
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
+    private List<String> ignoreWildcards;
+
+    public Conformance() {
+        super("Conformance");
+    }
 
     /**
      * Sets up the conformance checker ready to check a submission.
      */
-    public Conformance(List<String> ignoreWildcards){
+    public Conformance(List<String> ignoreWildcards) {
+        this();
         this.ignoreWildcards = ignoreWildcards;
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.SUBMISSION_AND_SOLUTION;
-    }
-
-    @Override
-    public StageResult run(Submission submission) throws StageException {
-        return null;
-    }
-
-    @Override
-    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
-        return null;
+    public Stage build(Config config) throws ConfigException {
+        return new Conformance(
+            config.getConfig(
+                "conformance.ignored",
+                new TypeCapture<List<String>>() {}
+            )
+        );
     }
 
     /**
@@ -59,20 +59,25 @@ public class Conformance implements Stage {
      * @param submission submission to check for conformance
      * @return given submission with extra test result for conformance results
      */
-    public StageResult run(Submission submission, Solution solution) throws StageException {
-        var result = new Result(name);
+    public StageResult run(Submission submission, Solution solution)
+        throws StageException {
+        var result = new Result(getName());
         var missing = new ArrayList<String>();
         var extra = new ArrayList<String>();
 
         try {
             var compilation = submission.compileSrc();
             if (!compilation.success()) {
-                result.appendOutput("Submission did not compile, not checking automated style");
+                result.appendOutput(
+                    "Submission did not compile, not checking automated style"
+                );
                 result.appendOutput(compilation.output());
                 return StageResult.fromOverview(result);
             }
         } catch (IOException e) {
-            result.appendOutput("Submission did not compile, not checking automated style");
+            result.appendOutput(
+                "Submission did not compile, not checking automated style"
+            );
             result.appendOutput(e.toString());
             return StageResult.fromOverview(result);
         }
@@ -87,8 +92,14 @@ public class Conformance implements Stage {
             throw new StageException(e.toString());
         }
 
-        var actual = removeMatchingFiles(FileLoader.loadFiles(submission.getSrcFolder()), ignoreWildcards);
-        var expectedFiles = removeMatchingFiles(FileLoader.loadFiles(solution.getSrcFolder()), ignoreWildcards);
+        var actual = removeMatchingFiles(
+            FileLoader.loadFiles(submission.getSrcFolder()),
+            ignoreWildcards
+        );
+        var expectedFiles = removeMatchingFiles(
+            FileLoader.loadFiles(solution.getSrcFolder()),
+            ignoreWildcards
+        );
 
         for (var expected : expectedFiles) {
             if (!actual.contains(expected)) {
@@ -113,13 +124,14 @@ public class Conformance implements Stage {
             for (var missingFile : missing) {
                 result.appendOutput(missingFile);
             }
-
         }
 
         if (extra.isEmpty()) {
             result.appendOutput("✅ No extra files\n");
         } else {
-            result.appendOutput("⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n");
+            result.appendOutput(
+                "⚠️ Extra files\n(note: this is a sanity check for you, if you intended to upload these files for example AI documentation or other useful files, ignore this warning)\n"
+            );
             result.appendOutput(String.join("\n", extra) + "\n\n");
         }
 
@@ -141,15 +153,19 @@ public class Conformance implements Stage {
         int totalDifferences = 0;
         for (String className : expectedClasses.keySet()) {
             // Skip anon generated classes
-//            if (className.contains("$")) {
-//                continue;
-//            }
+            //            if (className.contains("$")) {
+            //                continue;
+            //            }
 
             var expectedClass = expectedClasses.get(className);
             var actualClass = submissionClasses.get(className);
 
             if (expectedClass == null || actualClass == null) {
-                result.appendOutput("❌ `" + className + "` was not found (unable to load class)\n");
+                result.appendOutput(
+                    "❌ `" +
+                    className +
+                    "` was not found (unable to load class)\n"
+                );
                 totalDifferences += 1; // 1-difference penalty for class not found
                 continue;
             }
@@ -157,7 +173,13 @@ public class Conformance implements Stage {
             var comparator = new ClassComparator(expectedClass, actualClass);
             if (comparator.hasDifference()) {
                 // Class does not conform
-                result.appendOutput("❌ `" + className + "` does not conform:\n\n```text\n" + comparator + "```\n");
+                result.appendOutput(
+                    "❌ `" +
+                    className +
+                    "` does not conform:\n\n```text\n" +
+                    comparator +
+                    "```\n"
+                );
                 totalDifferences += comparator.getDifferenceCount();
             } else {
                 // Class conforms
@@ -170,12 +192,16 @@ public class Conformance implements Stage {
         return StageResult.fromOverview(result);
     }
 
-    private Map<String, Class> getSourceClasses(Source source) throws IOException, ClassNotFoundException {
+    private Map<String, Class> getSourceClasses(Source source)
+        throws IOException, ClassNotFoundException {
         SourceLoader loader = source.getSrcLoader();
         return loader.getClassMap();
     }
 
-    private List<String> removeMatchingFiles(List<String> files, List<String> globs) {
+    private List<String> removeMatchingFiles(
+        List<String> files,
+        List<String> globs
+    ) {
         var fs = FileSystems.getDefault();
         var filtered = new ArrayList<String>(files);
         var toBeRemoved = new ArrayList<String>();

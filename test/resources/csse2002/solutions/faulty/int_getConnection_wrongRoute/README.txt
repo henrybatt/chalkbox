@@ -1,1 +1,0 @@
-Intersection#getConnection returns wrong Route.

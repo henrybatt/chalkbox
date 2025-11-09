@@ -1,20 +1,21 @@
 package chalkbox.stages.ai;
 
+import static org.junit.Assert.*;
+
 import chalkbox.source.Submission;
 import chalkbox.stages.Status;
 import chalkbox.stages.Visibility;
-import org.junit.Test;
-
 import java.util.ArrayList;
-import java.util.Optional;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class AITest {
 
     @Test
     public void testDeclaredAiUsage() {
-        var submission = new Submission("test/resources/ai/declared", new ArrayList<>());
+        var submission = new Submission(
+            "test/resources/ai/declared",
+            new ArrayList<>()
+        );
         var results = new AI("ai/README.txt").run(submission);
         assertEquals("AI Declaration", results.overview().getName());
         assertEquals(Visibility.VISIBLE, results.overview().getVisibility());
@@ -23,7 +24,10 @@ public class AITest {
 
     @Test
     public void testDeclareNoAiUsage() {
-        var submission = new Submission("test/resources/ai/none", new ArrayList<>());
+        var submission = new Submission(
+            "test/resources/ai/none",
+            new ArrayList<>()
+        );
         var results = new AI("ai/README.txt").run(submission);
         assertEquals("AI Declaration", results.overview().getName());
         assertEquals(Visibility.VISIBLE, results.overview().getVisibility());
@@ -32,7 +36,10 @@ public class AITest {
 
     @Test
     public void testMissing() {
-        var submission = new Submission("test/resources/ai/missing", new ArrayList<>());
+        var submission = new Submission(
+            "test/resources/ai/missing",
+            new ArrayList<>()
+        );
         var results = new AI("ai/README.txt").run(submission);
         assertEquals("AI Declaration", results.overview().getName());
         assertEquals(Visibility.VISIBLE, results.overview().getVisibility());

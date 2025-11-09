@@ -5,19 +5,14 @@ import chalkbox.api.files.FileSourceFile;
 import chalkbox.stages.StageException;
 import chalkbox.stages.conformance.SourceLoader;
 import com.google.common.flogger.FluentLogger;
-
-import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,10 +55,18 @@ public abstract class Source {
         if (testCompilation != null) {
             return testCompilation;
         }
-        return compile(getTestBuildPath(), getTestJavaFiles(), getSrcBuildPath());
+        return compile(
+            getTestBuildPath(),
+            getTestJavaFiles(),
+            getSrcBuildPath()
+        );
     }
 
-    private CompilationResult compile(String destination, List<FileSourceFile> sourceFiles, String additionalClasspath) throws IOException {
+    private CompilationResult compile(
+        String destination,
+        List<FileSourceFile> sourceFiles,
+        String additionalClasspath
+    ) throws IOException {
         if (sourceFiles == null) {
             throw new StageException("Couldn't load source files");
         }
@@ -72,10 +75,17 @@ public abstract class Source {
 
         // Check if the folder exists
         if (!build.exists()) {
-            if(build.mkdirs()) {
-                logger.atInfo().log("build filepath created %s", build.getAbsolutePath());
+            if (build.mkdirs()) {
+                logger
+                    .atInfo()
+                    .log("build filepath created %s", build.getAbsolutePath());
             } else {
-                logger.atSevere().log("unable to make build path %s", build.getAbsolutePath());
+                logger
+                    .atSevere()
+                    .log(
+                        "unable to make build path %s",
+                        build.getAbsolutePath()
+                    );
                 throw new StageException("Unable to make build path");
             }
         }
@@ -86,7 +96,12 @@ public abstract class Source {
         }
 
         var output = new StringWriter();
-        var success = Compiler.compile(sourceFiles, classPath, build.getAbsolutePath(), output);
+        var success = Compiler.compile(
+            sourceFiles,
+            classPath,
+            build.getAbsolutePath(),
+            output
+        );
 
         return new CompilationResult(success, output.toString());
     }
@@ -132,10 +147,10 @@ public abstract class Source {
 
         try (Stream<Path> stream = Files.walk(start)) {
             return stream
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".java"))
-                    .map(path -> getClassName(start.relativize(path).toString()))
-                    .collect(Collectors.toList());
+                .filter(Files::isRegularFile)
+                .filter(path -> path.toString().endsWith(".java"))
+                .map(path -> getClassName(start.relativize(path).toString()))
+                .collect(Collectors.toList());
         }
     }
 
@@ -164,8 +179,10 @@ public abstract class Source {
         if (filePath.startsWith("/test/")) {
             filePath = filePath.replace("/test/", "");
         }
-        return filePath.replace(".java", "").replace("/", ".")
-                .replace(File.separator, ".");
+        return filePath
+            .replace(".java", "")
+            .replace("/", ".")
+            .replace(File.separator, ".");
     }
 
     /**
@@ -184,15 +201,18 @@ public abstract class Source {
         return className.replace(".", File.separator) + ".java";
     }
 
-    private List<FileSourceFile> getFilesWithExtension(String root, String extension) throws IOException {
+    private List<FileSourceFile> getFilesWithExtension(
+        String root,
+        String extension
+    ) throws IOException {
         var start = Paths.get(root);
 
         try (Stream<Path> stream = Files.walk(start)) {
             return stream
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(extension))
-                    .map(path -> new FileSourceFile(path.toString(), path.toFile()))
-                    .collect(Collectors.toList());
+                .filter(Files::isRegularFile)
+                .filter(path -> path.toString().endsWith(extension))
+                .map(path -> new FileSourceFile(path.toString(), path.toFile()))
+                .collect(Collectors.toList());
         }
     }
 
@@ -201,15 +221,17 @@ public abstract class Source {
     }
 
     private SourceLoader getSourceLoader(String directory) throws IOException {
-        URL[] urls = Arrays.stream(classPath.split(":"))
-                .filter(e -> !e.isEmpty())
-                .map(e -> {
-                    try {
-                        return new URI("file://" + e).toURL();
-                    } catch (MalformedURLException | URISyntaxException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }).toArray(URL[]::new);
+        URL[] urls = Arrays
+            .stream(classPath.split(":"))
+            .filter(e -> !e.isEmpty())
+            .map(e -> {
+                try {
+                    return new URI("file://" + e).toURL();
+                } catch (MalformedURLException | URISyntaxException ex) {
+                    throw new RuntimeException(ex);
+                }
+            })
+            .toArray(URL[]::new);
         var loader = new URLClassLoader(urls);
         return new SourceLoader(directory, loader);
     }

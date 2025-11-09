@@ -11,6 +11,5 @@ public class Solution extends Source {
     public Solution(String name, String baseDirectory, List<String> classPath) {
         super(name, baseDirectory, classPath);
     }
-
-//    public static Solution fromDiff(String name, String baseDirectory, String classPath, ... patch)
+    //    public static Solution fromDiff(String name, String baseDirectory, String classPath, ... patch)
 }

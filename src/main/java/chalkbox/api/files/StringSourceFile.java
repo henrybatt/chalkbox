@@ -1,12 +1,12 @@
 package chalkbox.api.files;
 
 import java.io.*;
-import java.nio.file.Files;
 
 /**
  * An implementation of a source file whose content comes from a String.
  */
 public class StringSourceFile extends SourceFile {
+
     private String source;
 
     /**
@@ -38,7 +38,8 @@ public class StringSourceFile extends SourceFile {
     }
 
     @Override
-    public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+    public CharSequence getCharContent(boolean ignoreEncodingErrors)
+        throws IOException {
         return source;
     }
 }

@@ -10,5 +10,5 @@ public enum Visibility {
     @SerializedName("after_published")
     AFTER_PUBLISHED,
     @SerializedName("visible")
-    VISIBLE
+    VISIBLE,
 }

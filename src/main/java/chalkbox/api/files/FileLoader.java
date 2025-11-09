@@ -8,6 +8,7 @@ import java.util.List;
  * Utility class for loading file paths relative to a root folder.
  */
 public class FileLoader {
+
     private File root;
     private String prefix = "";
     private String suffix = "";
@@ -56,8 +57,12 @@ public class FileLoader {
      * @param suffix only match files matching this suffix
      * @param recursive whether to recursively search for files
      */
-    public FileLoader(String root, String prefix,
-                      String suffix, boolean recursive) {
+    public FileLoader(
+        String root,
+        String prefix,
+        String suffix,
+        boolean recursive
+    ) {
         this(root, prefix, suffix);
         this.recursive = recursive;
     }
@@ -98,8 +103,10 @@ public class FileLoader {
                 continue;
             }
 
-            if (file.getName().startsWith(prefix)
-                    && file.getName().endsWith(suffix)) {
+            if (
+                file.getName().startsWith(prefix) &&
+                file.getName().endsWith(suffix)
+            ) {
                 files.add(truncatePath(file));
             }
         }

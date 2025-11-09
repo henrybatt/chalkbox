@@ -1,1 +1,0 @@
-DemoPressurePad#toString returns wrong value (does not call super.toString).

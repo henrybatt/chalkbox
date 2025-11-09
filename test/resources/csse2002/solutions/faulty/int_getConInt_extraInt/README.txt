@@ -1,1 +1,0 @@
-Intersection#getConnectedIntersections returns extra Intersection in list.

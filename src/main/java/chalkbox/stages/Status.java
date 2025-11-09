@@ -6,5 +6,5 @@ public enum Status {
     @SerializedName("passed")
     PASSED,
     @SerializedName("failed")
-    FAILED;
+    FAILED,
 }

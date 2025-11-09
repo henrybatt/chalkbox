@@ -1,1 +1,0 @@
-Intersection#getId returns incorrect value.

@@ -18,10 +18,12 @@ public class Submission extends Source {
 
     public String getAiDeclaration(String path) {
         try {
-            return Files.readString(Path.of(getBasePath() + "/" + path), StandardCharsets.UTF_8);
+            return Files.readString(
+                Path.of(getBasePath() + "/" + path),
+                StandardCharsets.UTF_8
+            );
         } catch (IOException e) {
             return "";
         }
     }
-
 }

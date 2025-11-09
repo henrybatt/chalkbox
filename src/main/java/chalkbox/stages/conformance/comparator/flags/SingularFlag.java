@@ -1,6 +1,7 @@
 package chalkbox.stages.conformance.comparator.flags;
 
 public class SingularFlag<T> extends Flag {
+
     private T expected;
     private T actual;
 
@@ -14,12 +15,16 @@ public class SingularFlag<T> extends Flag {
     public String toString(int indent) {
         StringBuilder builder = new StringBuilder(getIndent(indent));
 
-        builder.append(message)
-                .append("\n");
-        builder.append(getIndent(indent)).append("Expected: ").append(expected)
-                .append("\n")
-                .append(getIndent(indent)).append("Actual:   ").append(actual)
-                .append("\n");
+        builder.append(message).append("\n");
+        builder
+            .append(getIndent(indent))
+            .append("Expected: ")
+            .append(expected)
+            .append("\n")
+            .append(getIndent(indent))
+            .append("Actual:   ")
+            .append(actual)
+            .append("\n");
 
         return builder.toString();
     }
