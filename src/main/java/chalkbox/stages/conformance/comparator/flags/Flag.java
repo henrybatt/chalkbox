@@ -1,6 +1,7 @@
 package chalkbox.stages.conformance.comparator.flags;
 
 public class Flag {
+
     protected String message;
     protected boolean flag;
 

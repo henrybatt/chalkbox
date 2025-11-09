@@ -1,1 +1,0 @@
-DemoSensor#oneSecond uses wrong value for modulo arithmetic (data.length - 1), so array looping is out of sync.

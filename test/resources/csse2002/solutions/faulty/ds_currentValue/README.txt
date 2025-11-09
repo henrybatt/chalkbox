@@ -1,1 +1,0 @@
-DemoSensor#currentValue is initialised to wrong element from data [].

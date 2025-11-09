@@ -1,1 +1,0 @@
-Intersection#getConnection does not throw RNFE when it should.

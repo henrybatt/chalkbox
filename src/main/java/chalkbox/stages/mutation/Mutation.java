@@ -1,12 +1,18 @@
 package chalkbox.stages.mutation;
 
-import chalkbox.api.common.java.JUnitIndividualResult;
 import chalkbox.api.common.java.JUnitRunner;
-import chalkbox.source.Solution;
+import chalkbox.config.Config;
+import chalkbox.config.ConfigException;
 import chalkbox.source.Submission;
 import chalkbox.stages.*;
-
 import com.google.common.flogger.FluentLogger;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Predicate;
+import org.github.gestalt.config.reflect.TypeCapture;
 import org.pitest.mutationtest.ClassMutationResults;
 import org.pitest.mutationtest.DetectionStatus;
 import org.pitest.mutationtest.MutationResultListenerFactory;
@@ -22,25 +28,31 @@ import org.pitest.util.Glob;
 import org.pitest.util.IsolationUtils;
 import org.pitest.util.Verbosity;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-
-public class Mutation implements Stage {
+@RegisterStage
+public class Mutation
+    extends BaseStage
+    implements SubmissionOnlyStage, StageProducer {
 
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
-    public final static String name = "Mutation";
 
-    private final double maxScore;
-    private final double acceptableCoverage;
-    private final List<String> mutationTargets;
-    private final List<String> testTargets;
-    private final List<String> ignoreTests;
+    private double maxScore;
+    private double acceptableCoverage;
+    private List<String> mutationTargets;
+    private List<String> testTargets;
+    private List<String> ignoreTests;
 
-    public Mutation(double maxScore, double acceptableCoverage, List<String> mutationTargets, List<String> testTargets, List<String> ignoreTests) {
+    public Mutation() {
+        super("Mutation");
+    }
+
+    public Mutation(
+        double maxScore,
+        double acceptableCoverage,
+        List<String> mutationTargets,
+        List<String> testTargets,
+        List<String> ignoreTests
+    ) {
+        this();
         this.maxScore = maxScore;
         this.acceptableCoverage = acceptableCoverage;
         this.mutationTargets = mutationTargets;
@@ -49,13 +61,27 @@ public class Mutation implements Stage {
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.SUBMISSION_ONLY;
+    public Stage build(Config config) throws ConfigException {
+        return new Mutation(
+            config.getConfig("mutation.weighting", Double.class),
+            config.getConfig(
+                "mutation.acceptableCoverage",
+                100.0,
+                Double.class
+            ),
+            config.getConfig(
+                "mutation.mutationTargets",
+                new TypeCapture<List<String>>() {}
+            ),
+            config.getConfig(
+                "mutation.testTargets",
+                new TypeCapture<List<String>>() {}
+            ),
+            config.getConfig(
+                "mutation.ignoreTests",
+                new TypeCapture<List<String>>() {}
+            )
+        );
     }
 
     @Override
@@ -64,11 +90,16 @@ public class Mutation implements Stage {
         try {
             var compilation = submission.compileSrc();
             if (!compilation.success()) {
-                throw new StageException("Unable to compile submission: " + compilation.output());
+                throw new StageException(
+                    "Unable to compile submission: " + compilation.output()
+                );
             }
             compilation = submission.compileTest();
             if (!compilation.success()) {
-                throw new StageException("Unable to compile submission tests: " + compilation.output());
+                throw new StageException(
+                    "Unable to compile submission tests: " +
+                    compilation.output()
+                );
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,21 +113,25 @@ public class Mutation implements Stage {
         }
 
         // Path contains dependencies and the compile submission
-        var classPath = submission.getClassPath() +
-                File.pathSeparator + submission.getSrcBuildPath() +
-                File.pathSeparator + submission.getTestBuildPath();
+        var classPath =
+            submission.getClassPath() +
+            File.pathSeparator +
+            submission.getSrcBuildPath() +
+            File.pathSeparator +
+            submission.getTestBuildPath();
         List<String> failingTests = this.runTests(tests, classPath);
         if (!failingTests.isEmpty()) {
-            var overview = new Result(name)
-                    .appendOutput("Some of your JUnit tests failed when run against your solution therefore mutation testing was not executed.\n")
-                    .appendOutput("## Details\n\n")
-                    .setStatus(Status.FAILED);
+            var overview = new Result(getName())
+                .appendOutput(
+                    "Some of your JUnit tests failed when run against your solution therefore mutation testing was not executed.\n"
+                )
+                .appendOutput("## Details\n\n")
+                .setStatus(Status.FAILED);
             for (String fail : failingTests) {
                 overview.appendOutput(fail);
             }
             return StageResult.fromOverview(overview);
         }
-
 
         ReportOptions data = new ReportIgnoringTests();
         // Set the classes to mutate
@@ -110,7 +145,7 @@ public class Mutation implements Stage {
         //    packages.add(new Glob(test));
         //}
         for (var test : ignoreTests) {
-            packages.add((path) -> !new Glob(test).matches(path));
+            packages.add(path -> !new Glob(test).matches(path));
         }
         data.setTargetTests(packages);
 
@@ -120,7 +155,10 @@ public class Mutation implements Stage {
         path.add(submission.getClassPath()); //todo(mh): do we need to split by ":", replace with just libs needed
         path.add(submission.getSrcBuildPath());
         path.add(submission.getTestBuildPath());
-        String classpath = System.getProperty("java.class.path") + File.pathSeparator + classPath;
+        String classpath =
+            System.getProperty("java.class.path") +
+            File.pathSeparator +
+            classPath;
         System.out.println("Full Classpath: " + classpath);
 
         // Split the classpath into individual entries
@@ -139,7 +177,16 @@ public class Mutation implements Stage {
 
         // Set mutators, threads, etc. (optional, defaults are often fine)
         //data.setMutators(Collections.singletonList("DEFAULTS"));
-        data.setMutators(List.of("INVERT_NEGS", "MATH", "VOID_METHOD_CALLS", "REMOVE_CONDITIONALS", "INCREMENTS", "RETURNS"));
+        data.setMutators(
+            List.of(
+                "INVERT_NEGS",
+                "MATH",
+                "VOID_METHOD_CALLS",
+                "REMOVE_CONDITIONALS",
+                "INCREMENTS",
+                "RETURNS"
+            )
+        );
 
         data.setGroupConfig(new TestGroupConfig());
         data.addOutputFormats(Collections.singletonList("Chalkbox"));
@@ -162,34 +209,52 @@ public class Mutation implements Stage {
             return failWithMessage(result.getError().get().toString());
         }
 
-        var overview = new Result(name)
-                .appendOutput("Below are mutations (changes) that have been made to your submission and whether or not your unit tests successfully identified the change.")
-                .setStatus(Status.PASSED).setVisibility(Visibility.HIDDEN);
+        var overview = new Result(getName())
+            .appendOutput(
+                "Below are mutations (changes) that have been made to your submission and whether or not your unit tests successfully identified the change."
+            )
+            .setStatus(Status.PASSED)
+            .setVisibility(Visibility.HIDDEN);
 
-        List<Result> allResults = new ArrayList<>(List.of(buildPerformanceOverview(listener.getMutations(), result)));
+        List<Result> allResults = new ArrayList<>(
+            List.of(buildPerformanceOverview(listener.getMutations(), result))
+        );
         allResults.addAll(listener.getResults());
         return new StageResult(overview, allResults);
     }
 
-    private Result buildPerformanceOverview(List<ClassMutationResults> results, AnalysisResult analysis) {
+    private Result buildPerformanceOverview(
+        List<ClassMutationResults> results,
+        AnalysisResult analysis
+    ) {
         // A temporary overview of how many mutations were killed to give better gradescope progress insights
         long totalCreated = 0;
         long totalKilled = 0;
         for (ClassMutationResults result : results) {
             totalCreated += result.getMutations().size();
-            totalKilled += result.getMutations().stream().filter(m -> m.getStatus() == DetectionStatus.KILLED).count();
+            totalKilled +=
+            result
+                .getMutations()
+                .stream()
+                .filter(m -> m.getStatus() == DetectionStatus.KILLED)
+                .count();
         }
 
         if (totalCreated == 0) {
-            return new Result("Test Quality").setStatus(Status.FAILED).setMaxScore(maxScore).setVisibility(Visibility.HIDDEN).appendOutput("Unable to create any mutations");
+            return new Result("Test Quality")
+                .setStatus(Status.FAILED)
+                .setMaxScore(maxScore)
+                .setVisibility(Visibility.HIDDEN)
+                .appendOutput("Unable to create any mutations");
         }
 
-        double percentKilled = (double) totalKilled / (totalCreated * (acceptableCoverage/100));
+        double percentKilled =
+            (double) totalKilled / (totalCreated * (acceptableCoverage / 100));
         double score = Math.ceil(Math.min(maxScore, percentKilled * maxScore));
         Result result = new Result("Test Quality")
-                .setVisibility(Visibility.AFTER_PUBLISHED)
-                .setMaxScore(maxScore)
-                .setScore(score);
+            .setVisibility(Visibility.AFTER_PUBLISHED)
+            .setMaxScore(maxScore)
+            .setScore(score);
 
         int linesCovered = 0;
         int totalLines = 0;
@@ -201,8 +266,20 @@ public class Mutation implements Stage {
             totalLines = stats.getCoverageSummary().getNumberOfLines();
         }
 
-        result.appendOutput("Unit tests covered " + linesCovered + " lines of the " + totalLines + " lines to be tested.\n\n");
-        result.appendOutput("Killed " + totalKilled + " mutations from the " + totalCreated + " created.");
+        result.appendOutput(
+            "Unit tests covered " +
+            linesCovered +
+            " lines of the " +
+            totalLines +
+            " lines to be tested.\n\n"
+        );
+        result.appendOutput(
+            "Killed " +
+            totalKilled +
+            " mutations from the " +
+            totalCreated +
+            " created."
+        );
 
         return result;
     }
@@ -210,20 +287,24 @@ public class Mutation implements Stage {
     private StageResult failWithMessage(String cause) {
         String message;
         if (cause.contains("Mutation testing requires a green")) {
-            message = "Unable to run mutation tests while your unit tests do not pass on your solution. ";
-            message += "Your JUnit tests must pass when run against your submission.";
+            message =
+            "Unable to run mutation tests while your unit tests do not pass on your solution. ";
+            message +=
+            "Your JUnit tests must pass when run against your submission.";
         } else {
             message = "Unable to execute mutation tests: " + cause;
         }
         return StageResult.fromOverview(
-                new Result(name)
-                        .setStatus(Status.FAILED)
-                        .setOutputFormat(message)
+            new Result(getName())
+                .setStatus(Status.FAILED)
+                .setOutputFormat(message)
         );
     }
 
     private PluginServices injectServices(Map<Class<?>, Object> services) {
-        Services fallback = new ServicesFromClassLoader(IsolationUtils.getContextClassLoader());
+        Services fallback = new ServicesFromClassLoader(
+            IsolationUtils.getContextClassLoader()
+        );
         Services serviceLoader = new Services() {
             @Override
             @SuppressWarnings("unchecked") // hopefully valid
@@ -242,18 +323,6 @@ public class Mutation implements Stage {
         return new PluginServices(serviceLoader);
     }
 
-    @Override
-    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
-        // Not implemented
-        return null;
-    }
-
-    @Override
-    public StageResult run(Submission submission, Solution solution) throws StageException {
-        // Not implemented
-        return null;
-    }
-
     private List<String> runTests(List<String> tests, String classPath) {
         var failures = new ArrayList<String>();
         for (String className : tests) {
@@ -268,7 +337,9 @@ public class Mutation implements Stage {
             }
             for (var result : results) {
                 if (result.fails() > 0) {
-                    failures.add("JUnit test: `" + result.name() + "` fails. Output:\n");
+                    failures.add(
+                        "JUnit test: `" + result.name() + "` fails. Output:\n"
+                    );
                     failures.add("```" + result.output() + "```\n\n");
                 }
             }

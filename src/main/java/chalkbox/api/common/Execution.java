@@ -15,6 +15,7 @@ import java.util.concurrent.TimeoutException;
  * Utility class for executing processes
  */
 public class Execution {
+
     /**
      * Execute a process in a working directory
      *
@@ -24,8 +25,11 @@ public class Execution {
      * @return the executed process
      * @throws IOException if an issue occurs executing the process
      */
-    public static ProcessExecution runProcess(File working, int timeout, String... args)
-            throws IOException, TimeoutException {
+    public static ProcessExecution runProcess(
+        File working,
+        int timeout,
+        String... args
+    ) throws IOException, TimeoutException {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.directory(working);
 
@@ -41,9 +45,11 @@ public class Execution {
      * @return the executed process
      * @throws IOException if an issue occurs executing the process
      */
-    public static ProcessExecution runProcess(Map<String, String> environment,
-                                     int timeout, String... args)
-            throws IOException, TimeoutException {
+    public static ProcessExecution runProcess(
+        Map<String, String> environment,
+        int timeout,
+        String... args
+    ) throws IOException, TimeoutException {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.environment().putAll(environment);
 
@@ -60,9 +66,12 @@ public class Execution {
      * @return the executed process
      * @throws IOException if an issue occurs executing the process
      */
-    public static ProcessExecution runProcess(File working, Map<String, String> environment,
-                                     int timeout, String... args)
-            throws IOException, TimeoutException {
+    public static ProcessExecution runProcess(
+        File working,
+        Map<String, String> environment,
+        int timeout,
+        String... args
+    ) throws IOException, TimeoutException {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.directory(working);
         builder.environment().putAll(environment);
@@ -74,7 +83,7 @@ public class Execution {
      * Helper to execute a process.
      */
     private static ProcessExecution run(ProcessBuilder builder, int timeout)
-            throws IOException, TimeoutException {
+        throws IOException, TimeoutException {
         Process process;
         ProcessExecution execution = new ProcessExecution();
         try {
@@ -86,7 +95,9 @@ public class Execution {
                 @Override
                 public void run() {
                     try {
-                        InputStreamReader in = new InputStreamReader(process.getInputStream());
+                        InputStreamReader in = new InputStreamReader(
+                            process.getInputStream()
+                        );
                         int bite;
                         while ((bite = in.read()) != -1) {
                             output.write(bite);
@@ -100,7 +111,9 @@ public class Execution {
                 @Override
                 public void run() {
                     try {
-                        InputStreamReader in = new InputStreamReader(process.getErrorStream());
+                        InputStreamReader in = new InputStreamReader(
+                            process.getErrorStream()
+                        );
                         int bite;
                         while ((bite = in.read()) != -1) {
                             error.write(bite);
@@ -141,7 +154,7 @@ public class Execution {
      * @throws IOException if an issue occurs executing the process
      */
     public static ProcessExecution runProcess(int timeout, String... args)
-            throws IOException, TimeoutException {
+        throws IOException, TimeoutException {
         return runProcess(new File("."), timeout, args);
     }
 

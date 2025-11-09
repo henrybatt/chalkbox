@@ -2,20 +2,24 @@ package chalkbox.stages;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Optional;
-
 public class Result {
 
     private final String name;
+
     @SerializedName("name_format")
     private final String nameFormat;
+
     private Double score; // important: null required
+
     @SerializedName("max_score")
     private Double maxScore; // important: null required
+
     private Status status;
     private String output;
+
     @SerializedName("output_format")
     private String outputFormat;
+
     private Visibility visibility;
 
     public Result(String name) {

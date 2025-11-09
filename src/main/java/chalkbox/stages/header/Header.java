@@ -1,39 +1,32 @@
 package chalkbox.stages.header;
 
-import chalkbox.source.Solution;
+import chalkbox.config.Config;
+import chalkbox.config.ConfigException;
 import chalkbox.source.Submission;
 import chalkbox.stages.*;
 
-import java.util.List;
+@RegisterStage
+public class Header
+    extends BaseStage
+    implements SubmissionOnlyStage, StageProducer {
 
-public class Header implements Stage {
-    @Override
-    public String getName() {
-        return "Overview";
+    public Header() {
+        super("Overview");
     }
 
     @Override
-    public Type getType() {
-        return Type.SUBMISSION_ONLY;
+    public Stage build(Config config) throws ConfigException {
+        return new Header();
     }
 
     @Override
     public StageResult run(Submission submission) throws StageException {
         // todo(mh): Add header section
-        return StageResult.fromOverview(new Result("Info")
+        return StageResult.fromOverview(
+            new Result("Info")
                 .setStatus(Status.PASSED)
                 .setVisibility(Visibility.VISIBLE)
                 .setOutputFormat("html")
         );
-    }
-
-    @Override
-    public StageResult run(Submission submission, Solution solution) throws StageException {
-        return null;
-    }
-
-    @Override
-    public StageResult run(Submission submission, List<Solution> solutions) throws StageException {
-        return null;
     }
 }

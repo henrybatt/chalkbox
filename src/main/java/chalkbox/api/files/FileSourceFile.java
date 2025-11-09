@@ -10,6 +10,7 @@ import java.nio.file.Files;
  * An implementation of a source file based around abstracting an actual file
  */
 public class FileSourceFile extends SourceFile {
+
     private final File file;
 
     /**
@@ -39,7 +40,8 @@ public class FileSourceFile extends SourceFile {
     }
 
     @Override
-    public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+    public CharSequence getCharContent(boolean ignoreEncodingErrors)
+        throws IOException {
         return new String(Files.readAllBytes(file.toPath()));
     }
 }

@@ -1,11 +1,10 @@
 package chalkbox.stages.conformance;
 
+import chalkbox.api.files.FileLoader;
 import com.github.therapi.runtimejavadoc.ClassJavadoc;
 import com.github.therapi.runtimejavadoc.internal.JsonJavadocReader;
 import com.github.therapi.runtimejavadoc.repack.com.eclipsesource.json.Json;
 import com.github.therapi.runtimejavadoc.repack.com.eclipsesource.json.JsonObject;
-import chalkbox.api.files.FileLoader;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -14,10 +13,12 @@ import java.nio.file.Files;
 import java.util.*;
 
 public class SourceLoader extends ClassLoader {
+
     private File classDirectory;
     private List<String> files;
 
-    public SourceLoader(String classDirectory, ClassLoader parent) throws IOException {
+    public SourceLoader(String classDirectory, ClassLoader parent)
+        throws IOException {
         super(parent);
         File file = new File(classDirectory);
 
@@ -48,7 +49,11 @@ public class SourceLoader extends ClassLoader {
         for (String file : files) {
             // Any GUI-related classes break conformance, don't load them
             // TODO find a better fix for this
-            if (file.contains("$") || file.contains("Canvas") || file.contains("Launcher")) {
+            if (
+                file.contains("$") ||
+                file.contains("Canvas") ||
+                file.contains("Launcher")
+            ) {
                 continue;
             }
             classes.put(file, loadClass(file));
@@ -57,8 +62,12 @@ public class SourceLoader extends ClassLoader {
     }
 
     private File getFile(String className) {
-        return new File(classDirectory.getPath() + File.separator
-                + className.replace(".", File.separator) + ".class");
+        return new File(
+            classDirectory.getPath() +
+            File.separator +
+            className.replace(".", File.separator) +
+            ".class"
+        );
     }
 
     @Override
@@ -72,9 +81,7 @@ public class SourceLoader extends ClassLoader {
         try {
             byte[] classData = Files.readAllBytes(getFile(name).toPath());
 
-            return defineClass(name,
-                    classData, 0, classData.length);
-
+            return defineClass(name, classData, 0, classData.length);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,17 +90,23 @@ public class SourceLoader extends ClassLoader {
     }
 
     private File loadJavaDoc(String className) {
-        return new File(classDirectory.getPath() + File.separator
-                + className.replace(".", File.separator) + "__Javadoc.json");
+        return new File(
+            classDirectory.getPath() +
+            File.separator +
+            className.replace(".", File.separator) +
+            "__Javadoc.json"
+        );
     }
 
     public ClassJavadoc getTestJavadoc(String className) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(loadJavaDoc(className)));
+            BufferedReader reader = new BufferedReader(
+                new FileReader(loadJavaDoc(className))
+            );
             JsonObject json = Json.parse(reader).asObject();
             return JsonJavadocReader.readClassJavadoc(className, json);
         } catch (Exception ignored) {
-//            System.out.println(ignored);
+            //            System.out.println(ignored);
         }
         return ClassJavadoc.createEmpty(className);
     }

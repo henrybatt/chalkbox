@@ -1,17 +1,18 @@
 package chalkbox.api.common.java;
 
 import chalkbox.stages.Visibility;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
 public class JUnitListener extends RunListener {
+
     private static class TestResult {
+
         private final String testName;
         private boolean visible = false;
         private boolean passed = true;
@@ -38,9 +39,12 @@ public class JUnitListener extends RunListener {
     public void testStarted(Description description) throws Exception {
         super.testStarted(description);
 
-        this.currentResult = new TestResult(
-                description.getTestClass().getSimpleName()
-                + "." + description.getMethodName());
+        this.currentResult =
+        new TestResult(
+            description.getTestClass().getSimpleName() +
+            "." +
+            description.getMethodName()
+        );
 
         /* Results of this test should be immediately visible */
         // TODO create a library containing a custom annotation for this
@@ -67,7 +71,8 @@ public class JUnitListener extends RunListener {
                  * A large number of milliseconds should be used for the timeout, so that the actual
                  * timeout is not likely to be reached (since global timeout should be used instead).
                  */
-                testWeighting = Math.max(1, (int) (testAnnotation.timeout() % 10));
+                testWeighting =
+                Math.max(1, (int) (testAnnotation.timeout() % 10));
             }
             this.currentResult.weighting = testWeighting;
         }
@@ -75,7 +80,8 @@ public class JUnitListener extends RunListener {
         double classWeighting = 1.0;
 
         if (hasField(description.getTestClass().getFields(), "testWeight")) {
-            classWeighting = description.getTestClass().getField("testWeight").getDouble(null);
+            classWeighting =
+            description.getTestClass().getField("testWeight").getDouble(null);
         }
 
         this.currentResult.classWeighting = classWeighting;
@@ -107,15 +113,18 @@ public class JUnitListener extends RunListener {
         String failureString = failure.toString();
         if (failureString.equals(failure.getTestHeader() + ": null")) {
             failureString =
-                    failureString.substring(0, failureString.length() - 4);
-                    failureString += "No message given, refer to stack trace.";
+            failureString.substring(0, failureString.length() - 4);
+            failureString += "No message given, refer to stack trace.";
         }
-        
+
         if (this.currentResult != null) {
             this.output.append(failureString);
             this.output.append("\n");
-            this.currentResult.output = failureString + "\n\n```text\n"
-                    + failure.getTrace().replaceAll("\r\n", "\n") + "```";
+            this.currentResult.output =
+            failureString +
+            "\n\n```text\n" +
+            failure.getTrace().replaceAll("\r\n", "\n") +
+            "```";
             this.currentResult.passed = false;
         }
         this.numFailed++;
@@ -123,10 +132,10 @@ public class JUnitListener extends RunListener {
 
     public JUnitResult getResultsForClass() {
         return new JUnitResult(
-                this.results.size() - this.numFailed,
-                this.numFailed,
-                this.results.size(),
-                this.output.toString()
+            this.results.size() - this.numFailed,
+            this.numFailed,
+            this.results.size(),
+            this.output.toString()
         );
     }
 
@@ -134,15 +143,15 @@ public class JUnitListener extends RunListener {
         var results = new ArrayList<JUnitIndividualResult>();
         for (TestResult result : this.results) {
             var data = new JUnitIndividualResult(
-                    result.passed ? 1 : 0,
-                    result.passed ? 0 : 1,
-                    1,
-                    result.output,
-                    "md",
-                    result.testName,
-                    result.weighting,
-                    result.classWeighting,
-                    result.visible ? Visibility.VISIBLE : Visibility.AFTER_PUBLISHED
+                result.passed ? 1 : 0,
+                result.passed ? 0 : 1,
+                1,
+                result.output,
+                "md",
+                result.testName,
+                result.weighting,
+                result.classWeighting,
+                result.visible ? Visibility.VISIBLE : Visibility.AFTER_PUBLISHED
             );
             results.add(data);
         }

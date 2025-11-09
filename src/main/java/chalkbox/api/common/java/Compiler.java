@@ -1,12 +1,12 @@
 package chalkbox.api.common.java;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
 
 /**
  * Utility class for compiling Java source code.
@@ -25,9 +25,12 @@ public class Compiler {
      *
      * @return true iff the files were compiled successfully.
      */
-    public static boolean compile(Iterable<? extends JavaFileObject> files,
-                                  String classPath, String outputPath,
-                                  StringWriter output) {
+    public static boolean compile(
+        Iterable<? extends JavaFileObject> files,
+        String classPath,
+        String outputPath,
+        StringWriter output
+    ) {
         /* Try to create the output path directory */
         File outFile = new File(outputPath);
         if (!outFile.exists()) {
@@ -39,7 +42,9 @@ public class Compiler {
 
         List<String> options = new ArrayList<>();
         options.add("-processor");
-        options.add("com.github.therapi.runtimejavadoc.scribe.JavadocAnnotationProcessor");
+        options.add(
+            "com.github.therapi.runtimejavadoc.scribe.JavadocAnnotationProcessor"
+        );
         options.add("-cp");
         options.add(classPath);
         options.add("-d");
@@ -58,14 +63,17 @@ public class Compiler {
      *
      * @return true iff the files were compiled successfully.
      */
-    public static boolean compile(Iterable<? extends JavaFileObject> files,
-                                  StringWriter output, List<String> options) {
+    public static boolean compile(
+        Iterable<? extends JavaFileObject> files,
+        StringWriter output,
+        List<String> options
+    ) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
         boolean success;
         try {
-            success = compiler.getTask(output, null,
-                    null, options, null, files).call();
+            success =
+            compiler.getTask(output, null, null, options, null, files).call();
         } catch (IllegalStateException e) {
             output.write("Empty submission");
             return false;

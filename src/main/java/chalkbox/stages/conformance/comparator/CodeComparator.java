@@ -2,12 +2,12 @@ package chalkbox.stages.conformance.comparator;
 
 import chalkbox.stages.conformance.comparator.flags.Flag;
 import chalkbox.stages.conformance.comparator.flags.SingularFlag;
-
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class CodeComparator<T> {
+
     protected String name;
     protected int indent = 0;
     protected List<CodeComparator> subComparators = new ArrayList<>();
@@ -49,8 +49,11 @@ public abstract class CodeComparator<T> {
     }
 
     protected void compareModifier(int expected, int actual) {
-        Flag modifierFlag = new SingularFlag<>("Modifier does not match.",
-                Modifier.toString(expected), Modifier.toString(actual));
+        Flag modifierFlag = new SingularFlag<>(
+            "Modifier does not match.",
+            Modifier.toString(expected),
+            Modifier.toString(actual)
+        );
         modifierFlag.setFlag(expected != actual);
         flags.add(modifierFlag);
     }
@@ -62,13 +65,13 @@ public abstract class CodeComparator<T> {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder(getIndent()).append(name)
-                .append("\n");
+        StringBuilder builder = new StringBuilder(getIndent())
+            .append(name)
+            .append("\n");
 
         for (Flag flag : flags) {
             if (flag.isSet()) {
-                builder.append(flag.toString(indent + 4))
-                        .append("\n");
+                builder.append(flag.toString(indent + 4)).append("\n");
             }
         }
 

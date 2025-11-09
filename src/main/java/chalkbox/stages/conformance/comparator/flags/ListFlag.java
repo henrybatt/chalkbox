@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ListFlag<T> extends Flag {
+
     private List<T> expected = new ArrayList<>();
     private List<T> actual = new ArrayList<>();
 
@@ -23,13 +24,19 @@ public class ListFlag<T> extends Flag {
 
     public boolean isSet() {
         for (T expect : expected) {
-            if(Collections.frequency(expected,expect) != Collections.frequency(actual, expect)) {
+            if (
+                Collections.frequency(expected, expect) !=
+                Collections.frequency(actual, expect)
+            ) {
                 return true;
             }
         }
 
         for (T act : actual) {
-            if(Collections.frequency(actual,act) != Collections.frequency(expected, act)) {
+            if (
+                Collections.frequency(actual, act) !=
+                Collections.frequency(expected, act)
+            ) {
                 return true;
             }
         }
@@ -44,9 +51,9 @@ public class ListFlag<T> extends Flag {
         List<T> extra = new ArrayList<>();
 
         for (T expect : new HashSet<>(expected)) {
-            int freqExpected = Collections.frequency(expected,expect);
+            int freqExpected = Collections.frequency(expected, expect);
             int freqActual = Collections.frequency(actual, expect);
-            if(freqExpected != freqActual) {
+            if (freqExpected != freqActual) {
                 for (int i = 0; i < Math.max(0, freqExpected); i++) {
                     missing.add(expect);
                 }
@@ -54,22 +61,26 @@ public class ListFlag<T> extends Flag {
         }
 
         for (T act : new HashSet<>(actual)) {
-            int freqExpected = Collections.frequency(expected,act);
+            int freqExpected = Collections.frequency(expected, act);
             int freqActual = Collections.frequency(actual, act);
-            if(freqExpected != freqActual) {
-                for(int i = 0; i < freqActual; i++) {
+            if (freqExpected != freqActual) {
+                for (int i = 0; i < freqActual; i++) {
                     extra.add(act);
                 }
             }
-
         }
 
-        builder.append(message)
-                .append("\n");
-        builder.append(getIndent(indent)).append("Missing: ").append(missing)
-                .append("\n");
-        builder.append(getIndent(indent)).append("Extra:   ").append(extra)
-                .append("\n");
+        builder.append(message).append("\n");
+        builder
+            .append(getIndent(indent))
+            .append("Missing: ")
+            .append(missing)
+            .append("\n");
+        builder
+            .append(getIndent(indent))
+            .append("Extra:   ")
+            .append(extra)
+            .append("\n");
 
         return builder.toString();
     }

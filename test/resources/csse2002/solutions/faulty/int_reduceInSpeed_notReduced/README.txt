@@ -1,1 +1,0 @@
-Intersection#reduceIncomingSpeedSigns does not reduce speed.

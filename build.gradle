@@ -1,8 +1,9 @@
 plugins {
-    id 'java'
-    id 'application'
-    id "org.sonarqube" version "6.3.1.5724"
-    id "com.github.ben-manes.versions" version "0.53.0"
+    id("java")
+    id("application")
+    id("org.sonarqube") version "6.3.1.5724"
+    id("com.github.ben-manes.versions") version "0.53.0"
+    id("com.diffplug.spotless") version "8.0.0"
 }
 
 java {
@@ -42,6 +43,7 @@ dependencies {
     implementation 'com.github.therapi:therapi-runtime-javadoc:0.15.0'
     implementation 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0'
     implementation 'info.picocli:picocli:4.7.7'
+    implementation 'org.reflections:reflections:0.9.12'
     implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'com.github.gestalt-config:gestalt-core:0.36.0'
     implementation 'com.github.gestalt-config:gestalt-yaml:0.36.0'
@@ -78,4 +80,22 @@ tasks.register('fatJar', Jar) {
     archiveBaseName = project.name + '-all'
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+spotless {
+    format 'misc', {
+        // define the files to apply `misc` to
+        target '*.gradle', '.gitattributes', '.gitignore'
+
+        // Steps
+        trimTrailingWhitespace()
+        leadingTabsToSpaces()
+        endWithNewline()
+    }
+    java {
+        removeUnusedImports()
+        prettier(['prettier': '3.0.3', 'prettier-plugin-java': '2.3.0'])
+                .nodeExecutable("/home/millie/.nvm/versions/node/v25.1.0/bin/node")
+                .config(['parser': 'java', 'tabWidth': 4, 'plugins': ['prettier-plugin-java']])
+    }
 }

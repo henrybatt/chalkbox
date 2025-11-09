@@ -1,6 +1,7 @@
 package chalkbox.api.common;
 
 public class ProcessExecution {
+
     private String output;
     private String error;
 

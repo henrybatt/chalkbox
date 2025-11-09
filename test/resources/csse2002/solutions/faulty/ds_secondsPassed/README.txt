@@ -1,1 +1,0 @@
-DemoSensor#secondsPassed initialised to wrong value (1), causing DemoSensor#oneSecond to be out of sync.

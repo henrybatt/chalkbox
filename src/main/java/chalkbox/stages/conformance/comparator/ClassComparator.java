@@ -2,7 +2,6 @@ package chalkbox.stages.conformance.comparator;
 
 import chalkbox.stages.conformance.comparator.flags.Flag;
 import chalkbox.stages.conformance.comparator.flags.ListFlag;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -10,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class ClassComparator extends CodeComparator<Class> {
+
     public ClassComparator(Class expected, Class actual) {
         super(expected, actual);
         name = expected.isInterface() ? "interface " : "class ";
@@ -23,26 +23,43 @@ public class ClassComparator extends CodeComparator<Class> {
         compareModifier(expected.getModifiers(), actual.getModifiers());
 
         try {
-            ListFlag<String> fieldFlag = new ListFlag<>("Class fields do not match.");
+            ListFlag<String> fieldFlag = new ListFlag<>(
+                "Class fields do not match."
+            );
             compareMembers(expected.getFields(), actual.getFields(), fieldFlag);
             flags.add(fieldFlag);
 
-            ListFlag<String> methodFlag = new ListFlag<>("Class methods do not match.");
-            compareMembersOverload(expected.getMethods(), actual.getMethods(), methodFlag);
+            ListFlag<String> methodFlag = new ListFlag<>(
+                "Class methods do not match."
+            );
+            compareMembersOverload(
+                expected.getMethods(),
+                actual.getMethods(),
+                methodFlag
+            );
             //compareMembers(expected.getMethods(), actual.getMethods(), methodFlag);
             flags.add(methodFlag);
 
-            ListFlag<String> constructorFlag = new ListFlag<>("Class constructors do not match.");
-            compareMembersOverload(expected.getConstructors(),
-                    actual.getConstructors(), constructorFlag);
+            ListFlag<String> constructorFlag = new ListFlag<>(
+                "Class constructors do not match."
+            );
+            compareMembersOverload(
+                expected.getConstructors(),
+                actual.getConstructors(),
+                constructorFlag
+            );
             flags.add(constructorFlag);
         } catch (NoClassDefFoundError ncd) {
-            flags.add(new Flag("Failed to load fields: " + ncd.getMessage(), true));
+            flags.add(
+                new Flag("Failed to load fields: " + ncd.getMessage(), true)
+            );
             ncd.printStackTrace();
         }
 
         Flag shouldBeInterface = new Flag("Expected class to be an interface");
-        shouldBeInterface.setFlag(expected.isInterface() && !actual.isInterface());
+        shouldBeInterface.setFlag(
+            expected.isInterface() && !actual.isInterface()
+        );
 
         Flag shouldBeClass = new Flag("Class should not be an interface");
         shouldBeClass.setFlag(!expected.isInterface() && actual.isInterface());
@@ -51,8 +68,11 @@ public class ClassComparator extends CodeComparator<Class> {
         flags.add(shouldBeClass);
     }
 
-    private void compareMembers(Member[] expected, Member[] actual,
-                                ListFlag<String> flag) {
+    private void compareMembers(
+        Member[] expected,
+        Member[] actual,
+        ListFlag<String> flag
+    ) {
         Map<String, Member> expectedMembers = new HashMap<>();
 
         for (Member member : expected) {
@@ -69,7 +89,10 @@ public class ClassComparator extends CodeComparator<Class> {
             flag.addActual(member.getName());
             Member expectedMember = expectedMembers.get(member.getName());
             if (expectedMember != null) {
-                CodeComparator comparator = buildComparator(expectedMember, member);
+                CodeComparator comparator = buildComparator(
+                    expectedMember,
+                    member
+                );
                 comparator.indent = indent + 4;
                 subComparators.add(comparator);
             }
@@ -81,15 +104,23 @@ public class ClassComparator extends CodeComparator<Class> {
             return new FieldComparator((Field) expected, (Field) actual);
         } else if ((expected instanceof Method) && (actual instanceof Method)) {
             return new MethodComparator((Method) expected, (Method) actual);
-        } else if ((expected instanceof Constructor) && (actual instanceof Constructor)) {
-            return new ConstructorComparator((Constructor) expected, (Constructor) actual);
+        } else if (
+            (expected instanceof Constructor) && (actual instanceof Constructor)
+        ) {
+            return new ConstructorComparator(
+                (Constructor) expected,
+                (Constructor) actual
+            );
         }
 
         throw new RuntimeException("Unknown comparator types");
     }
 
-    private void compareMembersOverload(Member[] expected, Member[] actual,
-                                        ListFlag<String> flag) {
+    private void compareMembersOverload(
+        Member[] expected,
+        Member[] actual,
+        ListFlag<String> flag
+    ) {
         // Group all methods by name ( collecting overloaded )
         Map<String, List<Member>> expectedMembers = new HashMap<>();
         for (Member member : expected) {
@@ -142,19 +173,33 @@ public class ClassComparator extends CodeComparator<Class> {
                 }
             }
             int remainingPos = 0;
-            for (remainingPos = 0; remainingPos < Integer.min(expOverloadsLeft.size(), actOverloadsLeft.size()); remainingPos++) {
-                var comparator = buildComparator(expOverloadsLeft.get(remainingPos), actOverloadsLeft.get(remainingPos));
+            for (
+                remainingPos = 0;
+                remainingPos <
+                Integer.min(expOverloadsLeft.size(), actOverloadsLeft.size());
+                remainingPos++
+            ) {
+                var comparator = buildComparator(
+                    expOverloadsLeft.get(remainingPos),
+                    actOverloadsLeft.get(remainingPos)
+                );
                 comparator.indent = indent + 4;
                 subComparators.add(comparator);
             }
             // Only one of the following will run since we have already reached the max of one of the lists.
             for (; remainingPos < expOverloadsLeft.size(); remainingPos++) {
-                var comparator = buildComparator(expOverloadsLeft.get(remainingPos), baselineActual);
+                var comparator = buildComparator(
+                    expOverloadsLeft.get(remainingPos),
+                    baselineActual
+                );
                 comparator.indent = indent + 4;
                 subComparators.add(comparator);
             }
             for (; remainingPos < actOverloadsLeft.size(); remainingPos++) {
-                var comparator = buildComparator(baselineExpected, actOverloadsLeft.get(remainingPos));
+                var comparator = buildComparator(
+                    baselineExpected,
+                    actOverloadsLeft.get(remainingPos)
+                );
                 comparator.indent = indent + 4;
                 subComparators.add(comparator);
             }
