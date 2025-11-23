@@ -10,10 +10,14 @@ public class AI
     extends BaseStage
     implements SubmissionOnlyStage, StageProducer {
 
-    private final String path;
+    private String path;
+
+    public AI() {
+        super("AI Declaration");
+    }
 
     public AI(String path) {
-        super("AI Declaration");
+        this();
         this.path = path;
     }
 
